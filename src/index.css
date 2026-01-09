@@ -1,0 +1,5 @@
+@config "../tailwind.config.js";
+@import "reactflow/dist/style.css";
+@import "tailwindcss";
+@import "./xy-theme.css";
+@plugin "daisyui";
