@@ -11,7 +11,7 @@ export function UmlClassNode({ data }) {
   return (
     <div className="group/node min-w-[180px] rounded-lg border border-base-content bg-base-100 text-base-content shadow-sm">
       <div className="border-b border-base-content px-3 py-2 text-sm font-semibold">
-        {data.label}
+        {data.label ?? ''}
       </div>
       <div className="px-3 py-2 text-xs">
         {attributes.length === 0 ? (
