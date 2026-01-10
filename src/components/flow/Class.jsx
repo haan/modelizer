@@ -14,7 +14,7 @@ export function Class({ data, id, selected }) {
       className={`group/node min-w-[180px] rounded-lg border-2 bg-base-100 text-base-content shadow-sm hover:border-primary ${borderClass}`}
     >
       <div
-        className="h-2 rounded-t-[7px]"
+        className="h-2 rounded-t-md"
         style={{ backgroundColor: accentColor }}
       />
       <div className="border-b border-base-content px-3 py-2 text-sm font-semibold">

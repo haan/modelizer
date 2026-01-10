@@ -17,7 +17,7 @@ export function AssociativeAssociation({
     targetX,
     targetY,
   })
-  const strokeClass = selected ? 'text-primary' : 'text-base-content'
+  const strokeClass = selected ? 'text-primary' : 'text-base-content/70'
 
   return (
     <>

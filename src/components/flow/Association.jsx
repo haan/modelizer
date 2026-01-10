@@ -40,7 +40,7 @@ export function Association({
   const multiplicityA = data?.multiplicityA ?? ''
   const multiplicityB = data?.multiplicityB ?? ''
   const name = data?.name ?? ''
-  const strokeClass = selected ? 'text-primary' : 'text-base-content'
+  const strokeClass = selected ? 'text-primary' : 'text-base-content/70'
   const {
     edgePath,
     labelX,
