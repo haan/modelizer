@@ -1,4 +1,6 @@
 import { Handle, Position } from 'reactflow'
+import { CLASS_COLOR_PALETTE } from '../../classPalette.js'
+import UmlClassAttribute from './UmlClassAttribute.jsx'
 
 export function UmlClassNode({ data }) {
   const attributes = Array.isArray(data.attributes) ? data.attributes : []
@@ -7,9 +9,17 @@ export function UmlClassNode({ data }) {
   const handleVisibleClass =
     'group-hover/node:opacity-100 group-[.is-connecting]/flow:opacity-100'
   const handleClassName = `${handleBaseClass} ${handleVisibleClass}`
+  const accentColor = data?.color ?? CLASS_COLOR_PALETTE[0]
 
   return (
-    <div className="group/node min-w-[180px] rounded-lg border border-base-content bg-base-100 text-base-content shadow-sm">
+    <div
+      className="group/node min-w-[180px] rounded-lg border bg-base-100 text-base-content shadow-sm"
+      style={{ borderColor: 'oklch(var(--bc))' }}
+    >
+      <div
+        className="h-2 rounded-t-[7px]"
+        style={{ backgroundColor: accentColor }}
+      />
       <div className="border-b border-base-content px-3 py-2 text-sm font-semibold">
         {data.label ?? ''}
       </div>
@@ -19,7 +29,7 @@ export function UmlClassNode({ data }) {
         ) : (
           <ul className="space-y-1">
             {attributes.map((attr) => (
-              <li key={attr}>{attr}</li>
+              <UmlClassAttribute key={attr} name={attr} />
             ))}
           </ul>
         )}

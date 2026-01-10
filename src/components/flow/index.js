@@ -1,0 +1,6 @@
+export { AssociationEdge } from './AssociationEdge.jsx'
+export { AssociationFloatingEdge } from './AssociationFloatingEdge.jsx'
+export { AssociationReflexiveEdge } from './AssociationReflexiveEdge.jsx'
+export { EdgeLabel } from './EdgeLabel.jsx'
+export { default as UmlClassAttribute } from './UmlClassAttribute.jsx'
+export { UmlClassNode } from './UmlClassNode.jsx'

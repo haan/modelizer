@@ -10,8 +10,11 @@ import ReactFlow, {
   useNodesState,
 } from 'reactflow'
 import { edgeTypes, nodeTypes } from './flowTypes.js'
+import { getPaletteColor, getRandomPaletteColor } from './classPalette.js'
+import { InfoPanel, Navbar, Sidebar } from './components/layout/index.js'
 
 const FLOATING_EDGE_TYPE = 'associationFloating'
+const MIN_INFO_WIDTH = 350
 
 function makeUniqueEdgeId(usedIds, edge, sequence) {
   const baseSource = edge.source ?? 'edge'
@@ -132,13 +135,18 @@ const initialNodes = [
     data: {
       label: 'User',
       attributes: ['id', 'email', 'createdAt', 'updatedAt', 'status', 'role'],
+      color: getPaletteColor(0),
     },
   },
   {
     id: 'class-2',
     position: { x: 480, y: 220 },
     type: 'umlClass',
-    data: { label: 'Account', attributes: ['id', 'status', 'userId'] },
+    data: {
+      label: 'Account',
+      attributes: ['id', 'status', 'userId'],
+      color: getPaletteColor(1),
+    },
   },
 ]
 
@@ -156,9 +164,44 @@ function App() {
   const [nodes, setNodes, onNodesChange] = useNodesState(initialNodes)
   const [edges, setEdges] = useEdgesState(normalizeEdges(initialEdges))
   const [activeView, setActiveView] = useState('conceptual')
+  const [activeSidebarItem, setActiveSidebarItem] = useState('tables')
   const reactFlowWrapper = useRef(null)
   const [reactFlowInstance, setReactFlowInstance] = useState(null)
   const [isConnecting, setIsConnecting] = useState(false)
+  const [infoWidth, setInfoWidth] = useState(360)
+  const resizeState = useRef(null)
+
+  useEffect(() => {
+    const handlePointerMove = (event) => {
+      if (!resizeState.current) {
+        return
+      }
+
+      const { startX, startWidth } = resizeState.current
+      const nextWidth = Math.max(
+        MIN_INFO_WIDTH,
+        startWidth + (event.clientX - startX),
+      )
+      setInfoWidth(nextWidth)
+    }
+
+    const handlePointerUp = () => {
+      resizeState.current = null
+    }
+
+    window.addEventListener('pointermove', handlePointerMove)
+    window.addEventListener('pointerup', handlePointerUp)
+
+    return () => {
+      window.removeEventListener('pointermove', handlePointerMove)
+      window.removeEventListener('pointerup', handlePointerUp)
+    }
+  }, [])
+
+  const onResizeStart = useCallback((event) => {
+    event.preventDefault()
+    resizeState.current = { startX: event.clientX, startWidth: infoWidth }
+  }, [infoWidth])
 
   useEffect(() => {
     const nextType =
@@ -267,77 +310,168 @@ function App() {
           data: {
             label: `Class${current.length + 1}`,
             attributes: [],
+            color: getRandomPaletteColor(),
           },
         },
       ]
     })
   }, [reactFlowInstance, setNodes])
 
+  const onRenameClass = useCallback(
+    (nodeId, nextLabel) => {
+      setNodes((current) =>
+        current.map((node) =>
+          node.id === nodeId
+            ? { ...node, data: { ...node.data, label: nextLabel } }
+            : node,
+        ),
+      )
+    },
+    [setNodes],
+  )
+
+  const onReorderClasses = useCallback(
+    (nextOrderIds) => {
+      setNodes((current) => {
+        const byId = new Map(current.map((node) => [node.id, node]))
+        const ordered = []
+        const seen = new Set()
+
+        nextOrderIds.forEach((id) => {
+          const node = byId.get(id)
+          if (node) {
+            ordered.push(node)
+            seen.add(id)
+          }
+        })
+
+        current.forEach((node) => {
+          if (!seen.has(node.id)) {
+            ordered.push(node)
+          }
+        })
+
+        return ordered
+      })
+    },
+    [setNodes],
+  )
+
+  const onReorderAttributes = useCallback(
+    (nodeId, nextAttributes) => {
+      setNodes((current) =>
+        current.map((node) =>
+          node.id === nodeId
+            ? {
+                ...node,
+                data: {
+                  ...node.data,
+                  attributes: nextAttributes,
+                },
+              }
+            : node,
+        ),
+      )
+    },
+    [setNodes],
+  )
+
+  const onUpdateAttribute = useCallback(
+    (nodeId, attributeIndex, nextValue) => {
+      setNodes((current) =>
+        current.map((node) => {
+          if (node.id !== nodeId) {
+            return node
+          }
+
+          const currentAttributes = Array.isArray(node.data?.attributes)
+            ? [...node.data.attributes]
+            : []
+          if (
+            attributeIndex < 0 ||
+            attributeIndex >= currentAttributes.length
+          ) {
+            return node
+          }
+
+          currentAttributes[attributeIndex] = nextValue
+          return {
+            ...node,
+            data: {
+              ...node.data,
+              attributes: currentAttributes,
+            },
+          }
+        }),
+      )
+    },
+    [setNodes],
+  )
+
+  const onAddAttribute = useCallback(
+    (nodeId) => {
+      setNodes((current) =>
+        current.map((node) => {
+          if (node.id !== nodeId) {
+            return node
+          }
+
+          const currentAttributes = Array.isArray(node.data?.attributes)
+            ? [...node.data.attributes]
+            : []
+          currentAttributes.push(`attribute${currentAttributes.length + 1}`)
+
+          return {
+            ...node,
+            data: {
+              ...node.data,
+              attributes: currentAttributes,
+            },
+          }
+        }),
+      )
+    },
+    [setNodes],
+  )
+
+  const onUpdateClassColor = useCallback(
+    (nodeId, nextColor) => {
+      setNodes((current) =>
+        current.map((node) =>
+          node.id === nodeId
+            ? { ...node, data: { ...node.data, color: nextColor } }
+            : node,
+        ),
+      )
+    },
+    [setNodes],
+  )
+
   return (
     <div className="min-h-screen bg-base-200 text-base-content">
-      <div className="mx-auto flex min-h-screen max-w-screen-2xl flex-col gap-8 px-6 py-10">
-        <header className="flex flex-wrap items-center justify-between gap-4">
-          <div className="flex items-center gap-3">
-            <div className="grid h-10 w-10 place-items-center rounded-xl bg-primary text-primary-content font-bold">
-              M
-            </div>
-            <div>
-              <h1 className="text-2xl font-semibold">Modelizer</h1>
-              <p className="text-sm opacity-70">Database modeling workspace</p>
-            </div>
-          </div>
-          <div className="flex items-center gap-2">
-            <button className="btn btn-outline btn-sm">Load</button>
-            <button className="btn btn-primary btn-sm">Save</button>
-          </div>
-        </header>
-
-        <div className="tabs tabs-boxed">
-          <button
-            className={`tab ${activeView === 'conceptual' ? 'tab-active' : ''}`}
-            onClick={() => setActiveView('conceptual')}
-            type="button"
-          >
-            Conceptual
-          </button>
-          <button
-            className={`tab ${activeView === 'logical' ? 'tab-active' : ''}`}
-            onClick={() => setActiveView('logical')}
-            type="button"
-          >
-            Logical
-          </button>
-          <button
-            className={`tab ${activeView === 'physical' ? 'tab-active' : ''}`}
-            onClick={() => setActiveView('physical')}
-            type="button"
-          >
-            Physical
-          </button>
-        </div>
-
-        <div className="grid gap-6 lg:grid-cols-[280px_1fr_320px]">
-          <aside className="rounded-box bg-base-100 p-4 shadow">
-            <h2 className="text-sm font-semibold uppercase tracking-wide opacity-60">
-              Tools
-            </h2>
-            <div className="mt-4 flex flex-col gap-2">
-              <button
-                className="btn btn-sm btn-primary"
-                onClick={onAddClass}
-                type="button"
-              >
-                Add class
-              </button>
-              <button className="btn btn-sm">Add relationship</button>
-            </div>
-          </aside>
-
-          <main className="rounded-box bg-base-100 p-4 shadow">
+      <div className="flex min-h-screen flex-col">
+        <Navbar />
+        <div className="flex flex-1 min-h-0">
+          <Sidebar
+            activeItem={activeSidebarItem}
+            onSelect={setActiveSidebarItem}
+          />
+          <InfoPanel
+            width={infoWidth}
+            onResizeStart={onResizeStart}
+            activeItem={activeSidebarItem}
+            nodes={nodes}
+            onAddClass={onAddClass}
+            onRenameClass={onRenameClass}
+            onReorderClasses={onReorderClasses}
+            onReorderAttributes={onReorderAttributes}
+            onUpdateAttribute={onUpdateAttribute}
+            onAddAttribute={onAddAttribute}
+            onUpdateClassColor={onUpdateClassColor}
+          />
+          <main className="flex-1 min-w-0 bg-base-100">
             <div
-              className={`group/flow h-[680px] w-full rounded-xl border ${
-                isConnecting ? 'is-connecting' : ''
-              }`}
+              className={`group/flow h-full w-full ${isConnecting ? 'is-connecting' : ''}`}
               ref={reactFlowWrapper}
             >
               <ReactFlow
@@ -355,22 +489,12 @@ function App() {
                 connectionMode={ConnectionMode.Loose}
                 connectionLineType={ConnectionLineType.SmoothStep}
                 connectionRadius={24}
-                fitView
               >
                 <Controls />
                 <Background gap={16} size={1} />
               </ReactFlow>
             </div>
           </main>
-
-          <aside className="rounded-box bg-base-100 p-4 shadow">
-            <h2 className="text-sm font-semibold uppercase tracking-wide opacity-60">
-              Inspector
-            </h2>
-            <p className="mt-4 text-sm opacity-70">
-              Select a class or relationship to edit details.
-            </p>
-          </aside>
         </div>
       </div>
     </div>

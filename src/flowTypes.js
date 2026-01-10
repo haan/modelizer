@@ -1,7 +1,9 @@
-import { AssociationEdge } from './components/AssociationEdge.jsx'
-import { AssociationFloatingEdge } from './components/AssociationFloatingEdge.jsx'
-import { AssociationReflexiveEdge } from './components/AssociationReflexiveEdge.jsx'
-import { UmlClassNode } from './components/UmlClassNode.jsx'
+import {
+  AssociationEdge,
+  AssociationFloatingEdge,
+  AssociationReflexiveEdge,
+  UmlClassNode,
+} from './components/flow/index.js'
 
 export const nodeTypes = {
   umlClass: UmlClassNode,
