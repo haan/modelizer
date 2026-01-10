@@ -24,3 +24,14 @@
     bottom: -7px;
     transform: translate(-50%, 0%);
 }
+
+.react-flow__edge-path {
+    stroke: currentColor !important;
+    stroke-width: 1.5;
+}
+
+.react-flow__edge-interaction {
+    stroke: transparent;
+    stroke-width: 20;
+    pointer-events: stroke;
+}

@@ -1,4 +1,4 @@
-export function EdgeLabel({ transform, label }) {
+export function MultiplicityLabel({ transform, label }) {
   return (
     <div
       style={{ transform }}

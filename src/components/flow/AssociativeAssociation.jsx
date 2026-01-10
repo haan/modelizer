@@ -8,6 +8,8 @@ export function AssociativeAssociation({
   targetY,
   style,
   markerEnd,
+  data,
+  selected,
 }) {
   const [edgePath] = getStraightPath({
     sourceX,
@@ -15,14 +17,23 @@ export function AssociativeAssociation({
     targetX,
     targetY,
   })
+  const strokeClass = selected ? 'text-primary' : 'text-base-content'
 
   return (
-    <path
-      id={id}
-      className="react-flow__edge-path fill-none stroke-[var(--color-base-content)] [stroke-width:1]"
-      d={edgePath}
-      markerEnd={markerEnd}
-      style={{ ...style, strokeDasharray: '6 4' }}
-    />
+    <>
+      <path
+        id={id}
+        className={`react-flow__edge-path fill-none ${strokeClass}`}
+        d={edgePath}
+        markerEnd={markerEnd}
+        stroke="currentColor"
+        style={{ ...style, strokeDasharray: '6 4' }}
+      />
+      <path
+        className="react-flow__edge-interaction"
+        d={edgePath}
+        fill="none"
+      />
+    </>
   )
 }

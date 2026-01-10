@@ -1,5 +1,6 @@
 import { EdgeLabelRenderer, useStore } from 'reactflow'
-import { EdgeLabel } from './EdgeLabel.jsx'
+import { AssociationLabel } from './AssociationLabel.jsx'
+import { MultiplicityLabel } from './MultiplicityLabel.jsx'
 import { getAssociationLayout } from './associationUtils.js'
 
 function getEndpointLabelTransform(position, x, y) {
@@ -19,7 +20,15 @@ function getEndpointLabelTransform(position, x, y) {
   }
 }
 
-export function Association({ id, source, target, markerEnd, style, data }) {
+export function Association({
+  id,
+  source,
+  target,
+  markerEnd,
+  style,
+  data,
+  selected,
+}) {
   const sourceNode = useStore((state) => state.nodeInternals.get(source))
   const targetNode = useStore((state) => state.nodeInternals.get(target))
 
@@ -31,6 +40,7 @@ export function Association({ id, source, target, markerEnd, style, data }) {
   const multiplicityA = data?.multiplicityA ?? ''
   const multiplicityB = data?.multiplicityB ?? ''
   const name = data?.name ?? ''
+  const strokeClass = selected ? 'text-primary' : 'text-base-content'
   const {
     edgePath,
     labelX,
@@ -47,14 +57,20 @@ export function Association({ id, source, target, markerEnd, style, data }) {
     <>
       <path
         id={id}
-        className="react-flow__edge-path fill-none stroke-[var(--color-base-content)] [stroke-width:1]"
+        className={`react-flow__edge-path fill-none ${strokeClass}`}
         d={edgePath}
         markerEnd={markerEnd}
+        stroke="currentColor"
         style={style}
+      />
+      <path
+        className="react-flow__edge-interaction"
+        d={edgePath}
+        fill="none"
       />
       <EdgeLabelRenderer>
         {multiplicityA ? (
-          <EdgeLabel
+          <MultiplicityLabel
             transform={getEndpointLabelTransform(
               sourcePos,
               sourceX,
@@ -64,7 +80,7 @@ export function Association({ id, source, target, markerEnd, style, data }) {
           />
         ) : null}
         {multiplicityB ? (
-          <EdgeLabel
+          <MultiplicityLabel
             transform={getEndpointLabelTransform(
               targetPos,
               targetX,
@@ -74,7 +90,7 @@ export function Association({ id, source, target, markerEnd, style, data }) {
           />
         ) : null}
         {name ? (
-          <EdgeLabel
+          <AssociationLabel
             transform={`translate(-50%, -100%) translate(${labelX}px, ${labelY-1}px)`}
             label={name}
           />

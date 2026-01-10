@@ -22,6 +22,7 @@ export default function ClassesPanel({
   onUpdateAttribute,
   onAddAttribute,
   onUpdateClassColor,
+  onHighlightClass,
 }) {
   const sensors = useSensors(
     useSensor(PointerSensor, {
@@ -126,6 +127,7 @@ export default function ClassesPanel({
               onUpdateAttribute={onUpdateAttribute}
               onAddAttribute={onAddAttribute}
               onUpdateClassColor={onUpdateClassColor}
+              onHighlightClass={onHighlightClass}
             />
           ))}
         </SortableContext>

@@ -1,5 +1,6 @@
 import { EdgeLabelRenderer, useStore } from 'reactflow'
-import { EdgeLabel } from './EdgeLabel.jsx'
+import { AssociationLabel } from './AssociationLabel.jsx'
+import { MultiplicityLabel } from './MultiplicityLabel.jsx'
 
 function distance(a, b) {
   return Math.sqrt((b.x - a.x) ** 2 + (b.y - a.y) ** 2)
@@ -64,6 +65,7 @@ export function ReflexiveAssociation({
   markerEnd,
   style,
   data,
+  selected,
 }) {
   const node = useStore((state) => state.nodeInternals.get(source))
   const rect = getNodeRect(node)
@@ -95,31 +97,38 @@ export function ReflexiveAssociation({
   const multiplicityA = data?.multiplicityA ?? ''
   const multiplicityB = data?.multiplicityB ?? ''
   const name = data?.name ?? ''
+  const strokeClass = selected ? 'text-primary' : 'text-base-content'
 
   return (
     <>
       <path
         id={id}
-        className="react-flow__edge-path fill-none stroke-[var(--color-base-content)] [stroke-width:1]"
+        className={`react-flow__edge-path fill-none ${strokeClass}`}
         d={edgePath}
         markerEnd={markerEnd}
+        stroke="currentColor"
         style={style}
+      />
+      <path
+        className="react-flow__edge-interaction"
+        d={edgePath}
+        fill="none"
       />
       <EdgeLabelRenderer>
         {multiplicityA ? (
-          <EdgeLabel
+          <MultiplicityLabel
             transform={`translate(-100%, 0%) translate(${startX}px, ${startY+1}px)`}
             label={multiplicityA}
           />
         ) : null}
         {multiplicityB ? (
-          <EdgeLabel
+          <MultiplicityLabel
             transform={`translate(0%, -100%) translate(${rightX+1}px, ${endY}px)`}
             label={multiplicityB}
           />
         ) : null}
         {name ? (
-          <EdgeLabel
+          <AssociationLabel
             transform={`translate(-50%, -50%) translate(${labelX}px, ${labelY-2}px)`}
             label={name}
           />

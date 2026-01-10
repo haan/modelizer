@@ -21,7 +21,8 @@ const REFLEXIVE_EDGE_TYPE = 'reflexiveAssociation'
 const ASSOCIATION_HELPER_NODE_TYPE = 'associationHelper'
 const CLASS_NODE_TYPE = 'class'
 const MIN_INFO_WIDTH = 350
-const ASSOCIATION_NODE_SIZE = 24
+const HIGHLIGHT_ZOOM = 1.4
+const ASSOCIATION_NODE_SIZE = 1
 
 function getFloatingGroupKey(edge) {
   if (!edge.source || !edge.target) {
@@ -165,6 +166,13 @@ function App() {
 
   const onConnect = useCallback(
     (params) => {
+      const getNodeLabel = (nodeId) => {
+        const node =
+          reactFlowInstance?.getNode(nodeId) ??
+          nodes.find((entry) => entry.id === nodeId)
+        return node?.data?.label
+      }
+
       return setEdges((current) => {
         const connectsToAssociationHelper =
           params.source?.startsWith('assoc-edge-') ||
@@ -184,15 +192,26 @@ function App() {
             : nextType === REFLEXIVE_EDGE_TYPE
               ? 'reflexive'
               : 'association'
+        const classLabel =
+          nextType === ASSOCIATIVE_EDGE_TYPE
+            ? getNodeLabel(
+                isAssociationHelperNode(params.source)
+                  ? params.target
+                  : params.source,
+              ) ?? 'Association'
+            : null
         const baseEdge = {
           ...params,
           type: nextType,
-          data: {
-            multiplicityA: '1',
-            multiplicityB: '1',
-            name: 'test',
-            type: typeData,
-          },
+          data:
+            nextType === ASSOCIATIVE_EDGE_TYPE
+              ? { name: classLabel, type: typeData, autoName: true }
+              : {
+                  multiplicityA: '1',
+                  multiplicityB: '1',
+                  name: 'test',
+                  type: typeData,
+                },
         }
 
         if (nextType !== ASSOCIATION_EDGE_TYPE) {
@@ -207,7 +226,7 @@ function App() {
         return normalizeEdges([...current, nextEdge])
       })
     },
-    [isAssociationHelperNode, reactFlowInstance, setEdges],
+    [isAssociationHelperNode, nodes, reactFlowInstance, setEdges],
   )
 
   const onConnectStart = useCallback(() => {
@@ -290,8 +309,120 @@ function App() {
             : node,
         ),
       )
+      setEdges((current) =>
+        current.map((edge) =>
+          edge.type === ASSOCIATIVE_EDGE_TYPE &&
+          (edge.source === nodeId || edge.target === nodeId) &&
+          edge.data?.autoName !== false
+            ? {
+                ...edge,
+                data: {
+                  ...(edge.data ?? {}),
+                  name: nextLabel,
+                },
+              }
+            : edge,
+        ),
+      )
     },
-    [setNodes],
+    [setEdges, setNodes],
+  )
+
+  const onRenameAssociation = useCallback(
+    (edgeId, nextName) => {
+      setEdges((current) =>
+        current.map((edge) =>
+          edge.id === edgeId
+            ? {
+                ...edge,
+                data: {
+                  ...(edge.data ?? {}),
+                  name: nextName,
+                  ...(edge.type === ASSOCIATIVE_EDGE_TYPE
+                    ? { autoName: false }
+                    : {}),
+                },
+              }
+            : edge,
+        ),
+      )
+    },
+    [setEdges],
+  )
+
+  const focusEdge = useCallback(
+    (edge) => {
+      if (!edge || !reactFlowInstance?.setCenter) {
+        return
+      }
+
+      const getNodeCenter = (node) => {
+        const position =
+          node?.positionAbsolute ??
+          node?.internals?.positionAbsolute ??
+          node?.position
+        if (!position) {
+          return null
+        }
+        const width = node?.measured?.width ?? node?.width ?? 0
+        const height = node?.measured?.height ?? node?.height ?? 0
+        return {
+          x: position.x + width / 2,
+          y: position.y + height / 2,
+        }
+      }
+
+      const helperNode = reactFlowInstance.getNode?.(`assoc-edge-${edge.id}`)
+      let center = getNodeCenter(helperNode)
+
+      if (!center) {
+        const sourceNode =
+          reactFlowInstance.getNode?.(edge.source) ??
+          nodes.find((node) => node.id === edge.source)
+        const targetNode =
+          reactFlowInstance.getNode?.(edge.target) ??
+          nodes.find((node) => node.id === edge.target)
+        const sourceCenter = getNodeCenter(sourceNode)
+        const targetCenter = getNodeCenter(targetNode)
+
+        if (sourceCenter && targetCenter) {
+          center = {
+            x: (sourceCenter.x + targetCenter.x) / 2,
+            y: (sourceCenter.y + targetCenter.y) / 2,
+          }
+        } else {
+          center = sourceCenter
+        }
+      }
+
+      if (!center) {
+        return
+      }
+
+      reactFlowInstance.setCenter(center.x, center.y, {
+        zoom: HIGHLIGHT_ZOOM,
+        duration: 300,
+      })
+    },
+    [nodes, reactFlowInstance],
+  )
+
+  const onHighlightAssociation = useCallback(
+    (edgeId) => {
+      const edgeToFocus = edges.find((edge) => edge.id === edgeId)
+      focusEdge(edgeToFocus)
+      setEdges((current) =>
+        current.map((edge) => {
+          const { highlighted, ...data } = edge.data ?? {}
+          return {
+            ...edge,
+            selected: edge.id === edgeId,
+            data,
+          }
+        }),
+      )
+    },
+    [edges, focusEdge, setEdges],
   )
 
   const onReorderClasses = useCallback(
@@ -415,6 +546,59 @@ function App() {
     [setNodes],
   )
 
+  const onHighlightClass = useCallback(
+    (nodeId) => {
+      setNodes((current) =>
+        current.map((node) => ({
+          ...node,
+          selected: node.id === nodeId,
+        })),
+      )
+
+      const node =
+        reactFlowInstance?.getNode(nodeId) ??
+        nodes.find((entry) => entry.id === nodeId)
+      if (!node || !reactFlowInstance?.setCenter) {
+        return
+      }
+
+      const position =
+        node.positionAbsolute ??
+        node.internals?.positionAbsolute ??
+        node.position
+      if (!position) {
+        return
+      }
+
+      const width = node.measured?.width ?? node.width ?? 0
+      const height = node.measured?.height ?? node.height ?? 0
+      const centerX = position.x + width / 2
+      const centerY = position.y + height / 2
+
+      reactFlowInstance.setCenter(centerX, centerY, {
+        zoom: HIGHLIGHT_ZOOM,
+        duration: 300,
+      })
+    },
+    [nodes, reactFlowInstance, setNodes],
+  )
+
+  const clearAssociationHighlight = useCallback(() => {
+    setEdges((current) =>
+      current.map((edge) => {
+        if (!edge.selected && !edge.data?.highlighted) {
+          return edge
+        }
+        const { highlighted, ...data } = edge.data ?? {}
+        return { ...edge, selected: false, data }
+      }),
+    )
+  }, [setEdges])
+
+  const onPaneClick = useCallback(() => {
+    clearAssociationHighlight()
+  }, [clearAssociationHighlight])
+
   const associationEdgeNodes = useMemo(() => {
     const nodeMap = new Map(nodes.map((node) => [node.id, node]))
     const getNode = (nodeId) =>
@@ -497,6 +681,7 @@ function App() {
             onResizeStart={onResizeStart}
             activeItem={activeSidebarItem}
             nodes={nodes}
+            edges={edges}
             onAddClass={onAddClass}
             onRenameClass={onRenameClass}
             onReorderClasses={onReorderClasses}
@@ -504,6 +689,9 @@ function App() {
             onUpdateAttribute={onUpdateAttribute}
             onAddAttribute={onAddAttribute}
             onUpdateClassColor={onUpdateClassColor}
+            onHighlightClass={onHighlightClass}
+            onRenameAssociation={onRenameAssociation}
+            onHighlightAssociation={onHighlightAssociation}
           />
           <main className="flex-1 min-w-0 bg-base-100">
             <div
@@ -518,6 +706,7 @@ function App() {
                 onConnect={onConnect}
                 onConnectStart={onConnectStart}
                 onConnectEnd={onConnectEnd}
+                onPaneClick={onPaneClick}
                 onInit={setReactFlowInstance}
                 nodeTypes={nodeTypes}
                 edgeTypes={edgeTypes}
@@ -525,6 +714,7 @@ function App() {
                 connectionMode={ConnectionMode.Loose}
                 connectionLineType={ConnectionLineType.SmoothStep}
                 connectionRadius={40}
+                defaultEdgeOptions={{ interactionWidth: 20 }}
               >
                 <Controls />
                 <Background gap={16} size={1} />

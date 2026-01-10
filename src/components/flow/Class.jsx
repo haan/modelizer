@@ -4,14 +4,14 @@ import { normalizeAttributes } from '../../attributes.js'
 import Attribute from './Attribute.jsx'
 import ClassHandle from './ClassHandle.jsx'
 
-export function Class({ data, id }) {
+export function Class({ data, id, selected }) {
   const attributes = normalizeAttributes(id, data.attributes)
   const accentColor = data?.color ?? CLASS_COLOR_PALETTE[0]
+  const borderClass = selected ? 'border-primary' : 'border-base-content/70'
 
   return (
     <div
-      className="group/node min-w-[180px] rounded-lg border bg-base-100 text-base-content shadow-sm"
-      style={{ borderColor: 'oklch(var(--bc))' }}
+      className={`group/node min-w-[180px] rounded-lg border-2 bg-base-100 text-base-content shadow-sm hover:border-primary ${borderClass}`}
     >
       <div
         className="h-2 rounded-t-[7px]"

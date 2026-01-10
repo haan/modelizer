@@ -1,10 +1,11 @@
-import { ClassesPanel } from '../panels/index.js'
+import { ClassesPanel, RefsPanel } from '../panels/index.js'
 
 export default function InfoPanel({
   width,
   onResizeStart,
   activeItem,
   nodes,
+  edges,
   onAddClass,
   onRenameClass,
   onReorderClasses,
@@ -12,6 +13,9 @@ export default function InfoPanel({
   onUpdateAttribute,
   onAddAttribute,
   onUpdateClassColor,
+  onHighlightClass,
+  onRenameAssociation,
+  onHighlightAssociation,
 }) {
   return (
     <aside
@@ -29,6 +33,14 @@ export default function InfoPanel({
             onUpdateAttribute={onUpdateAttribute}
             onAddAttribute={onAddAttribute}
             onUpdateClassColor={onUpdateClassColor}
+            onHighlightClass={onHighlightClass}
+          />
+        ) : activeItem === 'refs' ? (
+          <RefsPanel
+            edges={edges}
+            nodes={nodes}
+            onRenameAssociation={onRenameAssociation}
+            onHighlightAssociation={onHighlightAssociation}
           />
         ) : (
           <p className="text-sm opacity-70">
