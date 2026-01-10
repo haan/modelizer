@@ -32,8 +32,20 @@ export function UmlClassNode({ data }) {
       />
       <Handle
         className={handleClassName}
+        id="left"
+        type="source"
+        position={Position.Left}
+      />
+      <Handle
+        className={handleClassName}
         id="right"
         type="source"
+        position={Position.Right}
+      />
+      <Handle
+        className={handleClassName}
+        id="right"
+        type="target"
         position={Position.Right}
       />
       <Handle
@@ -44,8 +56,20 @@ export function UmlClassNode({ data }) {
       />
       <Handle
         className={handleClassName}
+        id="top"
+        type="source"
+        position={Position.Top}
+      />
+      <Handle
+        className={handleClassName}
         id="bottom"
         type="source"
+        position={Position.Bottom}
+      />
+      <Handle
+        className={handleClassName}
+        id="bottom"
+        type="target"
         position={Position.Bottom}
       />
     </div>

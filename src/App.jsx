@@ -5,10 +5,124 @@ import ReactFlow, {
   ConnectionLineType,
   Controls,
   addEdge,
+  applyEdgeChanges,
   useEdgesState,
   useNodesState,
 } from 'reactflow'
 import { edgeTypes, nodeTypes } from './flowTypes.js'
+
+const FLOATING_EDGE_TYPE = 'associationFloating'
+
+function makeUniqueEdgeId(usedIds, edge, sequence) {
+  const baseSource = edge.source ?? 'edge'
+  const baseTarget = edge.target ?? 'edge'
+  let nextId = `edge-${baseSource}-${baseTarget}-${sequence}`
+
+  while (usedIds.has(nextId)) {
+    sequence += 1
+    nextId = `edge-${baseSource}-${baseTarget}-${sequence}`
+  }
+
+  return nextId
+}
+
+function ensureEdgeIds(edges) {
+  const usedIds = new Set()
+  let sequence = 0
+
+  return edges.map((edge) => {
+    const rawId = edge.id ? String(edge.id) : ''
+    if (rawId && !usedIds.has(rawId)) {
+      usedIds.add(rawId)
+      return edge
+    }
+
+    const nextId = makeUniqueEdgeId(usedIds, edge, sequence)
+    usedIds.add(nextId)
+    sequence += 1
+    return { ...edge, id: nextId }
+  })
+}
+
+function getFloatingGroupKey(edge) {
+  if (!edge.source || !edge.target) {
+    return null
+  }
+
+  const [first, second] =
+    edge.source < edge.target
+      ? [edge.source, edge.target]
+      : [edge.target, edge.source]
+
+  return `${first}|${second}`
+}
+
+function recomputeFloatingEdgeParallels(edges) {
+  const groups = new Map()
+
+  edges.forEach((edge) => {
+    if (edge.type !== FLOATING_EDGE_TYPE) {
+      return
+    }
+
+    const key = getFloatingGroupKey(edge)
+    if (!key) {
+      return
+    }
+
+    if (!groups.has(key)) {
+      groups.set(key, [])
+    }
+
+    groups.get(key).push(edge)
+  })
+
+  const metaById = new Map()
+  groups.forEach((group) => {
+    const ordered = [...group].sort((a, b) =>
+      String(a.id).localeCompare(String(b.id)),
+    )
+    ordered.forEach((edge, index) => {
+      metaById.set(edge.id, {
+        parallelIndex: index,
+        parallelCount: ordered.length,
+      })
+    })
+  })
+
+  let didChange = false
+  const nextEdges = edges.map((edge) => {
+    if (edge.type !== FLOATING_EDGE_TYPE) {
+      return edge
+    }
+
+    const meta = metaById.get(edge.id)
+    if (!meta) {
+      return edge
+    }
+
+    const currentIndex = edge.data?.parallelIndex
+    const currentCount = edge.data?.parallelCount
+    if (currentIndex !== meta.parallelIndex || currentCount !== meta.parallelCount) {
+      didChange = true
+    }
+
+    return {
+      ...edge,
+      data: {
+        ...(edge.data ?? {}),
+        parallelIndex: meta.parallelIndex,
+        parallelCount: meta.parallelCount,
+      },
+    }
+  })
+
+  return didChange ? nextEdges : edges
+}
+
+function normalizeEdges(edges) {
+  return recomputeFloatingEdgeParallels(ensureEdgeIds(edges))
+}
 
 const initialNodes = [
   {
@@ -40,7 +154,7 @@ const initialEdges = [
 
 function App() {
   const [nodes, setNodes, onNodesChange] = useNodesState(initialNodes)
-  const [edges, setEdges, onEdgesChange] = useEdgesState(initialEdges)
+  const [edges, setEdges] = useEdgesState(normalizeEdges(initialEdges))
   const [activeView, setActiveView] = useState('conceptual')
   const reactFlowWrapper = useRef(null)
   const [reactFlowInstance, setReactFlowInstance] = useState(null)
@@ -48,7 +162,7 @@ function App() {
 
   useEffect(() => {
     const nextType =
-      activeView === 'conceptual' ? 'associationFloating' : 'association'
+      activeView === 'conceptual' ? FLOATING_EDGE_TYPE : 'association'
     setEdges((current) => {
       let changed = false
       const next = current.map((edge) => {
@@ -63,27 +177,37 @@ function App() {
         }
         return edge
       })
-      return changed ? next : current
+      const updated = changed ? next : current
+      return normalizeEdges(updated)
     })
   }, [activeView, setEdges])
 
   const onConnect = useCallback(
     (params) =>
-      setEdges((current) =>
-        addEdge(
-          {
-            ...params,
-            type:
-              params.source === params.target
-                ? 'associationReflexive'
-                : activeView === 'conceptual'
-                  ? 'associationFloating'
-                  : 'association',
-            data: { multiplicityA: '1', multiplicityB: '1', name: 'test' },
-          },
-          current,
-        ),
-      ),
+      setEdges((current) => {
+        const nextType =
+          params.source === params.target
+            ? 'associationReflexive'
+            : activeView === 'conceptual'
+              ? FLOATING_EDGE_TYPE
+              : 'association'
+        const baseEdge = {
+          ...params,
+          type: nextType,
+          data: { multiplicityA: '1', multiplicityB: '1', name: 'test' },
+        }
+
+        if (nextType !== FLOATING_EDGE_TYPE) {
+          return normalizeEdges(addEdge(baseEdge, current))
+        }
+
+        const idSuffix =
+          typeof crypto !== 'undefined' && crypto.randomUUID
+            ? crypto.randomUUID()
+            : `${Date.now()}-${current.length + 1}`
+        const nextEdge = { ...baseEdge, id: `edge-${idSuffix}` }
+        return normalizeEdges([...current, nextEdge])
+      }),
     [activeView, setEdges],
   )
 
@@ -94,6 +218,17 @@ function App() {
   const onConnectEnd = useCallback(() => {
     setIsConnecting(false)
   }, [])
+
+  const onEdgesChange = useCallback(
+    (changes) =>
+      setEdges((current) => normalizeEdges(applyEdgeChanges(changes, current))),
+    [setEdges],
+  )
+
+  const isValidConnection = useCallback(
+    (connection) => Boolean(connection.sourceHandle && connection.targetHandle),
+    [],
+  )
 
   const onAddClass = useCallback(() => {
     const wrapperBounds = reactFlowWrapper.current?.getBoundingClientRect()
@@ -216,7 +351,7 @@ function App() {
                 onInit={setReactFlowInstance}
                 nodeTypes={nodeTypes}
                 edgeTypes={edgeTypes}
-                isValidConnection={() => true}
+                isValidConnection={isValidConnection}
                 connectionMode={ConnectionMode.Loose}
                 connectionLineType={ConnectionLineType.SmoothStep}
                 connectionRadius={24}

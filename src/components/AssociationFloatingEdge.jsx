@@ -1,6 +1,9 @@
 import { EdgeLabelRenderer, getSmoothStepPath, Position, useStore } from 'reactflow'
 import { EdgeLabel } from './EdgeLabel.jsx'
 
+const PARALLEL_OFFSET_SPACING = 25
+const STEP_SHIFT_SPACING = -20
+
 function getNodeIntersection(intersectionNode, targetNode) {
   const intersectionMeasured = intersectionNode.measured ?? {
     width: intersectionNode.width ?? 0,
@@ -83,6 +86,61 @@ function getEdgeParams(source, target) {
   }
 }
 
+function getNodeCenter(node) {
+  const width = node?.measured?.width ?? node?.width ?? 0
+  const height = node?.measured?.height ?? node?.height ?? 0
+  const position =
+    node?.internals?.positionAbsolute ?? node?.position ?? { x: 0, y: 0 }
+
+  return { x: position.x + width / 2, y: position.y + height / 2 }
+}
+
+function getParallelMeta(data) {
+  const parallelCount = data?.parallelCount ?? 1
+  const parallelIndex = data?.parallelIndex ?? 0
+  const parallelOffset =
+    parallelCount > 1 ? parallelIndex - (parallelCount - 1) / 2 : 0
+
+  return { parallelCount, parallelIndex, parallelOffset }
+}
+
+function isHorizontalConnection(sourcePos, targetPos) {
+  return (
+    sourcePos === Position.Left ||
+    sourcePos === Position.Right ||
+    targetPos === Position.Left ||
+    targetPos === Position.Right
+  )
+}
+
+function getParallelLineOffset(parallelOffset, isHorizontal) {
+  if (parallelOffset === 0) {
+    return { offsetX: 0, offsetY: 0 }
+  }
+
+  const offsetDistance = parallelOffset * PARALLEL_OFFSET_SPACING
+
+  return {
+    offsetX: isHorizontal ? 0 : offsetDistance,
+    offsetY: isHorizontal ? offsetDistance : 0,
+  }
+}
+
+function getPositionSign(sourceCenter, targetCenter, isHorizontal) {
+  const primaryOrder = isHorizontal
+    ? sourceCenter.x <= targetCenter.x
+      ? [sourceCenter, targetCenter]
+      : [targetCenter, sourceCenter]
+    : sourceCenter.y <= targetCenter.y
+      ? [sourceCenter, targetCenter]
+      : [targetCenter, sourceCenter]
+  const secondaryDelta = isHorizontal
+    ? primaryOrder[1].y - primaryOrder[0].y
+    : primaryOrder[1].x - primaryOrder[0].x
+
+  return Math.sign(secondaryDelta) || 1
+}
+
 function getEndpointLabelTransform(position, x, y) {
   const offset = 0
 
@@ -115,13 +173,31 @@ export function AssociationFloatingEdge({ id, source, target, markerEnd, style, 
     sourceNode,
     targetNode,
   )
+  const { parallelOffset } = getParallelMeta(data)
+  const isHorizontal = isHorizontalConnection(sourcePos, targetPos)
+  const { offsetX, offsetY } = getParallelLineOffset(parallelOffset, isHorizontal)
+  const sourceXOffset = sx + offsetX
+  const sourceYOffset = sy + offsetY
+  const targetXOffset = tx + offsetX
+  const targetYOffset = ty + offsetY
+  const sourceCenter = getNodeCenter(sourceNode)
+  const targetCenter = getNodeCenter(targetNode)
+  const positionSign = getPositionSign(sourceCenter, targetCenter, isHorizontal)
+  const stepShift = parallelOffset * STEP_SHIFT_SPACING * positionSign
+  const centerX =
+    (sourceXOffset + targetXOffset) / 2 + (isHorizontal ? stepShift : 0)
+  const centerY =
+    (sourceYOffset + targetYOffset) / 2 + (isHorizontal ? 0 : stepShift)
   const [edgePath, labelX, labelY] = getSmoothStepPath({
-    sourceX: sx,
-    sourceY: sy,
+    sourceX: sourceXOffset,
+    sourceY: sourceYOffset,
     sourcePosition: sourcePos,
     targetPosition: targetPos,
-    targetX: tx,
-    targetY: ty,
+    targetX: targetXOffset,
+    targetY: targetYOffset,
+    centerX,
+    centerY,
+    offset: 0,
   })
 
   return (
@@ -136,13 +212,21 @@ export function AssociationFloatingEdge({ id, source, target, markerEnd, style, 
       <EdgeLabelRenderer>
         {multiplicityA ? (
           <EdgeLabel
-            transform={getEndpointLabelTransform(sourcePos, sx, sy)}
+            transform={getEndpointLabelTransform(
+              sourcePos,
+              sourceXOffset,
+              sourceYOffset,
+            )}
             label={multiplicityA}
           />
         ) : null}
         {multiplicityB ? (
           <EdgeLabel
-            transform={getEndpointLabelTransform(targetPos, tx, ty)}
+            transform={getEndpointLabelTransform(
+              targetPos,
+              targetXOffset,
+              targetYOffset,
+            )}
             label={multiplicityB}
           />
         ) : null}
