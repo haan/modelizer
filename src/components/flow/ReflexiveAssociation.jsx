@@ -58,7 +58,7 @@ function getNodeRect(node) {
   return { x: position.x, y: position.y, width, height }
 }
 
-export function AssociationReflexiveEdge({
+export function ReflexiveAssociation({
   id,
   source,
   markerEnd,
@@ -108,19 +108,19 @@ export function AssociationReflexiveEdge({
       <EdgeLabelRenderer>
         {multiplicityA ? (
           <EdgeLabel
-            transform={`translate(-100%, 0%) translate(${startX}px, ${startY}px)`}
+            transform={`translate(-100%, 0%) translate(${startX}px, ${startY+1}px)`}
             label={multiplicityA}
           />
         ) : null}
         {multiplicityB ? (
           <EdgeLabel
-            transform={`translate(0%, -100%) translate(${rightX}px, ${endY}px)`}
+            transform={`translate(0%, -100%) translate(${rightX+1}px, ${endY}px)`}
             label={multiplicityB}
           />
         ) : null}
         {name ? (
           <EdgeLabel
-            transform={`translate(-50%, -50%) translate(${labelX}px, ${labelY}px)`}
+            transform={`translate(-50%, -50%) translate(${labelX}px, ${labelY-2}px)`}
             label={name}
           />
         ) : null}

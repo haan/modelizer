@@ -1,16 +1,20 @@
 import {
-  AssociationEdge,
-  AssociationFloatingEdge,
-  AssociationReflexiveEdge,
-  UmlClassNode,
+  Association,
+  AssociativeAssociation,
+  AssociationHelperNode,
+  ReflexiveAssociation,
+  Class,
 } from './components/flow/index.js'
 
 export const nodeTypes = {
-  umlClass: UmlClassNode,
+  class: Class,
+  umlClass: Class,
+  associationHelper: AssociationHelperNode,
+  associationFloatingEdgeNode: AssociationHelperNode,
 }
 
 export const edgeTypes = {
-  association: AssociationEdge,
-  associationFloating: AssociationFloatingEdge,
-  associationReflexive: AssociationReflexiveEdge,
+  association: Association,
+  associativeAssociation: AssociativeAssociation,
+  reflexiveAssociation: ReflexiveAssociation,
 }

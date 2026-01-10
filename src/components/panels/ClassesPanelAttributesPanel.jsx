@@ -15,12 +15,12 @@ import ClassesPanelAttributesItem from './ClassesPanelAttributesItem.jsx'
 
 export default function ClassesPanelAttributesPanel({
   attributes,
-  attributeIds,
   nodeId,
   onReorderAttributes,
   onUpdateAttribute,
   onAddAttribute,
 }) {
+  const attributeIds = attributes.map((attribute) => attribute.id)
   const sensors = useSensors(
     useSensor(PointerSensor, {
       activationConstraint: { distance: 4 },
@@ -55,13 +55,13 @@ export default function ClassesPanelAttributesPanel({
         strategy={verticalListSortingStrategy}
       >
         <ul className="mt-2 flex flex-col gap-1">
-          {attributes.map((attribute, index) => (
+          {attributes.map((attribute) => (
             <ClassesPanelAttributesItem
-              key={attributeIds[index]}
-              id={attributeIds[index]}
-              label={attribute}
+              key={attribute.id}
+              id={attribute.id}
+              label={attribute.name}
               onChange={(nextValue) =>
-                onUpdateAttribute?.(nodeId, index, nextValue)
+                onUpdateAttribute?.(nodeId, attribute.id, nextValue)
               }
             />
           ))}

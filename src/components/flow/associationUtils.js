@@ -1,5 +1,4 @@
-import { EdgeLabelRenderer, getSmoothStepPath, Position, useStore } from 'reactflow'
-import { EdgeLabel } from './EdgeLabel.jsx'
+import { Position, getSmoothStepPath } from 'reactflow'
 
 const PARALLEL_OFFSET_SPACING = 25
 const STEP_SHIFT_SPACING = -20
@@ -141,34 +140,11 @@ function getPositionSign(sourceCenter, targetCenter, isHorizontal) {
   return Math.sign(secondaryDelta) || 1
 }
 
-function getEndpointLabelTransform(position, x, y) {
-  const offset = 0
-
-  switch (position) {
-    case 'left':
-      return `translate(-100%, 0%) translate(${x - offset}px, ${y}px)`
-    case 'right':
-      return `translate(0%, 0%) translate(${x + offset}px, ${y}px)`
-    case 'top':
-      return `translate(0%, -100%) translate(${x}px, ${y - offset}px)`
-    case 'bottom':
-      return `translate(0%, 0%) translate(${x}px, ${y + offset}px)`
-    default:
-      return `translate(-50%, -50%) translate(${x}px, ${y}px)`
-  }
-}
-
-export function AssociationFloatingEdge({ id, source, target, markerEnd, style, data }) {
-  const sourceNode = useStore((state) => state.nodeInternals.get(source))
-  const targetNode = useStore((state) => state.nodeInternals.get(target))
-
+export function getAssociationLayout(sourceNode, targetNode, data) {
   if (!sourceNode || !targetNode) {
     return null
   }
 
-  const multiplicityA = data?.multiplicityA ?? ''
-  const multiplicityB = data?.multiplicityB ?? ''
-  const name = data?.name ?? ''
   const { sx, sy, tx, ty, sourcePos, targetPos } = getEdgeParams(
     sourceNode,
     targetNode,
@@ -200,43 +176,15 @@ export function AssociationFloatingEdge({ id, source, target, markerEnd, style, 
     offset: 0,
   })
 
-  return (
-    <>
-      <path
-        id={id}
-        className="react-flow__edge-path fill-none stroke-[var(--color-base-content)] [stroke-width:1]"
-        d={edgePath}
-        markerEnd={markerEnd}
-        style={style}
-      />
-      <EdgeLabelRenderer>
-        {multiplicityA ? (
-          <EdgeLabel
-            transform={getEndpointLabelTransform(
-              sourcePos,
-              sourceXOffset,
-              sourceYOffset,
-            )}
-            label={multiplicityA}
-          />
-        ) : null}
-        {multiplicityB ? (
-          <EdgeLabel
-            transform={getEndpointLabelTransform(
-              targetPos,
-              targetXOffset,
-              targetYOffset,
-            )}
-            label={multiplicityB}
-          />
-        ) : null}
-        {name ? (
-          <EdgeLabel
-            transform={`translate(-50%, -100%) translate(${labelX}px, ${labelY}px)`}
-            label={name}
-          />
-        ) : null}
-      </EdgeLabelRenderer>
-    </>
-  )
+  return {
+    edgePath,
+    labelX,
+    labelY,
+    sourcePos,
+    targetPos,
+    sourceX: sourceXOffset,
+    sourceY: sourceYOffset,
+    targetX: targetXOffset,
+    targetY: targetYOffset,
+  }
 }

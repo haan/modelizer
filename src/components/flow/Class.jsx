@@ -1,14 +1,11 @@
-import { Handle, Position } from 'reactflow'
+import { Position } from 'reactflow'
 import { CLASS_COLOR_PALETTE } from '../../classPalette.js'
-import UmlClassAttribute from './UmlClassAttribute.jsx'
+import { normalizeAttributes } from '../../attributes.js'
+import Attribute from './Attribute.jsx'
+import ClassHandle from './ClassHandle.jsx'
 
-export function UmlClassNode({ data }) {
-  const attributes = Array.isArray(data.attributes) ? data.attributes : []
-  const handleBaseClass =
-    'opacity-0 transition-opacity rounded-full w-4 h-4 border-2 border-base-100 bg-accent'
-  const handleVisibleClass =
-    'group-hover/node:opacity-100 group-[.is-connecting]/flow:opacity-100'
-  const handleClassName = `${handleBaseClass} ${handleVisibleClass}`
+export function Class({ data, id }) {
+  const attributes = normalizeAttributes(id, data.attributes)
   const accentColor = data?.color ?? CLASS_COLOR_PALETTE[0]
 
   return (
@@ -29,56 +26,48 @@ export function UmlClassNode({ data }) {
         ) : (
           <ul className="space-y-1">
             {attributes.map((attr) => (
-              <UmlClassAttribute key={attr} name={attr} />
+              <Attribute key={attr.id} name={attr.name} />
             ))}
           </ul>
         )}
       </div>
-      <Handle
-        className={handleClassName}
-        id="left"
+      <ClassHandle
+        id="left-target"
         type="target"
         position={Position.Left}
       />
-      <Handle
-        className={handleClassName}
-        id="left"
+      <ClassHandle
+        id="left-source"
         type="source"
         position={Position.Left}
       />
-      <Handle
-        className={handleClassName}
-        id="right"
+      <ClassHandle
+        id="right-source"
         type="source"
         position={Position.Right}
       />
-      <Handle
-        className={handleClassName}
-        id="right"
+      <ClassHandle
+        id="right-target"
         type="target"
         position={Position.Right}
       />
-      <Handle
-        className={handleClassName}
-        id="top"
+      <ClassHandle
+        id="top-target"
         type="target"
         position={Position.Top}
       />
-      <Handle
-        className={handleClassName}
-        id="top"
+      <ClassHandle
+        id="top-source"
         type="source"
         position={Position.Top}
       />
-      <Handle
-        className={handleClassName}
-        id="bottom"
+      <ClassHandle
+        id="bottom-source"
         type="source"
         position={Position.Bottom}
       />
-      <Handle
-        className={handleClassName}
-        id="bottom"
+      <ClassHandle
+        id="bottom-target"
         type="target"
         position={Position.Bottom}
       />

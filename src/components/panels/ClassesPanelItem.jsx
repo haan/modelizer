@@ -2,6 +2,7 @@ import { useEffect, useRef, useState } from 'react'
 import { useSortable } from '@dnd-kit/sortable'
 import { CSS } from '@dnd-kit/utilities'
 import { CLASS_COLOR_PALETTE } from '../../classPalette.js'
+import { normalizeAttributes } from '../../attributes.js'
 import ClassesPanelAttributesPanel from './ClassesPanelAttributesPanel.jsx'
 import ClassesPanelOptionsPanel from './ClassesPanelOptionsPanel.jsx'
 import ClassesPanelVisibilityPanel from './ClassesPanelVisibilityPanel.jsx'
@@ -15,14 +16,9 @@ export default function ClassesPanelItem({
   onUpdateClassColor,
 }) {
   const accentColor = node.data?.color ?? CLASS_COLOR_PALETTE[0]
-  const attributes = Array.isArray(node.data?.attributes)
-    ? node.data.attributes
-    : []
+  const attributes = normalizeAttributes(node.id, node.data?.attributes)
   const label = node.data?.label ?? ''
   const color = node.data?.color ?? CLASS_COLOR_PALETTE[0]
-  const attributeIds = attributes.map(
-    (_, index) => `${node.id}-attr-${index}`,
-  )
   const {
     attributes: sortableAttributes,
     listeners,
@@ -219,7 +215,6 @@ export default function ClassesPanelItem({
           </div>
           <ClassesPanelAttributesPanel
             attributes={attributes}
-            attributeIds={attributeIds}
             nodeId={node.id}
             onReorderAttributes={onReorderAttributes}
             onUpdateAttribute={onUpdateAttribute}
