@@ -207,8 +207,8 @@ function App() {
             nextType === ASSOCIATIVE_EDGE_TYPE
               ? { name: classLabel, type: typeData, autoName: true }
               : {
-                  multiplicityA: '1',
-                  multiplicityB: '1',
+                  multiplicityA: '',
+                  multiplicityB: '',
                   name: 'test',
                   type: typeData,
                 },
@@ -345,6 +345,28 @@ function App() {
               }
             : edge,
         ),
+      )
+    },
+    [setEdges],
+  )
+
+  const onUpdateAssociationMultiplicity = useCallback(
+    (edgeId, side, nextValue) => {
+      setEdges((current) =>
+        current.map((edge) => {
+          if (edge.id !== edgeId) {
+            return edge
+          }
+
+          const key = side === 'A' ? 'multiplicityA' : 'multiplicityB'
+          return {
+            ...edge,
+            data: {
+              ...(edge.data ?? {}),
+              [key]: nextValue,
+            },
+          }
+        }),
       )
     },
     [setEdges],
@@ -691,6 +713,7 @@ function App() {
             onUpdateClassColor={onUpdateClassColor}
             onHighlightClass={onHighlightClass}
             onRenameAssociation={onRenameAssociation}
+            onUpdateAssociationMultiplicity={onUpdateAssociationMultiplicity}
             onHighlightAssociation={onHighlightAssociation}
           />
           <main className="flex-1 min-w-0 bg-base-100">

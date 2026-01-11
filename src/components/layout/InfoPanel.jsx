@@ -15,6 +15,7 @@ export default function InfoPanel({
   onUpdateClassColor,
   onHighlightClass,
   onRenameAssociation,
+  onUpdateAssociationMultiplicity,
   onHighlightAssociation,
 }) {
   return (
@@ -40,6 +41,7 @@ export default function InfoPanel({
             edges={edges}
             nodes={nodes}
             onRenameAssociation={onRenameAssociation}
+            onUpdateAssociationMultiplicity={onUpdateAssociationMultiplicity}
             onHighlightAssociation={onHighlightAssociation}
           />
         ) : (

@@ -4,6 +4,7 @@ export default function RefsPanel({
   edges,
   nodes,
   onRenameAssociation,
+  onUpdateAssociationMultiplicity,
   onHighlightAssociation,
 }) {
   return (
@@ -15,6 +16,7 @@ export default function RefsPanel({
         edges={edges}
         nodes={nodes}
         onRenameAssociation={onRenameAssociation}
+        onUpdateAssociationMultiplicity={onUpdateAssociationMultiplicity}
         onHighlightAssociation={onHighlightAssociation}
       />
     </div>
