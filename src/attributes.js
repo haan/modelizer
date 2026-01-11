@@ -8,6 +8,9 @@ export function normalizeAttributes(nodeId, attributes) {
       return {
         id: `${nodeId}-attr-${index}`,
         name: attribute,
+        type: '',
+        nullable: false,
+        primaryKey: false,
       }
     }
 
@@ -21,15 +24,36 @@ export function normalizeAttributes(nodeId, attributes) {
       return {
         id: attribute.id ?? `${nodeId}-attr-${index}`,
         name,
+        type: typeof attribute.type === 'string' ? attribute.type : '',
+        nullable: typeof attribute.nullable === 'boolean' ? attribute.nullable : false,
+        primaryKey:
+          typeof attribute.primaryKey === 'boolean' ? attribute.primaryKey : false,
       }
     }
 
     return {
       id: `${nodeId}-attr-${index}`,
       name: '',
+      type: '',
+      nullable: false,
+      primaryKey: false,
     }
   })
 }
+
+export const ATTRIBUTE_TYPE_UNDEFINED = '__undefined__'
+
+export const ATTRIBUTE_TYPE_OPTIONS = [
+  { value: ATTRIBUTE_TYPE_UNDEFINED, label: 'Undefined' },
+  { value: 'int', label: 'int' },
+  { value: 'bigint', label: 'bigint' },
+  { value: 'varchar(255)', label: 'varchar(255)' },
+  { value: 'text', label: 'text' },
+  { value: 'boolean', label: 'boolean' },
+  { value: 'date', label: 'date' },
+  { value: 'timestamp', label: 'timestamp' },
+  { value: 'numeric', label: 'numeric' },
+]
 
 export function createAttribute(nodeId, name) {
   const idSuffix =
@@ -40,5 +64,8 @@ export function createAttribute(nodeId, name) {
   return {
     id: `attr-${nodeId}-${idSuffix}`,
     name,
+    type: '',
+    nullable: false,
+    primaryKey: false,
   }
 }

@@ -59,9 +59,29 @@ export default function ClassesPanelAttributesPanel({
             <ClassesPanelAttributesItem
               key={attribute.id}
               id={attribute.id}
-              label={attribute.name}
-              onChange={(nextValue) =>
-                onUpdateAttribute?.(nodeId, attribute.id, nextValue)
+              name={attribute.name}
+              type={attribute.type}
+              nullable={attribute.nullable}
+              primaryKey={attribute.primaryKey}
+              onChangeName={(nextValue) =>
+                onUpdateAttribute?.(nodeId, attribute.id, {
+                  name: nextValue,
+                })
+              }
+              onChangeType={(nextValue) =>
+                onUpdateAttribute?.(nodeId, attribute.id, {
+                  type: nextValue,
+                })
+              }
+              onToggleNullable={() =>
+                onUpdateAttribute?.(nodeId, attribute.id, {
+                  nullable: !attribute.nullable,
+                })
+              }
+              onTogglePrimaryKey={() =>
+                onUpdateAttribute?.(nodeId, attribute.id, {
+                  primaryKey: !attribute.primaryKey,
+                })
               }
             />
           ))}

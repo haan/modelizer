@@ -150,7 +150,7 @@ export default function ClassesPanelItem({
                   }}
                 />
               ) : (
-                <span className="truncate text-sm">
+                <span className="truncate text-md p-1">
                   {label || 'Untitled class'}
                 </span>
               )}

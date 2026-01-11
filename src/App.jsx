@@ -549,6 +549,10 @@ function App() {
 
   const onUpdateAttribute = useCallback(
     (nodeId, attributeId, nextValue) => {
+      const patch =
+        typeof nextValue === 'string'
+          ? { name: nextValue }
+          : nextValue ?? {}
       setNodes((current) =>
         current.map((node) => {
           if (node.id !== nodeId) {
@@ -561,7 +565,7 @@ function App() {
           )
           const nextAttributes = currentAttributes.map((attribute) =>
             attribute.id === attributeId
-              ? { ...attribute, name: nextValue }
+              ? { ...attribute, ...patch }
               : attribute,
           )
           return {

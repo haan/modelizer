@@ -26,7 +26,13 @@ export function Class({ data, id, selected }) {
         ) : (
           <ul className="space-y-1">
             {attributes.map((attr) => (
-              <Attribute key={attr.id} name={attr.name} />
+              <Attribute
+                key={attr.id}
+                name={attr.name}
+                type={attr.type}
+                nullable={attr.nullable}
+                primaryKey={attr.primaryKey}
+              />
             ))}
           </ul>
         )}
