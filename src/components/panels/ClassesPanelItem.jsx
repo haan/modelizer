@@ -14,6 +14,7 @@ export default function ClassesPanelItem({
   onReorderAttributes,
   onUpdateAttribute,
   onAddAttribute,
+  onDeleteAttribute,
   onUpdateClassColor,
   onDeleteClass,
   onHighlightClass,
@@ -257,6 +258,7 @@ export default function ClassesPanelItem({
             onReorderAttributes={onReorderAttributes}
             onUpdateAttribute={onUpdateAttribute}
             onAddAttribute={onAddAttribute}
+            onDeleteAttribute={onDeleteAttribute}
           />
         </div>
       </div>

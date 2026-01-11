@@ -120,7 +120,7 @@ export function ReflexiveAssociation({
       <EdgeLabelRenderer>
         {multiplicityA ? (
           <MultiplicityLabel
-            transform={`translate(-100%, 0%) translate(${startX}px, ${startY+1}px)`}
+            transform={`translate(-100%, -100%) translate(${startX}px, ${startY-1}px)`}
             label={multiplicityA}
           />
         ) : null}
@@ -132,7 +132,7 @@ export function ReflexiveAssociation({
         ) : null}
         {roleA ? (
           <RoleLabel
-            transform={`translate(-100%, -100%) translate(${startX}px, ${startY-1}px)`}
+            transform={`translate(-100%, 0%) translate(${startX}px, ${startY+1}px)`}
             label={roleA}
           />
         ) : null}

@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
+import * as AlertDialog from '@radix-ui/react-alert-dialog'
 import ReactFlow, {
   Background,
   ConnectionMode,
@@ -9,6 +10,7 @@ import ReactFlow, {
   useEdgesState,
   useNodesState,
 } from 'reactflow'
+import { toPng } from 'html-to-image'
 import { edgeTypes, nodeTypes } from './flowTypes.js'
 import { CLASS_COLOR_PALETTE, getRandomPaletteColor } from './classPalette.js'
 import { createAttribute, normalizeAttributes } from './attributes.js'
@@ -116,6 +118,7 @@ function App() {
   const [reactFlowInstance, setReactFlowInstance] = useState(null)
   const [isConnecting, setIsConnecting] = useState(false)
   const [infoWidth, setInfoWidth] = useState(360)
+  const [isNewDialogOpen, setIsNewDialogOpen] = useState(false)
   const resizeState = useRef(null)
 
   useEffect(() => {
@@ -209,10 +212,10 @@ function App() {
               : {
                   multiplicityA: '',
                   multiplicityB: '',
-                  name: 'test',
+                  name: '',
                   type: typeData,
-                  roleA: 'test',
-                  roleB: 'test',
+                  roleA: '',
+                  roleB: '',
                 },
         }
 
@@ -613,6 +616,35 @@ function App() {
     [setNodes],
   )
 
+  const onDeleteAttribute = useCallback(
+    (nodeId, attributeId) => {
+      setNodes((current) =>
+        current.map((node) => {
+          if (node.id !== nodeId) {
+            return node
+          }
+
+          const currentAttributes = normalizeAttributes(
+            nodeId,
+            node.data?.attributes,
+          )
+          const nextAttributes = currentAttributes.filter(
+            (attribute) => attribute.id !== attributeId,
+          )
+
+          return {
+            ...node,
+            data: {
+              ...node.data,
+              attributes: nextAttributes,
+            },
+          }
+        }),
+      )
+    },
+    [setNodes],
+  )
+
   const onUpdateClassColor = useCallback(
     (nodeId, nextColor) => {
       setNodes((current) =>
@@ -692,6 +724,21 @@ function App() {
     },
     [nodes, reactFlowInstance, setNodes],
   )
+
+  const onNewModel = useCallback(() => {
+    setNodes([])
+    setEdges(normalizeEdges([]))
+    setActiveSidebarItem('tables')
+  }, [setEdges, setNodes])
+
+  const onRequestNewModel = useCallback(() => {
+    if (nodes.length || edges.length) {
+      setIsNewDialogOpen(true)
+      return
+    }
+
+    onNewModel()
+  }, [edges.length, nodes.length, onNewModel])
 
   const clearAssociationHighlight = useCallback(() => {
     setEdges((current) =>
@@ -830,23 +877,67 @@ function App() {
     [nodes, associationEdgeNodes],
   )
 
+  const onExportPng = useCallback(async () => {
+    if (!reactFlowWrapper.current) {
+      return
+    }
+
+    const containerRect = reactFlowWrapper.current.getBoundingClientRect()
+    if (!containerRect.width || !containerRect.height) {
+      return
+    }
+
+    const imageWidth = Math.round(containerRect.width)
+    const imageHeight = Math.round(containerRect.height)
+    const viewport =
+      reactFlowInstance?.getViewport?.() ?? { x: 0, y: 0, zoom: 1 }
+    const viewportElement =
+      reactFlowWrapper.current.querySelector('.react-flow__viewport')
+    if (!viewportElement) {
+      return
+    }
+
+    const backgroundColor = '#ffffff'
+
+    try {
+      const dataUrl = await toPng(viewportElement, {
+        backgroundColor,
+        filter: (node) =>
+          !(node instanceof Element) ||
+          !node.closest('[data-no-export="true"]'),
+        width: imageWidth,
+        height: imageHeight,
+        style: {
+          width: `${imageWidth}px`,
+          height: `${imageHeight}px`,
+        transform: `translate(${viewport.x}px, ${viewport.y}px) scale(${viewport.zoom})`,
+      },
+    })
+
+      const link = document.createElement('a')
+      link.href = dataUrl
+      link.download = 'model.png'
+      link.click()
+    } catch (error) {
+      console.error('Failed to export PNG', error)
+    }
+  }, [reactFlowInstance])
+
   const onSidebarSelect = useCallback(
     (item) => {
       if (item === 'new') {
-        setNodes([])
-        setEdges(normalizeEdges([]))
-        setActiveSidebarItem('tables')
+        onRequestNewModel()
         return
       }
       setActiveSidebarItem(item)
     },
-    [setEdges, setNodes],
+    [onRequestNewModel],
   )
 
   return (
     <div className="min-h-screen bg-base-200 text-base-content">
       <div className="flex min-h-screen flex-col">
-        <Navbar />
+        <Navbar onNewModel={onRequestNewModel} onExportPng={onExportPng} />
         <div className="flex flex-1 min-h-0">
           <Sidebar
             activeItem={activeSidebarItem}
@@ -864,6 +955,7 @@ function App() {
             onReorderAttributes={onReorderAttributes}
             onUpdateAttribute={onUpdateAttribute}
             onAddAttribute={onAddAttribute}
+            onDeleteAttribute={onDeleteAttribute}
             onUpdateClassColor={onUpdateClassColor}
             onDeleteClass={onDeleteClass}
             onHighlightClass={onHighlightClass}
@@ -892,7 +984,7 @@ function App() {
                 edgeTypes={edgeTypes}
                 isValidConnection={isValidConnection}
                 connectionMode={ConnectionMode.Loose}
-                connectionLineType={ConnectionLineType.SmoothStep}
+                connectionLineType={ConnectionLineType.Straight}
                 connectionRadius={40}
                 defaultEdgeOptions={{ interactionWidth: 20 }}
               >
@@ -903,6 +995,41 @@ function App() {
           </main>
         </div>
       </div>
+      <AlertDialog.Root open={isNewDialogOpen} onOpenChange={setIsNewDialogOpen}>
+        <AlertDialog.Portal>
+          <AlertDialog.Overlay className="fixed inset-0 z-40 bg-black/40" />
+          <AlertDialog.Content className="fixed left-1/2 top-1/2 z-50 w-[320px] -translate-x-1/2 -translate-y-1/2 rounded-lg border border-base-content/20 bg-base-100 p-4 shadow-xl">
+            <AlertDialog.Title className="text-sm font-semibold">
+              Start a new model?
+            </AlertDialog.Title>
+            <AlertDialog.Description className="mt-2 text-xs text-base-content/70">
+              Your current model will be cleared. This action cannot be undone.
+            </AlertDialog.Description>
+            <div className="mt-4 flex justify-end gap-2">
+              <AlertDialog.Cancel asChild>
+                <button
+                  type="button"
+                  className="inline-flex h-7 items-center justify-center rounded-md px-3 text-xs font-medium text-base-content/70 transition-colors hover:bg-base-200 focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
+                >
+                  Cancel
+                </button>
+              </AlertDialog.Cancel>
+              <AlertDialog.Action asChild>
+                <button
+                  type="button"
+                  className="inline-flex h-7 items-center justify-center rounded-md px-3 text-xs font-medium text-red-700 transition-colors hover:bg-base-200 focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
+                  onClick={() => {
+                    setIsNewDialogOpen(false)
+                    onNewModel()
+                  }}
+                >
+                  New model
+                </button>
+              </AlertDialog.Action>
+            </div>
+          </AlertDialog.Content>
+        </AlertDialog.Portal>
+      </AlertDialog.Root>
     </div>
   )
 }

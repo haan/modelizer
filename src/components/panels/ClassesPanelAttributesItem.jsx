@@ -17,6 +17,7 @@ export default function ClassesPanelAttributesItem({
   onChangeType,
   onToggleNullable,
   onTogglePrimaryKey,
+  onDelete,
 }) {
   const {
     attributes: sortableAttributes,
@@ -165,6 +166,32 @@ export default function ClassesPanelAttributesItem({
                 }
               />
             </div>
+          </div>
+          <div className="flex items-center justify-center pt-2">
+            <button
+              className="inline-flex h-7 items-center justify-center gap-2 whitespace-nowrap rounded-md px-2 text-xs font-medium text-red-700 transition-colors hover:bg-base-300 focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:pointer-events-none disabled:opacity-50 [&_svg]:pointer-events-none [&_svg]:size-4 [&_svg]:shrink-0"
+              type="button"
+              onClick={onDelete}
+            >
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="2"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                className="h-3.5 w-3.5"
+                aria-hidden="true"
+              >
+                <path d="M10 11v6" />
+                <path d="M14 11v6" />
+                <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6" />
+                <path d="M3 6h18" />
+                <path d="M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2" />
+              </svg>
+              Delete
+            </button>
           </div>
         </div>
       </details>

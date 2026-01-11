@@ -12,6 +12,7 @@ export default function InfoPanel({
   onReorderAttributes,
   onUpdateAttribute,
   onAddAttribute,
+  onDeleteAttribute,
   onUpdateClassColor,
   onDeleteClass,
   onHighlightClass,
@@ -36,6 +37,7 @@ export default function InfoPanel({
             onReorderAttributes={onReorderAttributes}
             onUpdateAttribute={onUpdateAttribute}
             onAddAttribute={onAddAttribute}
+            onDeleteAttribute={onDeleteAttribute}
             onUpdateClassColor={onUpdateClassColor}
             onDeleteClass={onDeleteClass}
             onHighlightClass={onHighlightClass}

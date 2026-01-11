@@ -19,6 +19,7 @@ export default function ClassesPanelAttributesPanel({
   onReorderAttributes,
   onUpdateAttribute,
   onAddAttribute,
+  onDeleteAttribute,
 }) {
   const attributeIds = attributes.map((attribute) => attribute.id)
   const sensors = useSensors(
@@ -83,6 +84,7 @@ export default function ClassesPanelAttributesPanel({
                   primaryKey: !attribute.primaryKey,
                 })
               }
+              onDelete={() => onDeleteAttribute?.(nodeId, attribute.id)}
             />
           ))}
           <li>
