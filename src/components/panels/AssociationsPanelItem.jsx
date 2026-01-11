@@ -47,18 +47,6 @@ export default function AssociationsPanelItem({
     multiplicityBValue || UNDEFINED_MULTIPLICITY_VALUE
 
   useEffect(() => {
-    if (!isEditing) {
-      setDraft(label)
-    }
-  }, [label, isEditing])
-
-  useEffect(() => {
-    if (!canRename && isEditing) {
-      setIsEditing(false)
-    }
-  }, [canRename, isEditing])
-
-  useEffect(() => {
     if (isEditing) {
       inputRef.current?.focus()
       inputRef.current?.select()

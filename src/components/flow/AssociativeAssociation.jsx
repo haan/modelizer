@@ -4,16 +4,27 @@ export function AssociativeAssociation({
   id,
   sourceX,
   sourceY,
+  sourceHandle,
+  sourcePosition,
   targetX,
   targetY,
   style,
   markerEnd,
-  data,
   selected,
 }) {
+  const sourceSide =
+    sourceHandle?.split('-')[0] ?? (sourcePosition ?? '').toString()
+  const sourceOffsets = {
+    top: { x: 0, y: 7 },
+    right: { x: -7, y: 0 },
+    bottom: { x: 0, y: -7 },
+    left: { x: 7, y: 0 },
+  }
+  const { x: sourceOffsetX = 0, y: sourceOffsetY = 0 } =
+    sourceOffsets[sourceSide] ?? {}
   const [edgePath] = getStraightPath({
-    sourceX,
-    sourceY,
+    sourceX: sourceX + sourceOffsetX,
+    sourceY: sourceY + sourceOffsetY,
     targetX,
     targetY: targetY + 8,
   })

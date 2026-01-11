@@ -18,9 +18,3 @@
   --color-background: 255 255 255;
   --color-muted-foreground: 107 114 128;
 }
-
-@layer components {
-  .input {
-    @apply w-full rounded-md border border-base-content/20 bg-transparent px-2 py-1 text-sm focus:outline-none focus:ring-1 focus:ring-ring;
-  }
-}

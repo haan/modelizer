@@ -42,12 +42,6 @@ export default function ClassesPanelItem({
   }
 
   useEffect(() => {
-    if (!isEditing) {
-      setDraft(label)
-    }
-  }, [label, isEditing])
-
-  useEffect(() => {
     if (isEditing) {
       inputRef.current?.focus()
       inputRef.current?.select()

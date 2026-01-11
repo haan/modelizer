@@ -492,11 +492,10 @@ function App() {
       focusEdge(edgeToFocus)
       setEdges((current) =>
         current.map((edge) => {
-          const { highlighted, ...data } = edge.data ?? {}
           return {
             ...edge,
             selected: edge.id === edgeId,
-            data,
+            data: edge.data,
           }
         }),
       )
@@ -743,11 +742,10 @@ function App() {
   const clearAssociationHighlight = useCallback(() => {
     setEdges((current) =>
       current.map((edge) => {
-        if (!edge.selected && !edge.data?.highlighted) {
+        if (!edge.selected) {
           return edge
         }
-        const { highlighted, ...data } = edge.data ?? {}
-        return { ...edge, selected: false, data }
+        return { ...edge, selected: false, data: edge.data }
       }),
     )
   }, [setEdges])
@@ -798,7 +796,6 @@ function App() {
             return null
           }
 
-          const widthStep = Math.min(40, rect.width / 4)
           const heightStep = Math.min(40, rect.height / 4)
           const startX = rect.x
           const startY = rect.y + heightStep
@@ -910,9 +907,9 @@ function App() {
         style: {
           width: `${imageWidth}px`,
           height: `${imageHeight}px`,
-        transform: `translate(${viewport.x}px, ${viewport.y}px) scale(${viewport.zoom})`,
-      },
-    })
+          transform: `translate(${viewport.x}px, ${viewport.y}px) scale(${viewport.zoom})`,
+        },
+      })
 
       const link = document.createElement('a')
       link.href = dataUrl

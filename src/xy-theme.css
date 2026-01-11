@@ -2,27 +2,27 @@
 
 .react-flow__handle-left {
     top: 50%;
-    left: -7px;
-    transform: translate(0%, -50%);
+    left: 0px;
+    transform: translate(-50%, -50%);
 }
 
 .react-flow__handle-right {
-    right: -7px;
+    right: 0px;
     top: 50%;
-    transform: translate(0, -50%);
+    transform: translate(50%, -50%);
 }
 
 .react-flow__handle-top {
     left: 50%;
-    top: -7px;
-    transform: translate(-50%, 0%);
+    top: 0px;
+    transform: translate(-50%, -50%);
 }
 
 .react-flow__handle-bottom {
     top: auto;
     left: 50%;
-    bottom: -7px;
-    transform: translate(-50%, 0%);
+    bottom: 0px;
+    transform: translate(-50%, 50%);
 }
 
 .react-flow__edge-path {

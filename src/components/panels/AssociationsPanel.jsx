@@ -23,7 +23,13 @@ export default function AssociationsPanel({
 
   if (!associations.length) {
     return (
-      <div className="text-sm opacity-70">No associations yet.</div>
+      <div className="flex flex-col gap-1 text-sm">
+        <div className="flex items-center justify-between">
+          <div className="text-xs font-semibold uppercase tracking-wide opacity-60 py-1">
+            Associations
+          </div>
+        </div>
+      </div>
     )
   }
 
@@ -45,7 +51,12 @@ export default function AssociationsPanel({
   }
 
   return (
-    <div className="flex flex-col gap-2">
+    <div className="flex flex-col gap-1">
+      <div className="flex items-center justify-between">
+        <div className="text-xs font-semibold uppercase tracking-wide opacity-60 py-1">
+          Associations
+        </div>
+      </div>
       {associations.map((edge) => {
         const sourceIsAssociation = edge.source?.startsWith('assoc-edge-')
         const targetIsAssociation = edge.target?.startsWith('assoc-edge-')

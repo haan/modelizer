@@ -1,4 +1,5 @@
 import * as Menubar from '@radix-ui/react-menubar'
+import Button from '../ui/Button.jsx'
 
 export default function Navbar({ onNewModel, onExportPng }) {
   return (
@@ -69,6 +70,14 @@ export default function Navbar({ onNewModel, onExportPng }) {
               </Menubar.Portal>
             </Menubar.Menu>
           </Menubar.Root>
+        </div>
+        <div className="flex items-center gap-2">
+          <Button type="button" variant="ghost" size="sm">
+            Docs
+          </Button>
+          <Button type="button" variant="primary" size="sm" onClick={onNewModel}>
+            New model
+          </Button>
         </div>
       </div>
     </nav>

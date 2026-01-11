@@ -53,7 +53,7 @@ export default function ClassesPanel({
     return (
       <div className="flex flex-col gap-1 text-sm">
         <div className="flex items-center justify-between">
-          <div className="text-xs font-semibold uppercase tracking-wide opacity-60">
+          <div className="text-xs font-semibold uppercase tracking-wide opacity-60 py-1">
             Classes
           </div>
           <button
@@ -78,9 +78,6 @@ export default function ClassesPanel({
             Add class
           </button>
         </div>
-        <p className="text-sm opacity-70">
-          No classes yet. Add one to get started.
-        </p>
       </div>
     )
   }
@@ -88,7 +85,7 @@ export default function ClassesPanel({
   return (
     <div className="flex flex-col gap-1 text-sm">
       <div className="flex items-center justify-between">
-        <div className="text-xs font-semibold uppercase tracking-wide opacity-60">
+        <div className="text-xs font-semibold uppercase tracking-wide opacity-60 py-1">
           Classes
         </div>
         <button
