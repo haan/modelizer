@@ -1,3 +1,5 @@
+import Button from '../ui/Button.jsx'
+
 export default function Navbar() {
   return (
     <nav className="w-full border-b border-base-content/10 bg-base-100">
@@ -14,12 +16,12 @@ export default function Navbar() {
           </div>
         </div>
         <div className="flex items-center gap-2">
-          <button className="btn btn-ghost btn-sm" type="button">
+          <Button type="button" variant="ghost" size="sm">
             Docs
-          </button>
-          <button className="btn btn-primary btn-sm" type="button">
+          </Button>
+          <Button type="button" variant="primary" size="sm">
             New model
-          </button>
+          </Button>
         </div>
       </div>
     </nav>

@@ -1,7 +1,10 @@
 import { useEffect, useRef, useState } from 'react'
+import SelectField from '../ui/Select.jsx'
+import Input from '../ui/Input.jsx'
 
+const UNDEFINED_MULTIPLICITY_VALUE = '__undefined__'
 const MULTIPLICITY_OPTIONS = [
-  { value: '', label: 'Undefined' },
+  { value: UNDEFINED_MULTIPLICITY_VALUE, label: 'Undefined' },
   { value: '0..1', label: '0..1' },
   { value: '1..1', label: '1..1' },
   { value: '0..*', label: '0..*' },
@@ -38,6 +41,10 @@ export default function AssociationsPanelItem({
       : ''
   const multiplicityAValue = normalizeMultiplicity(multiplicityA)
   const multiplicityBValue = normalizeMultiplicity(multiplicityB)
+  const selectMultiplicityAValue =
+    multiplicityAValue || UNDEFINED_MULTIPLICITY_VALUE
+  const selectMultiplicityBValue =
+    multiplicityBValue || UNDEFINED_MULTIPLICITY_VALUE
 
   useEffect(() => {
     if (!isEditing) {
@@ -91,9 +98,10 @@ export default function AssociationsPanelItem({
             </svg>
             <div className="flex min-w-0 flex-1 items-center gap-2">
               {isEditing && canRename ? (
-                <input
+                <Input
                   ref={inputRef}
-                  className="w-full min-w-0 rounded-md border border-base-content/20 bg-transparent px-1 py-0.5 text-sm font-semibold focus:outline-none"
+                  size="sm"
+                  className="min-w-0 font-semibold"
                   value={draft}
                   placeholder="Association name"
                   onChange={(event) => {
@@ -269,33 +277,27 @@ export default function AssociationsPanelItem({
                     </div>
                   </div>
                   <div className="p-1">
-                    <select
-                      className="select select-bordered select-xs w-full appearance-none outline-offset-2 focus:ring-0 focus:ring-offset-0"
-                      value={multiplicityAValue}
-                      onChange={(event) =>
+                    <SelectField
+                      value={selectMultiplicityAValue}
+                      items={MULTIPLICITY_OPTIONS}
+                      placeholder="Select"
+                      onValueChange={(nextValue) =>
                         onUpdateAssociationMultiplicity?.(
                           edge.id,
                           'A',
-                          event.target.value,
+                          nextValue === UNDEFINED_MULTIPLICITY_VALUE
+                            ? ''
+                            : nextValue,
                         )
                       }
-                    >
-                      {MULTIPLICITY_OPTIONS.map((option) => (
-                        <option
-                          key={option.value || 'undefined'}
-                          value={option.value}
-                        >
-                          {option.label}
-                        </option>
-                      ))}
-                    </select>
+                    />
                   </div>
                   <div className="flex flex-row items-center gap-1">
                     <div className="font-bold text-subtitle">Role</div>
                   </div>
                   <div className="p-1">
-                    <input
-                      className="input w-full rounded-md border border-base-content/20 bg-transparent px-2 py-1 text-xs focus:outline-none"
+                    <Input
+                      size="xs"
                       value={roleA}
                       placeholder="Role"
                       onChange={(event) =>
@@ -363,33 +365,27 @@ export default function AssociationsPanelItem({
                     </div>
                   </div>
                   <div className="p-1">
-                    <select
-                      className="select select-xs"
-                      value={multiplicityBValue}
-                      onChange={(event) =>
+                    <SelectField
+                      value={selectMultiplicityBValue}
+                      items={MULTIPLICITY_OPTIONS}
+                      placeholder="Select"
+                      onValueChange={(nextValue) =>
                         onUpdateAssociationMultiplicity?.(
                           edge.id,
                           'B',
-                          event.target.value,
+                          nextValue === UNDEFINED_MULTIPLICITY_VALUE
+                            ? ''
+                            : nextValue,
                         )
                       }
-                    >
-                      {MULTIPLICITY_OPTIONS.map((option) => (
-                        <option
-                          key={option.value || 'undefined'}
-                          value={option.value}
-                        >
-                          {option.label}
-                        </option>
-                      ))}
-                    </select>
+                    />
                   </div>
                   <div className="flex flex-row items-center gap-1">
                     <div className="font-bold text-subtitle">Role</div>
                   </div>
                   <div className="p-1">
-                    <input
-                      className="input w-full rounded-md border border-base-content/20 bg-transparent px-2 py-1 text-xs focus:outline-none"
+                    <Input
+                      size="xs"
                       value={roleB}
                       placeholder="Role"
                       onChange={(event) =>

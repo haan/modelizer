@@ -1,5 +1,6 @@
 import { useSortable } from '@dnd-kit/sortable'
 import { CSS } from '@dnd-kit/utilities'
+import Input from '../ui/Input.jsx'
 
 export default function ClassesPanelAttributesItem({ id, label, onChange }) {
   const {
@@ -53,8 +54,9 @@ export default function ClassesPanelAttributesItem({ id, label, onChange }) {
           <circle cx="15" cy="19" r="1" />
         </svg>
       </button>
-      <input
-        className="w-full min-w-0 rounded-md border border-base-content/20 bg-transparent px-1 py-0.5 text-xs focus:outline-none"
+      <Input
+        size="xs"
+        className="min-w-0"
         value={label}
         placeholder="Attribute"
         onChange={(event) => onChange(event.target.value)}

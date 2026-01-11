@@ -13,7 +13,7 @@ export function AssociativeAssociation({
 }) {
   const [edgePath] = getStraightPath({
     sourceX,
-    sourceY: sourceY + 8,
+    sourceY,
     targetX,
     targetY,
   })

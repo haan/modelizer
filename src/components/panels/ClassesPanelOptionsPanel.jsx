@@ -13,7 +13,7 @@ export default function ClassesPanelOptionsPanel({
   const [isPickerOpen, setIsPickerOpen] = useState(false)
 
   return (
-    <div className="w-full rounded-l-md border-b border-base-content/20">
+    <div className="w-full rounded-b-md border-b border-base-content/20">
       <div
         className="border-l-[6px] px-2 py-2 text-xs rounded-bl-md"
         style={{ borderColor: accentColor }}

@@ -6,6 +6,7 @@ import { normalizeAttributes } from '../../attributes.js'
 import ClassesPanelAttributesPanel from './ClassesPanelAttributesPanel.jsx'
 import ClassesPanelOptionsPanel from './ClassesPanelOptionsPanel.jsx'
 import ClassesPanelVisibilityPanel from './ClassesPanelVisibilityPanel.jsx'
+import Input from '../ui/Input.jsx'
 
 export default function ClassesPanelItem({
   node,
@@ -119,9 +120,10 @@ export default function ClassesPanelItem({
             </button>
             <div className="flex min-w-0 flex-1 items-center gap-2">
               {isEditing ? (
-                <input
+                <Input
                   ref={inputRef}
-                  className="w-full min-w-0 rounded-md border border-base-content/20 bg-transparent px-1 py-0.5 text-sm font-semibold focus:outline-none"
+                  size="sm"
+                  className="min-w-0 font-semibold"
                   value={draft}
                   placeholder="Class name"
                   onChange={(event) => {

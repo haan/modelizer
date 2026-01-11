@@ -126,19 +126,19 @@ export function ReflexiveAssociation({
         ) : null}
         {multiplicityB ? (
           <MultiplicityLabel
-            transform={`translate(0%, -100%) translate(${rightX+1}px, ${endY}px)`}
+            transform={`translate(-100%, -100%) translate(${rightX-1}px, ${endY}px)`}
             label={multiplicityB}
           />
         ) : null}
         {roleA ? (
           <RoleLabel
-            transform={`translate(-100%, -100%) translate(${startX}px, ${startY - 12}px)`}
+            transform={`translate(-100%, -100%) translate(${startX}px, ${startY-1}px)`}
             label={roleA}
           />
         ) : null}
         {roleB ? (
           <RoleLabel
-            transform={`translate(0%, -100%) translate(${rightX}px, ${endY - 12}px)`}
+            transform={`translate(0%, -100%) translate(${rightX+1}px, ${endY}px)`}
             label={roleB}
           />
         ) : null}
