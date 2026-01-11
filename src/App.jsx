@@ -929,9 +929,13 @@ function App() {
         onRequestNewModel()
         return
       }
+      if (item === 'export') {
+        onExportPng()
+        return
+      }
       setActiveSidebarItem(item)
     },
-    [onRequestNewModel],
+    [onExportPng, onRequestNewModel],
   )
 
   return (

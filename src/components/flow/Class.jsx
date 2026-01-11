@@ -11,12 +11,12 @@ export function Class({ data, id, selected }) {
 
   return (
     <div
-      className={`group/node min-w-[180px] border-2 bg-base-100 text-base-content shadow-sm hover:border-primary ${borderClass}`}
+      className={`group/node min-w-[180px] rounded-lg border-2 bg-base-100 text-base-content shadow-sm hover:border-primary ${borderClass}`}
     >
       <div
         data-no-export="true"
-        className="h-2"
-        style={{ backgroundColor: accentColor }}
+        className="h-2 rounded-t-[6px]"
+        style={{ backgroundColor: accentColor}}
       />
       <div className="border-b border-base-content px-3 pb-2 pt-1 text-sm font-semibold">
         {data.label ?? ''}
