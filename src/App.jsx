@@ -350,6 +350,23 @@ function App() {
     [setEdges],
   )
 
+  const onDeleteAssociation = useCallback(
+    (edgeId) => {
+      const helperNodeId = `assoc-edge-${edgeId}`
+      setEdges((current) =>
+        normalizeEdges(
+          current.filter(
+            (edge) =>
+              edge.id !== edgeId &&
+              edge.source !== helperNodeId &&
+              edge.target !== helperNodeId,
+          ),
+        ),
+      )
+    },
+    [setEdges],
+  )
+
   const onUpdateAssociationMultiplicity = useCallback(
     (edgeId, side, nextValue) => {
       setEdges((current) =>
@@ -568,6 +585,36 @@ function App() {
     [setNodes],
   )
 
+  const onDeleteClass = useCallback(
+    (nodeId) => {
+      setNodes((current) => current.filter((node) => node.id !== nodeId))
+      setEdges((current) => {
+        const removedAssociationIds = current
+          .filter(
+            (edge) =>
+              (edge.source === nodeId || edge.target === nodeId) &&
+              (edge.type === ASSOCIATION_EDGE_TYPE ||
+                edge.type === REFLEXIVE_EDGE_TYPE),
+          )
+          .map((edge) => edge.id)
+        const helperNodeIds = new Set(
+          removedAssociationIds.map((edgeId) => `assoc-edge-${edgeId}`),
+        )
+
+        return normalizeEdges(
+          current.filter(
+            (edge) =>
+              edge.source !== nodeId &&
+              edge.target !== nodeId &&
+              !helperNodeIds.has(edge.source) &&
+              !helperNodeIds.has(edge.target),
+          ),
+        )
+      })
+    },
+    [setEdges, setNodes],
+  )
+
   const onHighlightClass = useCallback(
     (nodeId) => {
       setNodes((current) =>
@@ -625,17 +672,83 @@ function App() {
     const nodeMap = new Map(nodes.map((node) => [node.id, node]))
     const getNode = (nodeId) =>
       reactFlowInstance?.getNode(nodeId) ?? nodeMap.get(nodeId)
+    const getNodeRect = (node) => {
+      const width = node?.measured?.width ?? node?.width ?? 0
+      const height = node?.measured?.height ?? node?.height ?? 0
+      const position =
+        node?.internals?.positionAbsolute ??
+        node?.positionAbsolute ??
+        node?.position ??
+        null
+
+      if (!position || !width || !height) {
+        return null
+      }
+
+      return { x: position.x, y: position.y, width, height }
+    }
 
     return edges
-      .filter((edge) => edge.type === ASSOCIATION_EDGE_TYPE)
+      .filter(
+        (edge) =>
+          edge.type === ASSOCIATION_EDGE_TYPE ||
+          edge.type === REFLEXIVE_EDGE_TYPE,
+      )
       .map((edge) => {
+        if (edge.type === REFLEXIVE_EDGE_TYPE) {
+          const sourceNode = getNode(edge.source)
+          if (
+            !sourceNode ||
+            (sourceNode.type !== CLASS_NODE_TYPE &&
+              sourceNode.type !== 'umlClass')
+          ) {
+            return null
+          }
+
+          const rect = getNodeRect(sourceNode)
+          if (!rect) {
+            return null
+          }
+
+          const widthStep = Math.min(40, rect.width / 4)
+          const heightStep = Math.min(40, rect.height / 4)
+          const startX = rect.x
+          const startY = rect.y + heightStep
+          const upY = startY - heightStep * 2
+
+          return {
+            id: `assoc-edge-${edge.id}`,
+            type: ASSOCIATION_HELPER_NODE_TYPE,
+            position: {
+              x: startX - ASSOCIATION_NODE_SIZE / 2,
+              y: upY - ASSOCIATION_NODE_SIZE / 2,
+            },
+            width: ASSOCIATION_NODE_SIZE,
+            height: ASSOCIATION_NODE_SIZE,
+            data: { edgeId: edge.id },
+            className: 'association-helper-node',
+            style: {
+              visibility: 'visible',
+              opacity: 1,
+              width: ASSOCIATION_NODE_SIZE,
+              height: ASSOCIATION_NODE_SIZE,
+            },
+            draggable: false,
+            selectable: false,
+            focusable: false,
+            connectable: true,
+          }
+        }
+
         const sourceNode = getNode(edge.source)
         const targetNode = getNode(edge.target)
         if (
           !sourceNode ||
           !targetNode ||
-          (sourceNode.type !== CLASS_NODE_TYPE && sourceNode.type !== 'umlClass') ||
-          (targetNode.type !== CLASS_NODE_TYPE && targetNode.type !== 'umlClass')
+          (sourceNode.type !== CLASS_NODE_TYPE &&
+            sourceNode.type !== 'umlClass') ||
+          (targetNode.type !== CLASS_NODE_TYPE &&
+            targetNode.type !== 'umlClass')
         ) {
           return null
         }
@@ -711,8 +824,10 @@ function App() {
             onUpdateAttribute={onUpdateAttribute}
             onAddAttribute={onAddAttribute}
             onUpdateClassColor={onUpdateClassColor}
+            onDeleteClass={onDeleteClass}
             onHighlightClass={onHighlightClass}
             onRenameAssociation={onRenameAssociation}
+            onDeleteAssociation={onDeleteAssociation}
             onUpdateAssociationMultiplicity={onUpdateAssociationMultiplicity}
             onHighlightAssociation={onHighlightAssociation}
           />

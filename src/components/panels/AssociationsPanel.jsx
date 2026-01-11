@@ -10,6 +10,7 @@ export default function AssociationsPanel({
   edges,
   nodes,
   onRenameAssociation,
+  onDeleteAssociation,
   onUpdateAssociationMultiplicity,
   onHighlightAssociation,
 }) {
@@ -63,6 +64,7 @@ export default function AssociationsPanel({
             sourceIsAssociation={sourceIsAssociation}
             targetIsAssociation={targetIsAssociation}
             onRenameAssociation={onRenameAssociation}
+            onDeleteAssociation={onDeleteAssociation}
             onUpdateAssociationMultiplicity={onUpdateAssociationMultiplicity}
             onHighlightAssociation={onHighlightAssociation}
           />

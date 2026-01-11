@@ -4,6 +4,7 @@ export default function RefsPanel({
   edges,
   nodes,
   onRenameAssociation,
+  onDeleteAssociation,
   onUpdateAssociationMultiplicity,
   onHighlightAssociation,
 }) {
@@ -16,6 +17,7 @@ export default function RefsPanel({
         edges={edges}
         nodes={nodes}
         onRenameAssociation={onRenameAssociation}
+        onDeleteAssociation={onDeleteAssociation}
         onUpdateAssociationMultiplicity={onUpdateAssociationMultiplicity}
         onHighlightAssociation={onHighlightAssociation}
       />

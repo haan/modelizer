@@ -22,6 +22,7 @@ export default function ClassesPanel({
   onUpdateAttribute,
   onAddAttribute,
   onUpdateClassColor,
+  onDeleteClass,
   onHighlightClass,
 }) {
   const sensors = useSensors(
@@ -127,6 +128,7 @@ export default function ClassesPanel({
               onUpdateAttribute={onUpdateAttribute}
               onAddAttribute={onAddAttribute}
               onUpdateClassColor={onUpdateClassColor}
+              onDeleteClass={onDeleteClass}
               onHighlightClass={onHighlightClass}
             />
           ))}

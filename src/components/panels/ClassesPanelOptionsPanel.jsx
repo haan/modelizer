@@ -7,6 +7,7 @@ export default function ClassesPanelOptionsPanel({
   color,
   onChangeColor,
   nodeId,
+  onDeleteClass,
 }) {
   const currentColor = color ?? accentColor
   const [isPickerOpen, setIsPickerOpen] = useState(false)
@@ -63,6 +64,37 @@ export default function ClassesPanelOptionsPanel({
               </div>
             </div>
           ) : null}
+        </div>
+        <div className="flex flex-1 items-center justify-center pt-2">
+          <button
+            className="inline-flex h-8 items-center justify-center gap-2 whitespace-nowrap rounded-md p-2 text-xs font-medium transition-colors hover:bg-accent hover:text-accent-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:pointer-events-none disabled:opacity-50 [&_svg]:pointer-events-none [&_svg]:size-4 [&_svg]:shrink-0"
+            type="button"
+            onClick={(event) => {
+              event.stopPropagation()
+              onDeleteClass?.(nodeId)
+            }}
+          >
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              width="24"
+              height="24"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="2"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              className="lucide lucide-trash2 lucide-trash-2 mr-1 h-3.5 w-3.5 text-red-700"
+              aria-hidden="true"
+            >
+              <path d="M10 11v6" />
+              <path d="M14 11v6" />
+              <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6" />
+              <path d="M3 6h18" />
+              <path d="M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2" />
+            </svg>
+            <div className="text-red-700">Delete</div>
+          </button>
         </div>
       </div>
     </div>

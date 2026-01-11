@@ -14,6 +14,7 @@ export default function ClassesPanelItem({
   onUpdateAttribute,
   onAddAttribute,
   onUpdateClassColor,
+  onDeleteClass,
   onHighlightClass,
 }) {
   const accentColor = node.data?.color ?? CLASS_COLOR_PALETTE[0]
@@ -262,6 +263,7 @@ export default function ClassesPanelItem({
         color={color}
         nodeId={node.id}
         onChangeColor={onUpdateClassColor}
+        onDeleteClass={onDeleteClass}
       />
     </details>
   )

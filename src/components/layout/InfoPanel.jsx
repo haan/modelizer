@@ -13,8 +13,10 @@ export default function InfoPanel({
   onUpdateAttribute,
   onAddAttribute,
   onUpdateClassColor,
+  onDeleteClass,
   onHighlightClass,
   onRenameAssociation,
+  onDeleteAssociation,
   onUpdateAssociationMultiplicity,
   onHighlightAssociation,
 }) {
@@ -34,6 +36,7 @@ export default function InfoPanel({
             onUpdateAttribute={onUpdateAttribute}
             onAddAttribute={onAddAttribute}
             onUpdateClassColor={onUpdateClassColor}
+            onDeleteClass={onDeleteClass}
             onHighlightClass={onHighlightClass}
           />
         ) : activeItem === 'refs' ? (
@@ -41,6 +44,7 @@ export default function InfoPanel({
             edges={edges}
             nodes={nodes}
             onRenameAssociation={onRenameAssociation}
+            onDeleteAssociation={onDeleteAssociation}
             onUpdateAssociationMultiplicity={onUpdateAssociationMultiplicity}
             onHighlightAssociation={onHighlightAssociation}
           />
