@@ -10,7 +10,7 @@ import ReactFlow, {
   useNodesState,
 } from 'reactflow'
 import { edgeTypes, nodeTypes } from './flowTypes.js'
-import { getPaletteColor, getRandomPaletteColor } from './classPalette.js'
+import { CLASS_COLOR_PALETTE, getRandomPaletteColor } from './classPalette.js'
 import { createAttribute, normalizeAttributes } from './attributes.js'
 import { InfoPanel, Navbar, Sidebar } from './components/layout/index.js'
 import { getAssociationLayout } from './components/flow/associationUtils.js'
@@ -211,6 +211,8 @@ function App() {
                   multiplicityB: '',
                   name: 'test',
                   type: typeData,
+                  roleA: 'test',
+                  roleB: 'test',
                 },
         }
 
@@ -284,6 +286,19 @@ function App() {
           y: 80 + current.length * 30,
         }
 
+      const usedColors = new Set(
+        current
+          .map((node) => node.data?.color)
+          .filter((value) => typeof value === 'string' && value.length > 0),
+      )
+      const availableColors = CLASS_COLOR_PALETTE.filter(
+        (color) => !usedColors.has(color),
+      )
+      const nextColor =
+        availableColors.length > 0
+          ? availableColors[Math.floor(Math.random() * availableColors.length)]
+          : getRandomPaletteColor()
+
       return [
         ...current,
         {
@@ -293,7 +308,7 @@ function App() {
           data: {
             label: `Class${current.length + 1}`,
             attributes: [],
-            color: getRandomPaletteColor(),
+            color: nextColor,
           },
         },
       ]
@@ -376,6 +391,28 @@ function App() {
           }
 
           const key = side === 'A' ? 'multiplicityA' : 'multiplicityB'
+          return {
+            ...edge,
+            data: {
+              ...(edge.data ?? {}),
+              [key]: nextValue,
+            },
+          }
+        }),
+      )
+    },
+    [setEdges],
+  )
+
+  const onUpdateAssociationRole = useCallback(
+    (edgeId, side, nextValue) => {
+      setEdges((current) =>
+        current.map((edge) => {
+          if (edge.id !== edgeId) {
+            return edge
+          }
+
+          const key = side === 'A' ? 'roleA' : 'roleB'
           return {
             ...edge,
             data: {
@@ -829,6 +866,7 @@ function App() {
             onRenameAssociation={onRenameAssociation}
             onDeleteAssociation={onDeleteAssociation}
             onUpdateAssociationMultiplicity={onUpdateAssociationMultiplicity}
+            onUpdateAssociationRole={onUpdateAssociationRole}
             onHighlightAssociation={onHighlightAssociation}
           />
           <main className="flex-1 min-w-0 bg-base-100">

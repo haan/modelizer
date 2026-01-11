@@ -6,6 +6,7 @@ export default function RefsPanel({
   onRenameAssociation,
   onDeleteAssociation,
   onUpdateAssociationMultiplicity,
+  onUpdateAssociationRole,
   onHighlightAssociation,
 }) {
   return (
@@ -19,6 +20,7 @@ export default function RefsPanel({
         onRenameAssociation={onRenameAssociation}
         onDeleteAssociation={onDeleteAssociation}
         onUpdateAssociationMultiplicity={onUpdateAssociationMultiplicity}
+        onUpdateAssociationRole={onUpdateAssociationRole}
         onHighlightAssociation={onHighlightAssociation}
       />
     </div>

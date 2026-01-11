@@ -18,6 +18,7 @@ export default function InfoPanel({
   onRenameAssociation,
   onDeleteAssociation,
   onUpdateAssociationMultiplicity,
+  onUpdateAssociationRole,
   onHighlightAssociation,
 }) {
   return (
@@ -46,6 +47,7 @@ export default function InfoPanel({
             onRenameAssociation={onRenameAssociation}
             onDeleteAssociation={onDeleteAssociation}
             onUpdateAssociationMultiplicity={onUpdateAssociationMultiplicity}
+            onUpdateAssociationRole={onUpdateAssociationRole}
             onHighlightAssociation={onHighlightAssociation}
           />
         ) : (

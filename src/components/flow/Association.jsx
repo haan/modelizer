@@ -1,6 +1,7 @@
 import { EdgeLabelRenderer, useStore } from 'reactflow'
 import { AssociationLabel } from './AssociationLabel.jsx'
 import { MultiplicityLabel } from './MultiplicityLabel.jsx'
+import { RoleLabel } from './RoleLabel.jsx'
 import { getAssociationLayout } from './associationUtils.js'
 
 function getEndpointLabelTransform(position, x, y) {
@@ -8,13 +9,30 @@ function getEndpointLabelTransform(position, x, y) {
 
   switch (position) {
     case 'left':
-      return `translate(-100%, 0%) translate(${x - offset}px, ${y+1}px)`
+      return `translate(-100%, 0%) translate(${x - offset}px, ${y + 1}px)`
     case 'right':
-      return `translate(0%, 0%) translate(${x + offset}px, ${y+1}px)`
+      return `translate(0%, 0%) translate(${x + offset}px, ${y + 1}px)`
     case 'top':
-      return `translate(0%, -100%) translate(${x+1}px, ${y - offset}px)`
+      return `translate(0%, -100%) translate(${x + 1}px, ${y - offset}px)`
     case 'bottom':
-      return `translate(0%, 0%) translate(${x+1}px, ${y + offset}px)`
+      return `translate(0%, 0%) translate(${x + 1}px, ${y + offset}px)`
+    default:
+      return `translate(-50%, -50%) translate(${x}px, ${y}px)`
+  }
+}
+
+function getRoleLabelTransform(position, x, y) {
+  const offset = 0
+
+  switch (position) {
+    case 'left':
+      return `translate(-100%, -100%) translate(${x - offset}px, ${y - 1}px)`
+    case 'right':
+      return `translate(0%, -100%) translate(${x + offset}px, ${y - 1}px)`
+    case 'top':
+      return `translate(-100%, -100%) translate(${x - 1}px, ${y - offset}px)`
+    case 'bottom':
+      return `translate(-100%, 0%) translate(${x - 1}px, ${y + offset}px)`
     default:
       return `translate(-50%, -50%) translate(${x}px, ${y}px)`
   }
@@ -39,6 +57,8 @@ export function Association({
 
   const multiplicityA = data?.multiplicityA ?? ''
   const multiplicityB = data?.multiplicityB ?? ''
+  const roleA = data?.roleA ?? ''
+  const roleB = data?.roleB ?? ''
   const name = data?.name ?? ''
   const strokeClass = selected ? 'text-primary' : 'text-base-content/70'
   const {
@@ -89,9 +109,21 @@ export function Association({
             label={multiplicityB}
           />
         ) : null}
+        {roleA ? (
+          <RoleLabel
+            transform={getRoleLabelTransform(sourcePos, sourceX, sourceY)}
+            label={roleA}
+          />
+        ) : null}
+        {roleB ? (
+          <RoleLabel
+            transform={getRoleLabelTransform(targetPos, targetX, targetY)}
+            label={roleB}
+          />
+        ) : null}
         {name ? (
           <AssociationLabel
-            transform={`translate(-50%, -100%) translate(${labelX}px, ${labelY-1}px)`}
+            transform={`translate(-50%, -100%) translate(${labelX}px, ${labelY - 1}px)`}
             label={name}
           />
         ) : null}

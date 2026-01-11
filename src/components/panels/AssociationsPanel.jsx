@@ -12,6 +12,7 @@ export default function AssociationsPanel({
   onRenameAssociation,
   onDeleteAssociation,
   onUpdateAssociationMultiplicity,
+  onUpdateAssociationRole,
   onHighlightAssociation,
 }) {
   const nodeLabels = new Map(
@@ -66,6 +67,7 @@ export default function AssociationsPanel({
             onRenameAssociation={onRenameAssociation}
             onDeleteAssociation={onDeleteAssociation}
             onUpdateAssociationMultiplicity={onUpdateAssociationMultiplicity}
+            onUpdateAssociationRole={onUpdateAssociationRole}
             onHighlightAssociation={onHighlightAssociation}
           />
         )

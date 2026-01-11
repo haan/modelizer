@@ -17,6 +17,7 @@ export default function AssociationsPanelItem({
   onRenameAssociation,
   onDeleteAssociation,
   onUpdateAssociationMultiplicity,
+  onUpdateAssociationRole,
   onHighlightAssociation,
 }) {
   const canRename = edge.type !== 'associativeAssociation'
@@ -25,6 +26,8 @@ export default function AssociationsPanelItem({
   const label = edge.data?.name ?? ''
   const multiplicityA = edge.data?.multiplicityA ?? ''
   const multiplicityB = edge.data?.multiplicityB ?? ''
+  const roleA = edge.data?.roleA ?? ''
+  const roleB = edge.data?.roleB ?? ''
   const [isEditing, setIsEditing] = useState(false)
   const [draft, setDraft] = useState(label)
   const inputRef = useRef(null)
@@ -262,7 +265,7 @@ export default function AssociationsPanelItem({
                       <path d="M8 12h.01" />
                     </svg>
                     <div className="font-bold text-subtitle">
-                      Cardinality
+                      Multiplicity
                     </div>
                   </div>
                   <div className="p-1">
@@ -286,6 +289,23 @@ export default function AssociationsPanelItem({
                         </option>
                       ))}
                     </select>
+                  </div>
+                  <div className="flex flex-row items-center gap-1">
+                    <div className="font-bold text-subtitle">Role</div>
+                  </div>
+                  <div className="p-1">
+                    <input
+                      className="input w-full rounded-md border border-base-content/20 bg-transparent px-2 py-1 text-xs focus:outline-none"
+                      value={roleA}
+                      placeholder="Role"
+                      onChange={(event) =>
+                        onUpdateAssociationRole?.(
+                          edge.id,
+                          'A',
+                          event.target.value,
+                        )
+                      }
+                    />
                   </div>
                 </>
               ) : null}
@@ -339,12 +359,12 @@ export default function AssociationsPanelItem({
                       <path d="M8 12h.01" />
                     </svg>
                     <div className="font-bold text-subtitle">
-                      Cardinality
+                      Multiplicity
                     </div>
                   </div>
                   <div className="p-1">
                     <select
-                      className="select select-bordered select-xs w-full appearance-none outline-offset-2 focus:ring-0 focus:ring-offset-0"
+                      className="select select-xs"
                       value={multiplicityBValue}
                       onChange={(event) =>
                         onUpdateAssociationMultiplicity?.(
@@ -363,6 +383,23 @@ export default function AssociationsPanelItem({
                         </option>
                       ))}
                     </select>
+                  </div>
+                  <div className="flex flex-row items-center gap-1">
+                    <div className="font-bold text-subtitle">Role</div>
+                  </div>
+                  <div className="p-1">
+                    <input
+                      className="input w-full rounded-md border border-base-content/20 bg-transparent px-2 py-1 text-xs focus:outline-none"
+                      value={roleB}
+                      placeholder="Role"
+                      onChange={(event) =>
+                        onUpdateAssociationRole?.(
+                          edge.id,
+                          'B',
+                          event.target.value,
+                        )
+                      }
+                    />
                   </div>
                 </>
               ) : null}

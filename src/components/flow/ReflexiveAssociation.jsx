@@ -1,6 +1,7 @@
 import { EdgeLabelRenderer, useStore } from 'reactflow'
 import { AssociationLabel } from './AssociationLabel.jsx'
 import { MultiplicityLabel } from './MultiplicityLabel.jsx'
+import { RoleLabel } from './RoleLabel.jsx'
 
 function distance(a, b) {
   return Math.sqrt((b.x - a.x) ** 2 + (b.y - a.y) ** 2)
@@ -96,6 +97,8 @@ export function ReflexiveAssociation({
 
   const multiplicityA = data?.multiplicityA ?? ''
   const multiplicityB = data?.multiplicityB ?? ''
+  const roleA = data?.roleA ?? ''
+  const roleB = data?.roleB ?? ''
   const name = data?.name ?? ''
   const strokeClass = selected ? 'text-primary' : 'text-base-content/70'
 
@@ -125,6 +128,18 @@ export function ReflexiveAssociation({
           <MultiplicityLabel
             transform={`translate(0%, -100%) translate(${rightX+1}px, ${endY}px)`}
             label={multiplicityB}
+          />
+        ) : null}
+        {roleA ? (
+          <RoleLabel
+            transform={`translate(-100%, -100%) translate(${startX}px, ${startY - 12}px)`}
+            label={roleA}
+          />
+        ) : null}
+        {roleB ? (
+          <RoleLabel
+            transform={`translate(0%, -100%) translate(${rightX}px, ${endY - 12}px)`}
+            label={roleB}
           />
         ) : null}
         {name ? (
