@@ -1,0 +1,141 @@
+{
+  "version": 1,
+  "modelName": "Blog",
+  "nodes": [
+    {
+      "id": "class-user",
+      "type": "class",
+      "position": { "x": 0, "y": 220 },
+      "data": {
+        "label": "User",
+        "color": "#f44336",
+        "attributes": [
+          { "id": "attr-user-id", "name": "id", "type": "int", "nullable": false, "primaryKey": true },
+          { "id": "attr-user-name", "name": "name", "type": "varchar(255)", "nullable": false, "primaryKey": false },
+          { "id": "attr-user-email", "name": "email", "type": "varchar(255)", "nullable": false, "primaryKey": false },
+          { "id": "attr-user-created", "name": "created_at", "type": "timestamp", "nullable": false, "primaryKey": false }
+        ]
+      }
+    },
+    {
+      "id": "class-post",
+      "type": "class",
+      "position": { "x": 300, "y": 220 },
+      "data": {
+        "label": "Post",
+        "color": "#e91e63",
+        "attributes": [
+          { "id": "attr-post-id", "name": "id", "type": "int", "nullable": false, "primaryKey": true },
+          { "id": "attr-post-title", "name": "title", "type": "varchar(255)", "nullable": false, "primaryKey": false },
+          { "id": "attr-post-body", "name": "body", "type": "text", "nullable": false, "primaryKey": false },
+          { "id": "attr-post-published", "name": "published_at", "type": "timestamp", "nullable": true, "primaryKey": false },
+          { "id": "attr-post-author", "name": "author_id", "type": "int", "nullable": false, "primaryKey": false }
+        ]
+      }
+    },
+    {
+      "id": "class-comment",
+      "type": "class",
+      "position": { "x": 600, "y": 220 },
+      "data": {
+        "label": "Comment",
+        "color": "#9c27b0",
+        "attributes": [
+          { "id": "attr-comment-id", "name": "id", "type": "int", "nullable": false, "primaryKey": true },
+          { "id": "attr-comment-body", "name": "body", "type": "text", "nullable": false, "primaryKey": false },
+          { "id": "attr-comment-post", "name": "post_id", "type": "int", "nullable": false, "primaryKey": false },
+          { "id": "attr-comment-author", "name": "author_id", "type": "int", "nullable": false, "primaryKey": false }
+        ]
+      }
+    },
+    {
+      "id": "class-tag",
+      "type": "class",
+      "position": { "x": 300, "y": 0 },
+      "data": {
+        "label": "Tag",
+        "color": "#673ab7",
+        "attributes": [
+          { "id": "attr-tag-id", "name": "id", "type": "int", "nullable": false, "primaryKey": true },
+          { "id": "attr-tag-name", "name": "name", "type": "varchar(255)", "nullable": false, "primaryKey": false }
+        ]
+      }
+    },
+    {
+      "id": "class-posttag",
+      "type": "class",
+      "position": { "x": 300, "y": 440 },
+      "data": {
+        "label": "PostTag",
+        "color": "#3f51b5",
+        "attributes": [
+          { "id": "attr-posttag-post", "name": "post_id", "type": "int", "nullable": false, "primaryKey": true },
+          { "id": "attr-posttag-tag", "name": "tag_id", "type": "int", "nullable": false, "primaryKey": true }
+        ]
+      }
+    }
+  ],
+  "edges": [
+    {
+      "id": "edge-user-post",
+      "type": "association",
+      "source": "class-user",
+      "sourceHandle": "right-source",
+      "target": "class-post",
+      "targetHandle": "left-target",
+      "data": {
+        "multiplicityA": "0..*",
+        "multiplicityB": "1..1",
+        "name": "writes",
+        "type": "association",
+        "roleA": "author",
+        "roleB": "posts"
+      }
+    },
+    {
+      "id": "edge-post-comment",
+      "type": "association",
+      "source": "class-post",
+      "sourceHandle": "right-source",
+      "target": "class-comment",
+      "targetHandle": "left-target",
+      "data": {
+        "multiplicityA": "1..1",
+        "multiplicityB": "0..*",
+        "name": "has",
+        "type": "association",
+        "roleA": "post",
+        "roleB": "comments"
+      }
+    },
+    {
+      "id": "edge-post-tag",
+      "type": "association",
+      "source": "class-post",
+      "sourceHandle": "top-source",
+      "target": "class-tag",
+      "targetHandle": "bottom-target",
+      "data": {
+        "multiplicityA": "0..*",
+        "multiplicityB": "0..*",
+        "name": "tagged",
+        "type": "association",
+        "roleA": "post",
+        "roleB": "tag"
+      }
+    },
+    {
+      "id": "edge-posttag-assoc",
+      "type": "associativeAssociation",
+      "source": "class-posttag",
+      "sourceHandle": "top-source",
+      "target": "assoc-edge-edge-post-tag",
+      "targetHandle": "association-target",
+      "data": {
+        "name": "PostTag",
+        "type": "associative",
+        "autoName": true
+      }
+    }
+  ]
+}

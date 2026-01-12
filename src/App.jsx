@@ -5,6 +5,7 @@ import ReactFlow, {
   ConnectionMode,
   ConnectionLineType,
   Controls,
+  MiniMap,
   addEdge,
   applyEdgeChanges,
   useEdgesState,
@@ -14,6 +15,7 @@ import { toPng } from 'html-to-image'
 import { edgeTypes, nodeTypes } from './flowTypes.js'
 import { CLASS_COLOR_PALETTE, getRandomPaletteColor } from './classPalette.js'
 import { createAttribute, normalizeAttributes } from './attributes.js'
+import { MODEL_EXAMPLES } from './examples.js'
 import { InfoPanel, Navbar, Sidebar } from './components/layout/index.js'
 import { getAssociationLayout } from './components/flow/associationUtils.js'
 
@@ -25,6 +27,20 @@ const CLASS_NODE_TYPE = 'class'
 const MIN_INFO_WIDTH = 350
 const HIGHLIGHT_ZOOM = 1.4
 const ASSOCIATION_NODE_SIZE = 1
+const MODEL_FILE_EXTENSION = '.mdlz'
+const MODEL_VERSION = 1
+
+const sanitizeFileName = (value) => {
+  if (!value) {
+    return ''
+  }
+
+  return value
+    .trim()
+    .replace(/[<>:"/\\|?*\x00-\x1F]+/g, '-')
+    .replace(/\s+/g, ' ')
+    .trim()
+}
 
 function getFloatingGroupKey(edge) {
   if (!edge.source || !edge.target) {
@@ -113,12 +129,31 @@ const initialEdges = []
 function App() {
   const [nodes, setNodes, onNodesChange] = useNodesState(initialNodes)
   const [edges, setEdges] = useEdgesState(normalizeEdges(initialEdges))
+  const [modelName, setModelName] = useState('Untitled model')
   const [activeSidebarItem, setActiveSidebarItem] = useState('tables')
   const reactFlowWrapper = useRef(null)
   const [reactFlowInstance, setReactFlowInstance] = useState(null)
   const [isConnecting, setIsConnecting] = useState(false)
   const [infoWidth, setInfoWidth] = useState(360)
-  const [isNewDialogOpen, setIsNewDialogOpen] = useState(false)
+  const [isConfirmDialogOpen, setIsConfirmDialogOpen] = useState(false)
+  const [showMiniMap, setShowMiniMap] = useState(false)
+  const [showBackground, setShowBackground] = useState(true)
+  const [showAccentColors, setShowAccentColors] = useState(true)
+  const [isDirty, setIsDirty] = useState(false)
+  const fileHandleRef = useRef(null)
+  const lastSavedRef = useRef(
+    JSON.stringify(
+      {
+        version: MODEL_VERSION,
+        modelName: 'Untitled model',
+        nodes: [],
+        edges: [],
+      },
+      null,
+      2,
+    ),
+  )
+  const confirmActionRef = useRef(null)
   const resizeState = useRef(null)
 
   useEffect(() => {
@@ -152,6 +187,33 @@ function App() {
     event.preventDefault()
     resizeState.current = { startX: event.clientX, startWidth: infoWidth }
   }, [infoWidth])
+
+  const buildModelPayload = useCallback(() => {
+    const cleanedNodes = nodes.map((node) => ({
+      ...node,
+      selected: false,
+    }))
+    const cleanedEdges = edges.map((edge) => ({
+      ...edge,
+      selected: false,
+    }))
+
+    return {
+      version: MODEL_VERSION,
+      modelName: modelName || 'Untitled model',
+      nodes: cleanedNodes,
+      edges: cleanedEdges,
+    }
+  }, [edges, modelName, nodes])
+
+  const getSerializedModel = useCallback(
+    () => JSON.stringify(buildModelPayload(), null, 2),
+    [buildModelPayload],
+  )
+
+  useEffect(() => {
+    setIsDirty(getSerializedModel() !== lastSavedRef.current)
+  }, [getSerializedModel])
 
   const isAssociationHelperNode = useCallback(
     (nodeId) => {
@@ -724,20 +786,314 @@ function App() {
     [nodes, reactFlowInstance, setNodes],
   )
 
+  const applyLoadedModel = useCallback(
+    (payload, handle, serialized) => {
+      const nextNodes = (payload?.nodes ?? []).map((node, index) => {
+        const nodeId = node?.id ?? `class-${Date.now()}-${index}`
+        const data = node?.data ?? {}
+
+        return {
+          ...node,
+          id: nodeId,
+          type: node?.type ?? CLASS_NODE_TYPE,
+          selected: false,
+          data: {
+            ...data,
+            label: typeof data.label === 'string' ? data.label : '',
+            attributes: normalizeAttributes(nodeId, data.attributes),
+          },
+        }
+      })
+      const nextEdges = normalizeEdges(
+        (payload?.edges ?? []).map((edge, index) => ({
+          ...edge,
+          id: edge?.id ?? `edge-${Date.now()}-${index}`,
+          selected: false,
+          data: edge?.data ?? {},
+        })),
+      )
+      const nextModelName =
+        typeof payload?.modelName === 'string' && payload.modelName.trim()
+          ? payload.modelName
+          : 'Untitled model'
+      const nextSerialized =
+        serialized ??
+        JSON.stringify(
+          {
+            version: payload?.version ?? MODEL_VERSION,
+            modelName: nextModelName,
+            nodes: nextNodes,
+            edges: nextEdges,
+          },
+          null,
+          2,
+        )
+
+      setNodes(nextNodes)
+      setEdges(nextEdges)
+      setModelName(nextModelName)
+      setActiveSidebarItem('tables')
+      fileHandleRef.current = handle ?? null
+      lastSavedRef.current = nextSerialized
+      setIsDirty(false)
+    },
+    [setEdges, setModelName, setNodes],
+  )
+
+  const requestDiscardChanges = useCallback(
+    (action) => {
+      if (!isDirty) {
+        action()
+        return
+      }
+      confirmActionRef.current = action
+      setIsConfirmDialogOpen(true)
+    },
+    [isDirty],
+  )
+
+  const onConfirmDiscardChanges = useCallback(() => {
+    setIsConfirmDialogOpen(false)
+    const action = confirmActionRef.current
+    confirmActionRef.current = null
+    action?.()
+  }, [])
+
+  const onCancelDiscardChanges = useCallback(() => {
+    confirmActionRef.current = null
+  }, [])
+
   const onNewModel = useCallback(() => {
     setNodes([])
     setEdges(normalizeEdges([]))
     setActiveSidebarItem('tables')
+    setModelName('Untitled model')
+    fileHandleRef.current = null
+    lastSavedRef.current = JSON.stringify(
+      {
+        version: MODEL_VERSION,
+        modelName: 'Untitled model',
+        nodes: [],
+        edges: [],
+      },
+      null,
+      2,
+    )
+    setIsDirty(false)
   }, [setEdges, setNodes])
 
   const onRequestNewModel = useCallback(() => {
-    if (nodes.length || edges.length) {
-      setIsNewDialogOpen(true)
+    requestDiscardChanges(onNewModel)
+  }, [onNewModel, requestDiscardChanges])
+
+  const onOpenModel = useCallback(async () => {
+    const runOpen = async () => {
+      const canPickOpen =
+        typeof window !== 'undefined' && 'showOpenFilePicker' in window
+      let fileHandle = null
+      let fileText = null
+
+      if (canPickOpen) {
+        try {
+          const [handle] = await window.showOpenFilePicker({
+            multiple: false,
+            types: [
+              {
+                description: 'Modelizer Model',
+                accept: { 'application/json': [MODEL_FILE_EXTENSION] },
+              },
+            ],
+          })
+          fileHandle = handle
+          const file = await handle.getFile()
+          fileText = await file.text()
+        } catch (error) {
+          if (error?.name === 'AbortError') {
+            return
+          }
+          console.error('Failed to open model', error)
+          return
+        }
+      } else {
+        fileText = await new Promise((resolve) => {
+          const input = document.createElement('input')
+          input.type = 'file'
+          input.accept = `${MODEL_FILE_EXTENSION},application/json`
+          input.onchange = () => {
+            const file = input.files?.[0]
+            if (!file) {
+              resolve(null)
+              return
+            }
+            file
+              .text()
+              .then(resolve)
+              .catch(() => resolve(null))
+          }
+          input.click()
+        })
+      }
+
+      if (!fileText) {
+        return
+      }
+
+      let parsed
+      try {
+        parsed = JSON.parse(fileText)
+      } catch (error) {
+        console.error('Invalid model file', error)
+        return
+      }
+
+      if (!parsed || typeof parsed !== 'object') {
+        return
+      }
+
+      applyLoadedModel(parsed, fileHandle)
+    }
+
+    requestDiscardChanges(() => {
+      runOpen()
+    })
+  }, [applyLoadedModel, requestDiscardChanges])
+
+  const onLoadExample = useCallback(
+    (example) => {
+      if (!example?.model) {
+        return
+      }
+
+      requestDiscardChanges(() => {
+        applyLoadedModel(example.model, null)
+      })
+    },
+    [applyLoadedModel, requestDiscardChanges],
+  )
+
+  const onSaveModelAs = useCallback(async () => {
+    const serialized = getSerializedModel()
+    const normalizedName = sanitizeFileName(modelName || 'Untitled model')
+    const fileName = normalizedName
+      ? `${normalizedName}${MODEL_FILE_EXTENSION}`
+      : `untitled-model${MODEL_FILE_EXTENSION}`
+    const canPickSave =
+      typeof window !== 'undefined' && 'showSaveFilePicker' in window
+
+    if (canPickSave) {
+      try {
+        const handle = await window.showSaveFilePicker({
+          suggestedName: fileName,
+          types: [
+            {
+              description: 'Modelizer Model',
+              accept: { 'application/json': [MODEL_FILE_EXTENSION] },
+            },
+          ],
+        })
+        const writable = await handle.createWritable()
+        await writable.write(serialized)
+        await writable.close()
+        fileHandleRef.current = handle
+        lastSavedRef.current = serialized
+        setIsDirty(false)
+      } catch (error) {
+        if (error?.name !== 'AbortError') {
+          console.error('Failed to save model', error)
+        }
+      }
       return
     }
 
-    onNewModel()
-  }, [edges.length, nodes.length, onNewModel])
+    const blob = new Blob([serialized], { type: 'application/json' })
+    const url = URL.createObjectURL(blob)
+    const link = document.createElement('a')
+    link.href = url
+    link.download = fileName
+    link.click()
+    URL.revokeObjectURL(url)
+    lastSavedRef.current = serialized
+    setIsDirty(false)
+  }, [getSerializedModel, modelName])
+
+  const onSaveModel = useCallback(async () => {
+    if (fileHandleRef.current?.createWritable) {
+      const serialized = getSerializedModel()
+      try {
+        const writable = await fileHandleRef.current.createWritable()
+        await writable.write(serialized)
+        await writable.close()
+        lastSavedRef.current = serialized
+        setIsDirty(false)
+      } catch (error) {
+        if (error?.name !== 'AbortError') {
+          console.error('Failed to save model', error)
+        }
+      }
+      return
+    }
+
+    onSaveModelAs()
+  }, [getSerializedModel, onSaveModelAs])
+
+  useEffect(() => {
+    const handleKeyDown = (event) => {
+      const target = event.target
+      const isEditable =
+        target instanceof HTMLElement &&
+        (target.isContentEditable ||
+          target.tagName === 'INPUT' ||
+          target.tagName === 'TEXTAREA' ||
+          target.tagName === 'SELECT')
+      if (isEditable) {
+        return
+      }
+
+      const key = event.key?.toLowerCase()
+      if (event.ctrlKey || event.metaKey) {
+        if (key === 's') {
+          event.preventDefault()
+          onSaveModel()
+        }
+        if (key === 'o') {
+          event.preventDefault()
+          onOpenModel()
+        }
+        if (key === 'n') {
+          event.preventDefault()
+          onRequestNewModel()
+        }
+      }
+
+      if (key === 'delete' || key === 'backspace') {
+        const selectedNodes = nodes.filter((node) => node.selected)
+        if (selectedNodes.length > 0) {
+          event.preventDefault()
+          selectedNodes.forEach((node) => onDeleteClass(node.id))
+          return
+        }
+
+        const selectedEdges = edges.filter((edge) => edge.selected)
+        if (selectedEdges.length > 0) {
+          event.preventDefault()
+          selectedEdges.forEach((edge) => onDeleteAssociation(edge.id))
+        }
+      }
+    }
+
+    window.addEventListener('keydown', handleKeyDown)
+    return () => {
+      window.removeEventListener('keydown', handleKeyDown)
+    }
+  }, [
+    edges,
+    nodes,
+    onDeleteAssociation,
+    onDeleteClass,
+    onOpenModel,
+    onRequestNewModel,
+    onSaveModel,
+  ])
 
   const clearAssociationHighlight = useCallback(() => {
     setEdges((current) =>
@@ -869,10 +1225,17 @@ function App() {
       .filter(Boolean)
   }, [edges, nodes, reactFlowInstance])
 
-  const flowNodes = useMemo(
-    () => [...nodes, ...associationEdgeNodes],
-    [nodes, associationEdgeNodes],
-  )
+  const flowNodes = useMemo(() => {
+    const decoratedNodes = nodes.map((node) =>
+      node.type === CLASS_NODE_TYPE
+        ? {
+            ...node,
+            data: { ...node.data, showAccentColors },
+          }
+        : node,
+    )
+    return [...decoratedNodes, ...associationEdgeNodes]
+  }, [associationEdgeNodes, nodes, showAccentColors])
 
   const onExportPng = useCallback(async () => {
     if (!reactFlowWrapper.current) {
@@ -911,19 +1274,35 @@ function App() {
         },
       })
 
+      const normalizedName = (modelName ?? 'Untitled model')
+        .trim()
+        .replace(/[<>:"/\\|?*\x00-\x1F]+/g, '-')
+        .replace(/\s+/g, ' ')
+        .trim()
+      const fileName = normalizedName
+        ? `${normalizedName}.png`
+        : 'untitled-model.png'
       const link = document.createElement('a')
       link.href = dataUrl
-      link.download = 'model.png'
+      link.download = fileName
       link.click()
     } catch (error) {
       console.error('Failed to export PNG', error)
     }
-  }, [reactFlowInstance])
+  }, [modelName, reactFlowInstance])
 
   const onSidebarSelect = useCallback(
     (item) => {
       if (item === 'new') {
         onRequestNewModel()
+        return
+      }
+      if (item === 'open') {
+        onOpenModel()
+        return
+      }
+      if (item === 'save') {
+        onSaveModel()
         return
       }
       if (item === 'export') {
@@ -932,13 +1311,32 @@ function App() {
       }
       setActiveSidebarItem(item)
     },
-    [onExportPng, onRequestNewModel],
+    [onExportPng, onOpenModel, onRequestNewModel, onSaveModel],
   )
 
   return (
     <div className="min-h-screen bg-base-200 text-base-content">
       <div className="flex min-h-screen flex-col">
-        <Navbar onNewModel={onRequestNewModel} onExportPng={onExportPng} />
+        <Navbar
+          modelName={modelName}
+          onRenameModel={setModelName}
+          onNewModel={onRequestNewModel}
+          onOpenModel={onOpenModel}
+          onSaveModel={onSaveModel}
+          onSaveModelAs={onSaveModelAs}
+          onExportPng={onExportPng}
+          examples={MODEL_EXAMPLES}
+          onLoadExample={onLoadExample}
+          showMiniMap={showMiniMap}
+          showBackground={showBackground}
+          showAccentColors={showAccentColors}
+          onToggleMiniMap={() => setShowMiniMap((current) => !current)}
+          onToggleBackground={() => setShowBackground((current) => !current)}
+          onToggleAccentColors={() =>
+            setShowAccentColors((current) => !current)
+          }
+          isDirty={isDirty}
+        />
         <div className="flex flex-1 min-h-0">
           <Sidebar
             activeItem={activeSidebarItem}
@@ -949,22 +1347,23 @@ function App() {
             onResizeStart={onResizeStart}
             activeItem={activeSidebarItem}
             nodes={nodes}
-            edges={edges}
-            onAddClass={onAddClass}
-            onRenameClass={onRenameClass}
-            onReorderClasses={onReorderClasses}
-            onReorderAttributes={onReorderAttributes}
-            onUpdateAttribute={onUpdateAttribute}
-            onAddAttribute={onAddAttribute}
-            onDeleteAttribute={onDeleteAttribute}
-            onUpdateClassColor={onUpdateClassColor}
-            onDeleteClass={onDeleteClass}
-            onHighlightClass={onHighlightClass}
-            onRenameAssociation={onRenameAssociation}
-            onDeleteAssociation={onDeleteAssociation}
-            onUpdateAssociationMultiplicity={onUpdateAssociationMultiplicity}
-            onUpdateAssociationRole={onUpdateAssociationRole}
-            onHighlightAssociation={onHighlightAssociation}
+          edges={edges}
+          onAddClass={onAddClass}
+          onRenameClass={onRenameClass}
+          onReorderClasses={onReorderClasses}
+          onReorderAttributes={onReorderAttributes}
+          onUpdateAttribute={onUpdateAttribute}
+          onAddAttribute={onAddAttribute}
+          onDeleteAttribute={onDeleteAttribute}
+          onUpdateClassColor={onUpdateClassColor}
+          onDeleteClass={onDeleteClass}
+          onHighlightClass={onHighlightClass}
+          showAccentColors={showAccentColors}
+          onRenameAssociation={onRenameAssociation}
+          onDeleteAssociation={onDeleteAssociation}
+          onUpdateAssociationMultiplicity={onUpdateAssociationMultiplicity}
+          onUpdateAssociationRole={onUpdateAssociationRole}
+          onHighlightAssociation={onHighlightAssociation}
           />
           <main className="flex-1 min-w-0 bg-base-100">
             <div
@@ -990,27 +1389,37 @@ function App() {
                 defaultEdgeOptions={{ interactionWidth: 20 }}
               >
                 <Controls />
-                <Background gap={16} size={1} />
+                {showMiniMap ? <MiniMap /> : null}
+                {showBackground ? <Background gap={16} size={1} /> : null}
               </ReactFlow>
             </div>
           </main>
         </div>
       </div>
-      <AlertDialog.Root open={isNewDialogOpen} onOpenChange={setIsNewDialogOpen}>
+      <AlertDialog.Root
+        open={isConfirmDialogOpen}
+        onOpenChange={(open) => {
+          setIsConfirmDialogOpen(open)
+          if (!open) {
+            confirmActionRef.current = null
+          }
+        }}
+      >
         <AlertDialog.Portal>
           <AlertDialog.Overlay className="fixed inset-0 z-40 bg-black/40" />
           <AlertDialog.Content className="fixed left-1/2 top-1/2 z-50 w-[320px] -translate-x-1/2 -translate-y-1/2 rounded-lg border border-base-content/20 bg-base-100 p-4 shadow-xl">
             <AlertDialog.Title className="text-sm font-semibold">
-              Start a new model?
+              Discard changes?
             </AlertDialog.Title>
             <AlertDialog.Description className="mt-2 text-xs text-base-content/70">
-              Your current model will be cleared. This action cannot be undone.
+              Your unsaved changes will be lost.
             </AlertDialog.Description>
             <div className="mt-4 flex justify-end gap-2">
               <AlertDialog.Cancel asChild>
                 <button
                   type="button"
                   className="inline-flex h-7 items-center justify-center rounded-md px-3 text-xs font-medium text-base-content/70 transition-colors hover:bg-base-200 focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
+                  onClick={onCancelDiscardChanges}
                 >
                   Cancel
                 </button>
@@ -1019,12 +1428,9 @@ function App() {
                 <button
                   type="button"
                   className="inline-flex h-7 items-center justify-center rounded-md px-3 text-xs font-medium text-red-700 transition-colors hover:bg-base-200 focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
-                  onClick={() => {
-                    setIsNewDialogOpen(false)
-                    onNewModel()
-                  }}
+                  onClick={onConfirmDiscardChanges}
                 >
-                  New model
+                  Discard
                 </button>
               </AlertDialog.Action>
             </div>

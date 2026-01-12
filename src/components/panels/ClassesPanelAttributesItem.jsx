@@ -1,3 +1,4 @@
+import { useState } from 'react'
 import { useSortable } from '@dnd-kit/sortable'
 import { CSS } from '@dnd-kit/utilities'
 import Input from '../ui/Input.jsx'
@@ -34,6 +35,7 @@ export default function ClassesPanelAttributesItem({
   }
   const isNullable = Boolean(nullable)
   const isPrimaryKey = Boolean(primaryKey)
+  const [isOpen, setIsOpen] = useState(false)
   const typeValue = ATTRIBUTE_TYPE_OPTIONS.some(
     (option) => option.value === type,
   )
@@ -49,21 +51,37 @@ export default function ClassesPanelAttributesItem({
         isDragging ? 'opacity-60' : ''
       }`}
     >
-      <details className="group/attribute">
-        <summary className="flex list-none items-center gap-2 rounded-md px-1 py-1 cursor-pointer [&::-webkit-details-marker]:hidden">
-          <svg
-            xmlns="http://www.w3.org/2000/svg"
-            viewBox="0 0 24 24"
-            fill="none"
-            stroke="currentColor"
-            strokeWidth="2"
-            strokeLinecap="round"
-            strokeLinejoin="round"
-            className="h-3.5 w-3.5 opacity-60 transition-transform group-open/attribute:rotate-90"
+      <details className="group/attribute" open={isOpen}>
+        <summary
+          className="flex list-none items-center gap-2 rounded-md px-1 py-1 cursor-default [&::-webkit-details-marker]:hidden"
+          onClick={(event) => event.preventDefault()}
+        >
+          <button
+            type="button"
+            className="inline-flex h-5 w-5 items-center justify-center rounded-md text-base-content/60 transition-colors hover:bg-base-300 hover:text-base-content"
+            aria-label={isOpen ? 'Collapse attribute' : 'Expand attribute'}
+            aria-expanded={isOpen}
+            onClick={(event) => {
+              event.preventDefault()
+              event.stopPropagation()
+              setIsOpen((open) => !open)
+            }}
+            onMouseDown={(event) => event.stopPropagation()}
+          >
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="2"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              className="h-3.5 w-3.5 opacity-60 transition-transform group-open/attribute:rotate-90"
               aria-hidden="true"
             >
               <path d="M9 18l6-6-6-6" />
             </svg>
+          </button>
           <button
             ref={setActivatorNodeRef}
             type="button"

@@ -25,6 +25,7 @@ export default function ClassesPanel({
   onUpdateClassColor,
   onDeleteClass,
   onHighlightClass,
+  showAccentColors,
 }) {
   const sensors = useSensors(
     useSensor(PointerSensor, {
@@ -129,6 +130,7 @@ export default function ClassesPanel({
               onUpdateClassColor={onUpdateClassColor}
               onDeleteClass={onDeleteClass}
               onHighlightClass={onHighlightClass}
+              showAccentColors={showAccentColors}
             />
           ))}
         </SortableContext>

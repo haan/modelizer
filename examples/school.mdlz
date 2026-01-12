@@ -1,0 +1,139 @@
+{
+  "version": 1,
+  "modelName": "School",
+  "nodes": [
+    {
+      "id": "class-student",
+      "type": "class",
+      "position": { "x": 0, "y": 220 },
+      "data": {
+        "label": "Student",
+        "color": "#9c27b0",
+        "attributes": [
+          { "id": "attr-student-id", "name": "id", "type": "int", "nullable": false, "primaryKey": true },
+          { "id": "attr-student-first", "name": "first_name", "type": "varchar(255)", "nullable": false, "primaryKey": false },
+          { "id": "attr-student-last", "name": "last_name", "type": "varchar(255)", "nullable": false, "primaryKey": false },
+          { "id": "attr-student-email", "name": "email", "type": "varchar(255)", "nullable": false, "primaryKey": false }
+        ]
+      }
+    },
+    {
+      "id": "class-course",
+      "type": "class",
+      "position": { "x": 300, "y": 220 },
+      "data": {
+        "label": "Course",
+        "color": "#673ab7",
+        "attributes": [
+          { "id": "attr-course-id", "name": "id", "type": "int", "nullable": false, "primaryKey": true },
+          { "id": "attr-course-title", "name": "title", "type": "varchar(255)", "nullable": false, "primaryKey": false },
+          { "id": "attr-course-credits", "name": "credits", "type": "int", "nullable": false, "primaryKey": false }
+        ]
+      }
+    },
+    {
+      "id": "class-instructor",
+      "type": "class",
+      "position": { "x": 600, "y": 220 },
+      "data": {
+        "label": "Instructor",
+        "color": "#3f51b5",
+        "attributes": [
+          { "id": "attr-instructor-id", "name": "id", "type": "int", "nullable": false, "primaryKey": true },
+          { "id": "attr-instructor-name", "name": "name", "type": "varchar(255)", "nullable": false, "primaryKey": false },
+          { "id": "attr-instructor-email", "name": "email", "type": "varchar(255)", "nullable": false, "primaryKey": false }
+        ]
+      }
+    },
+    {
+      "id": "class-department",
+      "type": "class",
+      "position": { "x": 300, "y": 0 },
+      "data": {
+        "label": "Department",
+        "color": "#8bc34a",
+        "attributes": [
+          { "id": "attr-department-id", "name": "id", "type": "int", "nullable": false, "primaryKey": true },
+          { "id": "attr-department-name", "name": "name", "type": "varchar(255)", "nullable": false, "primaryKey": false }
+        ]
+      }
+    },
+    {
+      "id": "class-enrollment",
+      "type": "class",
+      "position": { "x": 300, "y": 440 },
+      "data": {
+        "label": "Enrollment",
+        "color": "#ff9800",
+        "attributes": [
+          { "id": "attr-enrollment-student", "name": "student_id", "type": "int", "nullable": false, "primaryKey": true },
+          { "id": "attr-enrollment-course", "name": "course_id", "type": "int", "nullable": false, "primaryKey": true },
+          { "id": "attr-enrollment-date", "name": "enrolled_at", "type": "date", "nullable": false, "primaryKey": false }
+        ]
+      }
+    }
+  ],
+  "edges": [
+    {
+      "id": "edge-student-course",
+      "type": "association",
+      "source": "class-student",
+      "sourceHandle": "right-source",
+      "target": "class-course",
+      "targetHandle": "left-target",
+      "data": {
+        "multiplicityA": "0..*",
+        "multiplicityB": "0..*",
+        "name": "enrolls",
+        "type": "association",
+        "roleA": "student",
+        "roleB": "courses"
+      }
+    },
+    {
+      "id": "edge-enrollment-assoc",
+      "type": "associativeAssociation",
+      "source": "class-enrollment",
+      "sourceHandle": "top-source",
+      "target": "assoc-edge-edge-student-course",
+      "targetHandle": "association-target",
+      "data": {
+        "name": "Enrollment",
+        "type": "associative",
+        "autoName": true
+      }
+    },
+    {
+      "id": "edge-course-instructor",
+      "type": "association",
+      "source": "class-course",
+      "sourceHandle": "right-source",
+      "target": "class-instructor",
+      "targetHandle": "left-target",
+      "data": {
+        "multiplicityA": "1..1",
+        "multiplicityB": "0..*",
+        "name": "teaches",
+        "type": "association",
+        "roleA": "course",
+        "roleB": "instructors"
+      }
+    },
+    {
+      "id": "edge-department-course",
+      "type": "association",
+      "source": "class-department",
+      "sourceHandle": "bottom-source",
+      "target": "class-course",
+      "targetHandle": "top-target",
+      "data": {
+        "multiplicityA": "1..1",
+        "multiplicityB": "0..*",
+        "name": "offers",
+        "type": "association",
+        "roleA": "department",
+        "roleB": "courses"
+      }
+    }
+  ]
+}

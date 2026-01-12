@@ -7,6 +7,7 @@ import ClassHandle from './ClassHandle.jsx'
 export function Class({ data, id, selected }) {
   const attributes = normalizeAttributes(id, data.attributes)
   const accentColor = data?.color ?? CLASS_COLOR_PALETTE[0]
+  const showAccentColors = data?.showAccentColors ?? true
   const borderClass = selected ? 'border-primary' : 'border-base-content/70'
 
   return (
@@ -16,7 +17,7 @@ export function Class({ data, id, selected }) {
       <div
         data-no-export="true"
         className="h-2 rounded-t-[6px]"
-        style={{ backgroundColor: accentColor}}
+        style={{ backgroundColor: showAccentColors ? accentColor : 'transparent' }}
       />
       <div className="border-b border-base-content px-3 pb-2 pt-1 text-sm font-semibold">
         {data.label ?? ''}

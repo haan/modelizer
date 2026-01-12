@@ -9,15 +9,17 @@ export default function ClassesPanelOptionsPanel({
   onChangeColor,
   nodeId,
   onDeleteClass,
+  showAccentColors = true,
 }) {
   const currentColor = color ?? accentColor
   const [isPickerOpen, setIsPickerOpen] = useState(false)
+  const accentBorderColor = showAccentColors ? accentColor : 'transparent'
 
   return (
     <div className="w-full rounded-b-md border-b border-base-content/20">
       <div
         className="border-l-[6px] px-2 py-2 text-xs rounded-bl-md"
-        style={{ borderColor: accentColor }}
+        style={{ borderColor: accentBorderColor }}
       >
         <div className="flex items-center justify-between">
           <span className="text-[10px] font-semibold uppercase tracking-wide opacity-70">

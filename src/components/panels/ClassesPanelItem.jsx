@@ -18,8 +18,10 @@ export default function ClassesPanelItem({
   onUpdateClassColor,
   onDeleteClass,
   onHighlightClass,
+  showAccentColors = true,
 }) {
   const accentColor = node.data?.color ?? CLASS_COLOR_PALETTE[0]
+  const accentBorderColor = showAccentColors ? accentColor : 'transparent'
   const attributes = normalizeAttributes(node.id, node.data?.attributes)
   const label = node.data?.label ?? ''
   const color = node.data?.color ?? CLASS_COLOR_PALETTE[0]
@@ -69,7 +71,7 @@ export default function ClassesPanelItem({
         <div className="w-full rounded-b-md border-b border-base-content/20 group-open:border-b-0">
           <div
             className="flex items-center gap-2 rounded-l-md border-l-[6px] px-2 py-2 text-sm font-semibold transition-colors hover:bg-base-200 group-open:rounded-b-none"
-            style={{ borderColor: accentColor }}
+            style={{ borderColor: accentBorderColor }}
           >
             <svg
               xmlns="http://www.w3.org/2000/svg"
@@ -212,11 +214,14 @@ export default function ClassesPanelItem({
           </div>
         </div>
       </summary>
-      <ClassesPanelVisibilityPanel accentColor={accentColor} />
+      <ClassesPanelVisibilityPanel
+        accentColor={accentColor}
+        showAccentColors={showAccentColors}
+      />
       <div className="w-full">
         <div
           className="border-l-[6px] px-2 pb-3 pt-1 text-xs opacity-100"
-          style={{ borderColor: accentColor }}
+          style={{ borderColor: accentBorderColor }}
         >
           <div className="flex items-center justify-between text-[10px] font-semibold uppercase tracking-wide opacity-70">
             <span>Attributes</span>
@@ -262,6 +267,7 @@ export default function ClassesPanelItem({
         nodeId={node.id}
         onChangeColor={onUpdateClassColor}
         onDeleteClass={onDeleteClass}
+        showAccentColors={showAccentColors}
       />
     </details>
   )

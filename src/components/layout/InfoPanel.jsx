@@ -16,6 +16,7 @@ export default function InfoPanel({
   onUpdateClassColor,
   onDeleteClass,
   onHighlightClass,
+  showAccentColors,
   onRenameAssociation,
   onDeleteAssociation,
   onUpdateAssociationMultiplicity,
@@ -41,6 +42,7 @@ export default function InfoPanel({
             onUpdateClassColor={onUpdateClassColor}
             onDeleteClass={onDeleteClass}
             onHighlightClass={onHighlightClass}
+            showAccentColors={showAccentColors}
           />
         ) : activeItem === 'refs' ? (
           <RefsPanel
