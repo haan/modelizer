@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import * as Tooltip from '@radix-ui/react-tooltip'
 import { useSortable } from '@dnd-kit/sortable'
 import { CSS } from '@dnd-kit/utilities'
 import Input from '../ui/Input.jsx'
@@ -14,10 +15,14 @@ export default function ClassesPanelAttributesItem({
   type,
   nullable,
   primaryKey,
+  unique,
+  autoIncrement,
   onChangeName,
   onChangeType,
   onToggleNullable,
   onTogglePrimaryKey,
+  onToggleUnique,
+  onToggleAutoIncrement,
   onDelete,
 }) {
   const {
@@ -35,6 +40,8 @@ export default function ClassesPanelAttributesItem({
   }
   const isNullable = Boolean(nullable)
   const isPrimaryKey = Boolean(primaryKey)
+  const isUnique = Boolean(unique)
+  const isAutoIncrement = Boolean(autoIncrement)
   const [isOpen, setIsOpen] = useState(false)
   const typeValue = ATTRIBUTE_TYPE_OPTIONS.some(
     (option) => option.value === type,
@@ -53,7 +60,7 @@ export default function ClassesPanelAttributesItem({
     >
       <details className="group/attribute" open={isOpen}>
         <summary
-          className="flex list-none items-center gap-2 rounded-md px-1 py-1 cursor-default [&::-webkit-details-marker]:hidden"
+          className="flex list-none items-center gap-1 rounded-md px-1 py-1 cursor-default [&::-webkit-details-marker]:hidden"
           onClick={(event) => event.preventDefault()}
         >
           <button
@@ -111,7 +118,7 @@ export default function ClassesPanelAttributesItem({
               <circle cx="15" cy="19" r="1" />
             </svg>
           </button>
-          <div className="flex min-w-0 flex-1 items-center gap-2">
+          <div className="flex min-w-0 flex-1 items-center gap-1">
             <Input
               size="xs"
               className="min-w-0 flex-1"
@@ -122,52 +129,151 @@ export default function ClassesPanelAttributesItem({
               onMouseDown={(event) => event.stopPropagation()}
             />
           </div>
-          <div className="flex shrink-0 items-center gap-1">
-            <button
-              type="button"
-              aria-pressed={isNullable}
-              className={`inline-flex h-6 w-6 items-center justify-center rounded-md text-[10px] font-semibold transition-colors hover:bg-base-300 ${
-                isNullable ? 'text-accent' : 'text-base-content/60'
-              }`}
-              onClick={(event) => {
-                event.stopPropagation()
-                onToggleNullable?.()
-              }}
-              onMouseDown={(event) => event.stopPropagation()}
-            >
-              N
-            </button>
-            <button
-              type="button"
-              aria-pressed={isPrimaryKey}
-              className={`inline-flex h-6 w-6 items-center justify-center rounded-md transition-colors hover:bg-base-300 ${
-                isPrimaryKey ? 'text-accent' : 'text-base-content/60'
-              }`}
-              onClick={(event) => {
-                event.stopPropagation()
-                onTogglePrimaryKey?.()
-              }}
-              onMouseDown={(event) => event.stopPropagation()}
-              aria-label="Primary key"
-            >
-              <svg
-                xmlns="http://www.w3.org/2000/svg"
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke="currentColor"
-                strokeWidth="2"
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                className="h-3.5 w-3.5"
-                aria-hidden="true"
-              >
-                <path d="M2.586 17.414A2 2 0 0 0 2 18.828V21a1 1 0 0 0 1 1h3a1 1 0 0 0 1-1v-1a1 1 0 0 1 1-1h1a1 1 0 0 0 1-1v-1a1 1 0 0 1 1-1h.172a2 2 0 0 0 1.414-.586l.814-.814a6.5 6.5 0 1 0-4-4z" />
-                <circle cx="16.5" cy="7.5" r=".5" fill="currentColor" />
-              </svg>
-            </button>
-          </div>
         </summary>
         <div className="pl-6 pt-2 text-xs">
+          <div className="flex items-center justify-between gap-3 pb-2">
+            <div className="text-[10px] font-semibold uppercase tracking-wide opacity-70">
+              Constraints
+            </div>
+            <Tooltip.Provider delayDuration={100}>
+              <div className="flex items-center gap-1">
+                <Tooltip.Root>
+                  <Tooltip.Trigger asChild>
+                    <button
+                      type="button"
+                      aria-pressed={isNullable}
+                      className={`inline-flex h-6 w-6 items-center justify-center rounded-md text-[10px] font-semibold transition-colors hover:bg-base-300 ${
+                        isNullable ? 'text-accent' : 'text-base-content/60'
+                      }`}
+                      onClick={(event) => {
+                        event.stopPropagation()
+                        onToggleNullable?.()
+                      }}
+                      onMouseDown={(event) => event.stopPropagation()}
+                    >
+                      N
+                    </button>
+                  </Tooltip.Trigger>
+                  <Tooltip.Portal>
+                    <Tooltip.Content
+                      side="top"
+                      align="center"
+                      sideOffset={6}
+                      className="rounded-md border border-base-content/20 bg-base-100 px-2 py-1 text-[10px] text-base-content shadow-lg"
+                    >
+                      {isNullable ? 'Null' : 'Not Null'}
+                      <Tooltip.Arrow className="fill-base-100" />
+                    </Tooltip.Content>
+                  </Tooltip.Portal>
+                </Tooltip.Root>
+                <Tooltip.Root>
+                  <Tooltip.Trigger asChild>
+                    <button
+                      type="button"
+                      aria-pressed={isAutoIncrement}
+                      className={`inline-flex h-6 w-6 items-center justify-center rounded-md text-[10px] font-semibold transition-colors hover:bg-base-300 ${
+                        isAutoIncrement
+                          ? 'text-accent'
+                          : 'text-base-content/60'
+                      }`}
+                      onClick={(event) => {
+                        event.stopPropagation()
+                        onToggleAutoIncrement?.()
+                      }}
+                      onMouseDown={(event) => event.stopPropagation()}
+                      aria-label="Auto increment"
+                    >
+                      AI
+                    </button>
+                  </Tooltip.Trigger>
+                  <Tooltip.Portal>
+                    <Tooltip.Content
+                      side="top"
+                      align="center"
+                      sideOffset={6}
+                      className="rounded-md border border-base-content/20 bg-base-100 px-2 py-1 text-[10px] text-base-content shadow-lg"
+                    >
+                      {isAutoIncrement ? 'Auto Increment' : 'Not Auto Increment'}
+                      <Tooltip.Arrow className="fill-base-100" />
+                    </Tooltip.Content>
+                  </Tooltip.Portal>
+                </Tooltip.Root>
+                <Tooltip.Root>
+                  <Tooltip.Trigger asChild>
+                    <button
+                      type="button"
+                      aria-pressed={isUnique}
+                      className={`inline-flex h-6 w-6 items-center justify-center rounded-md text-[10px] font-semibold transition-colors hover:bg-base-300 ${
+                        isUnique ? 'text-accent' : 'text-base-content/60'
+                      }`}
+                      onClick={(event) => {
+                        event.stopPropagation()
+                        onToggleUnique?.()
+                      }}
+                      onMouseDown={(event) => event.stopPropagation()}
+                      aria-label="Unique"
+                    >
+                      U
+                    </button>
+                  </Tooltip.Trigger>
+                  <Tooltip.Portal>
+                    <Tooltip.Content
+                      side="top"
+                      align="center"
+                      sideOffset={6}
+                      className="rounded-md border border-base-content/20 bg-base-100 px-2 py-1 text-[10px] text-base-content shadow-lg"
+                    >
+                      {isUnique ? 'Unique' : 'Not Unique'}
+                      <Tooltip.Arrow className="fill-base-100" />
+                    </Tooltip.Content>
+                  </Tooltip.Portal>
+                </Tooltip.Root>
+                <Tooltip.Root>
+                  <Tooltip.Trigger asChild>
+                    <button
+                      type="button"
+                      aria-pressed={isPrimaryKey}
+                      className={`inline-flex h-6 w-6 items-center justify-center rounded-md transition-colors hover:bg-base-300 ${
+                        isPrimaryKey ? 'text-accent' : 'text-base-content/60'
+                      }`}
+                      onClick={(event) => {
+                        event.stopPropagation()
+                        onTogglePrimaryKey?.()
+                      }}
+                      onMouseDown={(event) => event.stopPropagation()}
+                      aria-label="Primary key"
+                    >
+                      <svg
+                        xmlns="http://www.w3.org/2000/svg"
+                        viewBox="0 0 24 24"
+                        fill="none"
+                        stroke="currentColor"
+                        strokeWidth="2"
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        className="h-3.5 w-3.5"
+                        aria-hidden="true"
+                      >
+                        <path d="M2.586 17.414A2 2 0 0 0 2 18.828V21a1 1 0 0 0 1 1h3a1 1 0 0 0 1-1v-1a1 1 0 0 1 1-1h1a1 1 0 0 0 1-1v-1a1 1 0 0 1 1-1h.172a2 2 0 0 0 1.414-.586l.814-.814a6.5 6.5 0 1 0-4-4z" />
+                        <circle cx="16.5" cy="7.5" r=".5" fill="currentColor" />
+                      </svg>
+                    </button>
+                  </Tooltip.Trigger>
+                  <Tooltip.Portal>
+                    <Tooltip.Content
+                      side="top"
+                      align="center"
+                      sideOffset={6}
+                      className="rounded-md border border-base-content/20 bg-base-100 px-2 py-1 text-[10px] text-base-content shadow-lg"
+                    >
+                      {isPrimaryKey ? 'Primary key' : 'Not a primary key'}
+                      <Tooltip.Arrow className="fill-base-100" />
+                    </Tooltip.Content>
+                  </Tooltip.Portal>
+                </Tooltip.Root>
+              </div>
+            </Tooltip.Provider>
+          </div>
           <div className="flex items-center justify-between gap-3">
             <div className="text-[10px] font-semibold uppercase tracking-wide opacity-70">
               Type

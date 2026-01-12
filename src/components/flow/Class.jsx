@@ -34,6 +34,8 @@ export function Class({ data, id, selected }) {
                 type={attr.type}
                 nullable={attr.nullable}
                 primaryKey={attr.primaryKey}
+                unique={attr.unique}
+                autoIncrement={attr.autoIncrement}
               />
             ))}
           </ul>

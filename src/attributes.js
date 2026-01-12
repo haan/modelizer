@@ -11,6 +11,8 @@ export function normalizeAttributes(nodeId, attributes) {
         type: '',
         nullable: false,
         primaryKey: false,
+        unique: false,
+        autoIncrement: false,
       }
     }
 
@@ -28,6 +30,11 @@ export function normalizeAttributes(nodeId, attributes) {
         nullable: typeof attribute.nullable === 'boolean' ? attribute.nullable : false,
         primaryKey:
           typeof attribute.primaryKey === 'boolean' ? attribute.primaryKey : false,
+        unique: typeof attribute.unique === 'boolean' ? attribute.unique : false,
+        autoIncrement:
+          typeof attribute.autoIncrement === 'boolean'
+            ? attribute.autoIncrement
+            : false,
       }
     }
 
@@ -37,6 +44,8 @@ export function normalizeAttributes(nodeId, attributes) {
       type: '',
       nullable: false,
       primaryKey: false,
+      unique: false,
+      autoIncrement: false,
     }
   })
 }
@@ -67,5 +76,7 @@ export function createAttribute(nodeId, name) {
     type: '',
     nullable: false,
     primaryKey: false,
+    unique: false,
+    autoIncrement: false,
   }
 }

@@ -1,4 +1,11 @@
-export default function Attribute({ name, type, nullable, primaryKey }) {
+export default function Attribute({
+  name,
+  type,
+  nullable,
+  primaryKey,
+  unique,
+  autoIncrement,
+}) {
   const label = typeof name === 'string' ? name : ''
   const typeLabel = typeof type === 'string' ? type : ''
 
@@ -25,6 +32,16 @@ export default function Attribute({ name, type, nullable, primaryKey }) {
         {nullable ? (
           <span className="rounded border border-base-content/20 px-1 text-[10px]">
             N
+          </span>
+        ) : null}
+        {unique ? (
+          <span className="rounded border border-base-content/20 px-1 text-[10px]">
+            U
+          </span>
+        ) : null}
+        {autoIncrement ? (
+          <span className="rounded border border-base-content/20 px-1 text-[10px]">
+            AI
           </span>
         ) : null}
         {typeLabel ? <span className="truncate">{typeLabel}</span> : null}

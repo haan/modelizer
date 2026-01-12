@@ -1,0 +1,9 @@
+export const ASSOCIATION_EDGE_TYPE = 'association'
+export const ASSOCIATIVE_EDGE_TYPE = 'associativeAssociation'
+export const REFLEXIVE_EDGE_TYPE = 'reflexiveAssociation'
+export const ASSOCIATION_HELPER_NODE_TYPE = 'associationHelper'
+export const CLASS_NODE_TYPE = 'class'
+export const ASSOCIATION_NODE_SIZE = 1
+export const HIGHLIGHT_ZOOM = 1.4
+export const MODEL_FILE_EXTENSION = '.mdlz'
+export const MODEL_VERSION = 1

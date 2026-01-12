@@ -64,6 +64,8 @@ export default function ClassesPanelAttributesPanel({
               type={attribute.type}
               nullable={attribute.nullable}
               primaryKey={attribute.primaryKey}
+              unique={attribute.unique}
+              autoIncrement={attribute.autoIncrement}
               onChangeName={(nextValue) =>
                 onUpdateAttribute?.(nodeId, attribute.id, {
                   name: nextValue,
@@ -82,6 +84,16 @@ export default function ClassesPanelAttributesPanel({
               onTogglePrimaryKey={() =>
                 onUpdateAttribute?.(nodeId, attribute.id, {
                   primaryKey: !attribute.primaryKey,
+                })
+              }
+              onToggleUnique={() =>
+                onUpdateAttribute?.(nodeId, attribute.id, {
+                  unique: !attribute.unique,
+                })
+              }
+              onToggleAutoIncrement={() =>
+                onUpdateAttribute?.(nodeId, attribute.id, {
+                  autoIncrement: !attribute.autoIncrement,
                 })
               }
               onDelete={() => onDeleteAttribute?.(nodeId, attribute.id)}

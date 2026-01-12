@@ -54,13 +54,15 @@ export default function Navbar({
     <nav className="w-full border-b border-base-content/10 bg-base-100">
       <div className="mx-auto grid max-w-screen-2xl grid-cols-[1fr_auto_1fr] items-center gap-4 px-6 py-4">
         <div className="flex items-center gap-4">
-          <div className="grid h-9 w-9 place-items-center rounded-lg bg-primary text-primary-content font-bold">
-            M
-          </div>
+          <img
+            src="/images/logo.png"
+            alt="Modelizer"
+            className="h-10 w-10 object-contain"
+          />
           <div>
             <div className="text-lg font-semibold">Modelizer</div>
             <div className="text-xs opacity-70">
-              Database modeling workspace
+              Database modeling tool
             </div>
           </div>
           <Menubar.Root className="flex items-center gap-1 bg-base-100 p-1 text-xs">
