@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useRef, useState } from 'react'
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import * as AlertDialog from '@radix-ui/react-alert-dialog'
 import ReactFlow, {
   Background,
@@ -14,6 +14,8 @@ import { InfoPanel, Navbar, Sidebar } from './components/layout/index.js'
 import { useFileActions } from './hooks/useFileActions.js'
 import { useKeyboardShortcuts } from './hooks/useKeyboardShortcuts.js'
 import { useModelState } from './hooks/useModelState.js'
+import { normalizeAttributes } from './attributes.js'
+import DefaultValuesPanel from './components/flow/DefaultValuesPanel.jsx'
 import { sanitizeFileName } from './model/fileUtils.js'
 
 const MIN_INFO_WIDTH = 350
@@ -25,6 +27,8 @@ function App() {
   const [showMiniMap, setShowMiniMap] = useState(false)
   const [showBackground, setShowBackground] = useState(true)
   const [showAccentColors, setShowAccentColors] = useState(true)
+  const [alternateNNDisplay, setAlternateNNDisplay] = useState(false)
+  const [isExportingPng, setIsExportingPng] = useState(false)
   const [confirmDelete, setConfirmDelete] = useState(false)
   const [deleteDialog, setDeleteDialog] = useState({
     open: false,
@@ -103,6 +107,7 @@ function App() {
     reactFlowInstance,
     reactFlowWrapper,
     showAccentColors,
+    alternateNNDisplay,
   })
 
   const requestDelete = useCallback(
@@ -220,36 +225,31 @@ function App() {
       return
     }
 
-    const containerRect = reactFlowWrapper.current.getBoundingClientRect()
+    const container = reactFlowWrapper.current
+    const containerRect = container.getBoundingClientRect()
     if (!containerRect.width || !containerRect.height) {
       return
     }
 
     const imageWidth = Math.round(containerRect.width)
     const imageHeight = Math.round(containerRect.height)
-    const viewport =
-      reactFlowInstance?.getViewport?.() ?? { x: 0, y: 0, zoom: 1 }
-    const viewportElement =
-      reactFlowWrapper.current.querySelector('.react-flow__viewport')
-    if (!viewportElement) {
-      return
-    }
 
     const backgroundColor = '#ffffff'
 
+    setIsExportingPng(true)
+    await new Promise((resolve) => {
+      requestAnimationFrame(() => requestAnimationFrame(resolve))
+    })
+
     try {
-      const dataUrl = await toPng(viewportElement, {
+      const dataUrl = await toPng(container, {
         backgroundColor,
         filter: (node) =>
           !(node instanceof Element) ||
-          !node.closest('[data-no-export="true"]'),
+          (!node.closest('[data-no-export="true"]') &&
+            !node.closest('.react-flow__background')),
         width: imageWidth,
         height: imageHeight,
-        style: {
-          width: `${imageWidth}px`,
-          height: `${imageHeight}px`,
-          transform: `translate(${viewport.x}px, ${viewport.y}px) scale(${viewport.zoom})`,
-        },
       })
 
       const normalizedName = sanitizeFileName(modelName ?? 'Untitled model')
@@ -262,6 +262,8 @@ function App() {
       link.click()
     } catch (error) {
       console.error('Failed to export PNG', error)
+    } finally {
+      setIsExportingPng(false)
     }
   }, [modelName, reactFlowInstance])
 
@@ -288,6 +290,35 @@ function App() {
     [onExportPng, onOpenModel, onRequestNewModel, onSaveModel, setActiveSidebarItem],
   )
 
+  const defaultValueEntries = useMemo(() => {
+    return nodes.flatMap((node) => {
+      const className =
+        typeof node.data?.label === 'string' && node.data.label.trim()
+          ? node.data.label.trim()
+          : 'Class'
+      const attributes = normalizeAttributes(node.id, node.data?.attributes)
+      return attributes.flatMap((attribute) => {
+        const value =
+          typeof attribute.defaultValue === 'string'
+            ? attribute.defaultValue.trim()
+            : ''
+        if (!value) {
+          return []
+        }
+        const attributeName =
+          typeof attribute.name === 'string' && attribute.name.trim()
+            ? attribute.name.trim()
+            : 'attribute'
+        return [
+          {
+            key: `${className}.${attributeName}`,
+            value,
+          },
+        ]
+      })
+    })
+  }, [nodes])
+
   return (
     <div className="h-screen overflow-hidden bg-base-200 text-base-content">
       <div className="flex h-full flex-col">
@@ -309,6 +340,8 @@ function App() {
           onToggleAccentColors={() =>
             setShowAccentColors((current) => !current)
           }
+          alternateNNDisplay={alternateNNDisplay}
+          onToggleAlternateNNDisplay={setAlternateNNDisplay}
           confirmDelete={confirmDelete}
           onToggleConfirmDelete={setConfirmDelete}
           isDirty={isDirty}
@@ -343,7 +376,7 @@ function App() {
           />
           <main className="flex-1 min-w-0 bg-base-100">
             <div
-              className={`group/flow h-full w-full ${isConnecting ? 'is-connecting' : ''}`}
+              className={`group/flow relative h-full w-full ${isConnecting ? 'is-connecting' : ''}`}
               ref={reactFlowWrapper}
             >
               <ReactFlow
@@ -364,10 +397,20 @@ function App() {
                 connectionRadius={40}
                 defaultEdgeOptions={{ interactionWidth: 20 }}
               >
-                <Controls />
-                {showMiniMap ? <MiniMap /> : null}
+                <div data-no-export="true">
+                  <Controls />
+                </div>
+                {showMiniMap ? (
+                  <div data-no-export="true">
+                    <MiniMap />
+                  </div>
+                ) : null}
                 {showBackground ? <Background gap={16} size={1} /> : null}
               </ReactFlow>
+              <DefaultValuesPanel
+                entries={defaultValueEntries}
+                isExporting={isExportingPng}
+              />
             </div>
           </main>
         </div>

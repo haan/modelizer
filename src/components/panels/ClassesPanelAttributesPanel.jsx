@@ -64,8 +64,8 @@ export default function ClassesPanelAttributesPanel({
               name={attribute.name}
               type={attribute.type}
               typeParams={attribute.typeParams}
+              defaultValue={attribute.defaultValue}
               nullable={attribute.nullable}
-              primaryKey={attribute.primaryKey}
               unique={attribute.unique}
               autoIncrement={attribute.autoIncrement}
               onChangeName={(nextValue) =>
@@ -77,6 +77,7 @@ export default function ClassesPanelAttributesPanel({
                 onUpdateAttribute?.(nodeId, attribute.id, {
                   type: nextValue,
                   typeParams: { ...ATTRIBUTE_TYPE_PARAMS_DEFAULT },
+                  defaultValue: '',
                 })
               }
               onChangeTypeParams={(nextValue) =>
@@ -84,14 +85,14 @@ export default function ClassesPanelAttributesPanel({
                   typeParams: nextValue,
                 })
               }
+              onChangeDefaultValue={(nextValue) =>
+                onUpdateAttribute?.(nodeId, attribute.id, {
+                  defaultValue: nextValue,
+                })
+              }
               onToggleNullable={() =>
                 onUpdateAttribute?.(nodeId, attribute.id, {
                   nullable: !attribute.nullable,
-                })
-              }
-              onTogglePrimaryKey={() =>
-                onUpdateAttribute?.(nodeId, attribute.id, {
-                  primaryKey: !attribute.primaryKey,
                 })
               }
               onToggleUnique={() =>

@@ -8,6 +8,7 @@ export function Class({ data, id, selected }) {
   const attributes = normalizeAttributes(id, data.attributes)
   const accentColor = data?.color ?? CLASS_COLOR_PALETTE[0]
   const showAccentColors = data?.showAccentColors ?? true
+  const alternateNNDisplay = data?.alternateNNDisplay ?? false
   const borderClass = selected ? 'border-primary' : 'border-base-content/70'
 
   return (
@@ -33,8 +34,8 @@ export function Class({ data, id, selected }) {
                   name={attr.name}
                   type={attr.type}
                   typeParams={attr.typeParams}
+                  alternateNNDisplay={alternateNNDisplay}
                   nullable={attr.nullable}
-                  primaryKey={attr.primaryKey}
                   unique={attr.unique}
                   autoIncrement={attr.autoIncrement}
                 />

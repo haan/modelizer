@@ -10,8 +10,8 @@ export function normalizeAttributes(nodeId, attributes) {
         name: attribute,
         type: '',
         typeParams: normalizeTypeParams(),
-        nullable: false,
-        primaryKey: false,
+        defaultValue: '',
+        nullable: true,
         unique: false,
         autoIncrement: false,
       }
@@ -29,9 +29,9 @@ export function normalizeAttributes(nodeId, attributes) {
         name,
         type: typeof attribute.type === 'string' ? attribute.type : '',
         typeParams: normalizeTypeParams(attribute.typeParams),
+        defaultValue:
+          typeof attribute.defaultValue === 'string' ? attribute.defaultValue : '',
         nullable: typeof attribute.nullable === 'boolean' ? attribute.nullable : false,
-        primaryKey:
-          typeof attribute.primaryKey === 'boolean' ? attribute.primaryKey : false,
         unique: typeof attribute.unique === 'boolean' ? attribute.unique : false,
         autoIncrement:
           typeof attribute.autoIncrement === 'boolean'
@@ -45,8 +45,8 @@ export function normalizeAttributes(nodeId, attributes) {
       name: '',
       type: '',
       typeParams: normalizeTypeParams(),
-      nullable: false,
-      primaryKey: false,
+      defaultValue: '',
+      nullable: true,
       unique: false,
       autoIncrement: false,
     }
@@ -148,8 +148,8 @@ export function createAttribute(nodeId, name) {
     name,
     type: '',
     typeParams: normalizeTypeParams(),
-    nullable: false,
-    primaryKey: false,
+    defaultValue: '',
+    nullable: true,
     unique: false,
     autoIncrement: false,
   }

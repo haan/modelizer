@@ -19,6 +19,8 @@ export default function Navbar({
   onToggleBackground,
   showAccentColors,
   onToggleAccentColors,
+  alternateNNDisplay,
+  onToggleAlternateNNDisplay,
   confirmDelete,
   onToggleConfirmDelete,
   isDirty,
@@ -196,24 +198,54 @@ export default function Navbar({
                   align="start"
                   sideOffset={6}
                 >
-                  <Menubar.Item
+                  <Menubar.CheckboxItem
                     className={viewItemClass}
-                    onSelect={() => onToggleMiniMap?.()}
+                    checked={showMiniMap}
+                    onCheckedChange={(value) =>
+                      onToggleMiniMap?.(Boolean(value))
+                    }
                   >
-                    {showMiniMap ? 'Hide' : 'Show'} Mini Map
-                  </Menubar.Item>
-                  <Menubar.Item
+                    <Menubar.ItemIndicator className="absolute left-1.5 inline-flex h-3.5 w-3.5 items-center justify-center">
+                      <CheckIcon className="h-3.5 w-3.5" aria-hidden="true" />
+                    </Menubar.ItemIndicator>
+                    <span>Mini Map</span>
+                  </Menubar.CheckboxItem>
+                  <Menubar.CheckboxItem
                     className={viewItemClass}
-                    onSelect={() => onToggleBackground?.()}
+                    checked={showBackground}
+                    onCheckedChange={(value) =>
+                      onToggleBackground?.(Boolean(value))
+                    }
                   >
-                    {showBackground ? 'Hide' : 'Show'} Background
-                  </Menubar.Item>
-                  <Menubar.Item
+                    <Menubar.ItemIndicator className="absolute left-1.5 inline-flex h-3.5 w-3.5 items-center justify-center">
+                      <CheckIcon className="h-3.5 w-3.5" aria-hidden="true" />
+                    </Menubar.ItemIndicator>
+                    <span>Background</span>
+                  </Menubar.CheckboxItem>
+                  <Menubar.CheckboxItem
                     className={viewItemClass}
-                    onSelect={() => onToggleAccentColors?.()}
+                    checked={showAccentColors}
+                    onCheckedChange={(value) =>
+                      onToggleAccentColors?.(Boolean(value))
+                    }
                   >
-                    {showAccentColors ? 'Hide' : 'Show'} Accent Colors
-                  </Menubar.Item>
+                    <Menubar.ItemIndicator className="absolute left-1.5 inline-flex h-3.5 w-3.5 items-center justify-center">
+                      <CheckIcon className="h-3.5 w-3.5" aria-hidden="true" />
+                    </Menubar.ItemIndicator>
+                    <span>Accent Colors</span>
+                  </Menubar.CheckboxItem>
+                    <Menubar.CheckboxItem
+                      className={viewItemClass}
+                      checked={alternateNNDisplay}
+                    onCheckedChange={(value) =>
+                      onToggleAlternateNNDisplay?.(Boolean(value))
+                    }
+                  >
+                    <Menubar.ItemIndicator className="absolute left-1.5 inline-flex h-3.5 w-3.5 items-center justify-center">
+                      <CheckIcon className="h-3.5 w-3.5" aria-hidden="true" />
+                    </Menubar.ItemIndicator>
+                    <span>Alternate Not Null display</span>
+                  </Menubar.CheckboxItem>
                   <Menubar.Separator className="my-1 h-px bg-base-content/20" />
                   <Menubar.CheckboxItem
                     className={viewItemClass}

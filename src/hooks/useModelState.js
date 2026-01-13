@@ -26,6 +26,7 @@ export function useModelState({
   reactFlowInstance,
   reactFlowWrapper,
   showAccentColors,
+  alternateNNDisplay,
 }) {
   const [nodes, setNodes, onNodesChange] = useNodesState(initialNodes)
   const [edges, setEdges] = useEdgesState(normalizeEdges(initialEdges))
@@ -748,12 +749,12 @@ export function useModelState({
       node.type === CLASS_NODE_TYPE
         ? {
             ...node,
-            data: { ...node.data, showAccentColors },
+            data: { ...node.data, showAccentColors, alternateNNDisplay },
           }
         : node,
     )
     return [...decoratedNodes, ...associationEdgeNodes]
-  }, [associationEdgeNodes, nodes, showAccentColors])
+  }, [alternateNNDisplay, associationEdgeNodes, nodes, showAccentColors])
 
   return {
     nodes,
