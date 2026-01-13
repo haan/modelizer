@@ -13,9 +13,7 @@ env:
   # Change miniserve version here (only once)
   MINISERVE_VERSION: "0.32.0"
 
-  # Derived values (do not edit)
-  MINISERVE_TAG: "v${{ env.MINISERVE_VERSION }}"
-  MINISERVE_ASSET_WIN_X64: "miniserve-${{ env.MINISERVE_VERSION }}-x86_64-pc-windows-msvc.exe"
+  # Zip name should match the current ref (tag like v1.0.0)
   ZIP_NAME: "modelizer-${{ github.ref_name }}.zip"
 
 jobs:
@@ -42,6 +40,10 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
+
+          MINISERVE_TAG="v${MINISERVE_VERSION}"
+          MINISERVE_ASSET_WIN_X64="miniserve-${MINISERVE_VERSION}-x86_64-pc-windows-msvc.exe"
+
           mkdir -p bundle
           rm -f bundle/miniserve.exe
 
