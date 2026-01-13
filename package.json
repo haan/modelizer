@@ -5,7 +5,7 @@
   "type": "module",
   "scripts": {
     "dev": "vite",
-    "build": "vite build && rimraf bundle/dist && cpy \"dist/**\" bundle/dist --parents",
+    "build": "vite build && rimraf bundle/app/dist && cpy \"dist/**\" bundle/app/dist --parents",
     "lint": "eslint .",
     "preview": "vite preview"
   },
