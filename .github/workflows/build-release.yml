@@ -13,7 +13,7 @@ env:
   # Change miniserve version here (only once)
   MINISERVE_VERSION: "0.32.0"
 
-  # Zip name should match the current ref (tag like v1.0.0)
+  # Final zip name (tag: modelizer-v1.0.0.zip)
   ZIP_NAME: "modelizer-${{ github.ref_name }}.zip"
 
 jobs:
@@ -36,7 +36,39 @@ jobs:
       - name: Build (Vite)
         run: npm run build
 
-      - name: Download miniserve (pinned, Windows x64)
+      # Layout produced in the zip:
+      # modelizer/
+      #   modelizer.bat
+      #   README.txt (optional)
+      #   app/
+      #     miniserve.exe
+      #     dist/...
+      - name: Prepare package folders
+        shell: bash
+        run: |
+          set -euo pipefail
+          rm -rf package
+          mkdir -p package/modelizer/app/dist
+
+      - name: Copy modelizer.bat into modelizer/ root
+        shell: bash
+        run: |
+          set -euo pipefail
+          # Adjust if your bat lives somewhere else; this assumes bundle/modelizer.bat in repo
+          cp bundle/modelizer.bat package/modelizer/modelizer.bat
+
+          # Optional: include a plain-text README for end users (if present)
+          if [ -f bundle/README.txt ]; then
+            cp bundle/README.txt package/modelizer/README.txt
+          fi
+
+      - name: Copy Vite dist into modelizer/app/dist
+        shell: bash
+        run: |
+          set -euo pipefail
+          cp -R dist/* package/modelizer/app/dist/
+
+      - name: Download miniserve (pinned, Windows x64) into modelizer/app
         shell: bash
         run: |
           set -euo pipefail
@@ -44,45 +76,28 @@ jobs:
           MINISERVE_TAG="v${MINISERVE_VERSION}"
           MINISERVE_ASSET_WIN_X64="miniserve-${MINISERVE_VERSION}-x86_64-pc-windows-msvc.exe"
 
-          mkdir -p bundle
-          rm -f bundle/miniserve.exe
-
           gh release download "${MINISERVE_TAG}" \
             --repo svenstaro/miniserve \
             --pattern "${MINISERVE_ASSET_WIN_X64}" \
-            --dir bundle
+            --dir package/modelizer/app
 
-          mv "bundle/${MINISERVE_ASSET_WIN_X64}" bundle/miniserve.exe
+          mv "package/modelizer/app/${MINISERVE_ASSET_WIN_X64}" package/modelizer/app/miniserve.exe
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-
-      - name: Assemble bundle (copy dist into bundle/dist)
-        shell: bash
-        run: |
-          rm -rf bundle/dist
-          mkdir -p bundle/dist
-          cp -R dist/* bundle/dist/
-
-      - name: Prepare package folder named modelizer/
-        shell: bash
-        run: |
-          set -euo pipefail
-          rm -rf package
-          mkdir -p package/modelizer
-          cp -R bundle/. package/modelizer/
 
       - name: Create zip (top-level folder is modelizer/)
         shell: bash
         run: |
+          set -euo pipefail
           cd package
           zip -r "../${ZIP_NAME}" modelizer
 
-      - name: Upload folder as workflow artifact (manual runs)
+      - name: Upload zip as workflow artifact (manual runs)
         if: ${{ github.event_name == 'workflow_dispatch' }}
         uses: actions/upload-artifact@v4
         with:
-          name: modelizer-${{ github.ref_name }}
-          path: package/modelizer
+          name: ${{ env.ZIP_NAME }}
+          path: ${{ env.ZIP_NAME }}
 
       - name: Create GitHub Release and upload asset (tag runs)
         if: startsWith(github.ref, 'refs/tags/')
