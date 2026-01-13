@@ -2,6 +2,7 @@ import { Position, getSmoothStepPath } from 'reactflow'
 
 const PARALLEL_OFFSET_SPACING = 25
 const STEP_SHIFT_SPACING = -20
+const SNAP_AXIS_THRESHOLD = 10
 
 function getNodeIntersection(intersectionNode, targetNode) {
   const intersectionMeasured = intersectionNode.measured ?? {
@@ -152,19 +153,46 @@ export function getAssociationLayout(sourceNode, targetNode, data) {
   const { parallelOffset } = getParallelMeta(data)
   const isHorizontal = isHorizontalConnection(sourcePos, targetPos)
   const { offsetX, offsetY } = getParallelLineOffset(parallelOffset, isHorizontal)
-  const sourceXOffset = sx + offsetX
-  const sourceYOffset = sy + offsetY
-  const targetXOffset = tx + offsetX
-  const targetYOffset = ty + offsetY
+  let sourceXOffset = sx + offsetX
+  let sourceYOffset = sy + offsetY
+  let targetXOffset = tx + offsetX
+  let targetYOffset = ty + offsetY
   const sourceCenter = getNodeCenter(sourceNode)
   const targetCenter = getNodeCenter(targetNode)
+  const deltaX = Math.abs(sourceCenter.x - targetCenter.x)
+  const deltaY = Math.abs(sourceCenter.y - targetCenter.y)
+  const snapHorizontal = deltaY <= SNAP_AXIS_THRESHOLD
+  const snapVertical = deltaX <= SNAP_AXIS_THRESHOLD
   const positionSign = getPositionSign(sourceCenter, targetCenter, isHorizontal)
-  const stepShift = parallelOffset * STEP_SHIFT_SPACING * positionSign
+  const isPerfectHorizontal =
+    snapHorizontal ||
+    Math.round(sourceCenter.y) === Math.round(targetCenter.y)
+  const isPerfectVertical =
+    snapVertical ||
+    Math.round(sourceCenter.x) === Math.round(targetCenter.x)
+  if (snapHorizontal) {
+    const avgY = (sourceYOffset + targetYOffset) / 2
+    sourceYOffset = avgY
+    targetYOffset = avgY
+  }
+  if (snapVertical) {
+    const avgX = (sourceXOffset + targetXOffset) / 2
+    sourceXOffset = avgX
+    targetXOffset = avgX
+  }
+
+  const stepShift = isPerfectHorizontal || isPerfectVertical
+    ? 0
+    : parallelOffset * STEP_SHIFT_SPACING * positionSign
   const centerX =
-    (sourceXOffset + targetXOffset) / 2 + (isHorizontal ? stepShift : 0)
+    (sourceXOffset + targetXOffset) / 2 +
+    (isHorizontal ? stepShift : 0) +
+    (snapVertical ? sourceCenter.x - targetCenter.x : 0)
   const centerY =
-    (sourceYOffset + targetYOffset) / 2 + (isHorizontal ? 0 : stepShift)
-  const [edgePath, labelX, labelY] = getSmoothStepPath({
+    (sourceYOffset + targetYOffset) / 2 +
+    (isHorizontal ? 0 : stepShift) +
+    (snapHorizontal ? sourceCenter.y - targetCenter.y : 0)
+  const [edgePath, rawLabelX, rawLabelY] = getSmoothStepPath({
     sourceX: sourceXOffset,
     sourceY: sourceYOffset,
     sourcePosition: sourcePos,
@@ -175,6 +203,12 @@ export function getAssociationLayout(sourceNode, targetNode, data) {
     centerY,
     offset: 0,
   })
+  const labelX = snapHorizontal || snapVertical
+    ? (sourceXOffset + targetXOffset) / 2
+    : rawLabelX
+  const labelY = snapHorizontal || snapVertical
+    ? (sourceYOffset + targetYOffset) / 2
+    : rawLabelY
 
   return {
     edgePath,
