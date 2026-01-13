@@ -12,6 +12,7 @@ import {
   verticalListSortingStrategy,
 } from '@dnd-kit/sortable'
 import ClassesPanelAttributesItem from './ClassesPanelAttributesItem.jsx'
+import { ATTRIBUTE_TYPE_PARAMS_DEFAULT } from '../../attributes.js'
 
 export default function ClassesPanelAttributesPanel({
   attributes,
@@ -62,6 +63,7 @@ export default function ClassesPanelAttributesPanel({
               id={attribute.id}
               name={attribute.name}
               type={attribute.type}
+              typeParams={attribute.typeParams}
               nullable={attribute.nullable}
               primaryKey={attribute.primaryKey}
               unique={attribute.unique}
@@ -74,6 +76,12 @@ export default function ClassesPanelAttributesPanel({
               onChangeType={(nextValue) =>
                 onUpdateAttribute?.(nodeId, attribute.id, {
                   type: nextValue,
+                  typeParams: { ...ATTRIBUTE_TYPE_PARAMS_DEFAULT },
+                })
+              }
+              onChangeTypeParams={(nextValue) =>
+                onUpdateAttribute?.(nodeId, attribute.id, {
+                  typeParams: nextValue,
                 })
               }
               onToggleNullable={() =>

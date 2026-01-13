@@ -9,6 +9,7 @@ export function normalizeAttributes(nodeId, attributes) {
         id: `${nodeId}-attr-${index}`,
         name: attribute,
         type: '',
+        typeParams: normalizeTypeParams(),
         nullable: false,
         primaryKey: false,
         unique: false,
@@ -27,6 +28,7 @@ export function normalizeAttributes(nodeId, attributes) {
         id: attribute.id ?? `${nodeId}-attr-${index}`,
         name,
         type: typeof attribute.type === 'string' ? attribute.type : '',
+        typeParams: normalizeTypeParams(attribute.typeParams),
         nullable: typeof attribute.nullable === 'boolean' ? attribute.nullable : false,
         primaryKey:
           typeof attribute.primaryKey === 'boolean' ? attribute.primaryKey : false,
@@ -42,6 +44,7 @@ export function normalizeAttributes(nodeId, attributes) {
       id: `${nodeId}-attr-${index}`,
       name: '',
       type: '',
+      typeParams: normalizeTypeParams(),
       nullable: false,
       primaryKey: false,
       unique: false,
@@ -51,17 +54,87 @@ export function normalizeAttributes(nodeId, attributes) {
 }
 
 export const ATTRIBUTE_TYPE_UNDEFINED = '__undefined__'
+export const ATTRIBUTE_TYPE_PARAMS_DEFAULT = {
+  maxLength: '',
+  precision: '',
+  scale: '',
+  enumValues: '',
+}
+
+export function normalizeTypeParams(params) {
+  if (!params || typeof params !== 'object') {
+    return { ...ATTRIBUTE_TYPE_PARAMS_DEFAULT }
+  }
+
+  return {
+    maxLength:
+      typeof params.maxLength === 'string' ? params.maxLength : '',
+    precision:
+      typeof params.precision === 'string' ? params.precision : '',
+    scale: typeof params.scale === 'string' ? params.scale : '',
+    enumValues:
+      typeof params.enumValues === 'string' ? params.enumValues : '',
+  }
+}
+
+export function getTypeParamKind(type) {
+  if (typeof type !== 'string') {
+    return null
+  }
+  if (type.endsWith('(n)')) {
+    return 'length'
+  }
+  if (type.endsWith('(p,s)')) {
+    return 'precisionScale'
+  }
+  if (type.endsWith('(e)')) {
+    return 'enum'
+  }
+  return null
+}
+
+export function formatAttributeType(type, typeParams) {
+  if (typeof type !== 'string' || !type) {
+    return ''
+  }
+
+  const params = normalizeTypeParams(typeParams)
+  const kind = getTypeParamKind(type)
+  if (kind === 'length') {
+    const value = params.maxLength.trim()
+    return value ? type.replace('(n)', `(${value})`) : type
+  }
+  if (kind === 'precisionScale') {
+    const precision = params.precision.trim()
+    const scale = params.scale.trim()
+    if (precision && scale) {
+      return type.replace('(p,s)', `(${precision},${scale})`)
+    }
+    if (precision) {
+      return type.replace('(p,s)', `(${precision})`)
+    }
+    return type
+  }
+  if (kind === 'enum') {
+    const values = params.enumValues.trim()
+    return values ? type.replace('(e)', `(${values})`) : type
+  }
+
+  return type
+}
 
 export const ATTRIBUTE_TYPE_OPTIONS = [
   { value: ATTRIBUTE_TYPE_UNDEFINED, label: 'Undefined' },
   { value: 'int', label: 'int' },
-  { value: 'bigint', label: 'bigint' },
-  { value: 'varchar(255)', label: 'varchar(255)' },
+  { value: 'decimal(p,s)', label: 'decimal(p,s)' },
+  { value: 'varchar(n)', label: 'varchar(n)' },
   { value: 'text', label: 'text' },
   { value: 'boolean', label: 'boolean' },
-  { value: 'date', label: 'date' },
+  { value: 'datetime', label: 'datetime' },
   { value: 'timestamp', label: 'timestamp' },
-  { value: 'numeric', label: 'numeric' },
+  { value: 'date', label: 'date' },
+  { value: 'time', label: 'time' },
+  { value: 'enum(e)', label: 'enum(e)' }
 ]
 
 export function createAttribute(nodeId, name) {
@@ -74,6 +147,7 @@ export function createAttribute(nodeId, name) {
     id: `attr-${nodeId}-${idSuffix}`,
     name,
     type: '',
+    typeParams: normalizeTypeParams(),
     nullable: false,
     primaryKey: false,
     unique: false,

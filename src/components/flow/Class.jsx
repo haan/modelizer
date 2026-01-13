@@ -28,15 +28,16 @@ export function Class({ data, id, selected }) {
         ) : (
           <ul className="space-y-1">
             {attributes.map((attr) => (
-              <Attribute
-                key={attr.id}
-                name={attr.name}
-                type={attr.type}
-                nullable={attr.nullable}
-                primaryKey={attr.primaryKey}
-                unique={attr.unique}
-                autoIncrement={attr.autoIncrement}
-              />
+                <Attribute
+                  key={attr.id}
+                  name={attr.name}
+                  type={attr.type}
+                  typeParams={attr.typeParams}
+                  nullable={attr.nullable}
+                  primaryKey={attr.primaryKey}
+                  unique={attr.unique}
+                  autoIncrement={attr.autoIncrement}
+                />
             ))}
           </ul>
         )}

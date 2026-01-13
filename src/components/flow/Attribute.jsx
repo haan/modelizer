@@ -1,13 +1,16 @@
+import { formatAttributeType } from '../../attributes.js'
+
 export default function Attribute({
   name,
   type,
+  typeParams,
   nullable,
   primaryKey,
   unique,
   autoIncrement,
 }) {
   const label = typeof name === 'string' ? name : ''
-  const typeLabel = typeof type === 'string' ? type : ''
+  const typeLabel = formatAttributeType(type, typeParams)
 
   return (
     <li className="flex items-center justify-between gap-2">

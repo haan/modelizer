@@ -6,19 +6,23 @@ import Input from '../ui/Input.jsx'
 import SelectField from '../ui/Select.jsx'
 import {
   ATTRIBUTE_TYPE_OPTIONS,
+  ATTRIBUTE_TYPE_PARAMS_DEFAULT,
   ATTRIBUTE_TYPE_UNDEFINED,
+  getTypeParamKind,
 } from '../../attributes.js'
 
 export default function ClassesPanelAttributesItem({
   id,
   name,
   type,
+  typeParams,
   nullable,
   primaryKey,
   unique,
   autoIncrement,
   onChangeName,
   onChangeType,
+  onChangeTypeParams,
   onToggleNullable,
   onTogglePrimaryKey,
   onToggleUnique,
@@ -49,6 +53,10 @@ export default function ClassesPanelAttributesItem({
     ? type
     : ''
   const selectTypeValue = typeValue || ATTRIBUTE_TYPE_UNDEFINED
+  const params = typeParams ?? ATTRIBUTE_TYPE_PARAMS_DEFAULT
+  const typeParamKind = getTypeParamKind(
+    selectTypeValue === ATTRIBUTE_TYPE_UNDEFINED ? '' : typeValue,
+  )
 
   return (
     <li
@@ -291,6 +299,68 @@ export default function ClassesPanelAttributesItem({
               />
             </div>
           </div>
+          {typeParamKind === 'length' ? (
+            <div className="mt-2 flex items-center justify-between gap-3">
+              <div className="text-[10px] font-semibold uppercase tracking-wide opacity-70">
+                Max Length
+              </div>
+              <div className="min-w-[140px] max-w-[220px] flex-1">
+                <Input
+                  size="xs"
+                  value={params.maxLength}
+                  placeholder="Length"
+                  onChange={(event) =>
+                    onChangeTypeParams?.({ maxLength: event.target.value })
+                  }
+                />
+              </div>
+            </div>
+          ) : null}
+          {typeParamKind === 'precisionScale' ? (
+            <div className="mt-2 flex items-center justify-between gap-3">
+              <div className="text-[10px] font-semibold uppercase tracking-wide opacity-70">
+                Precision
+              </div>
+              <div className="flex min-w-[140px] max-w-[220px] flex-1 items-center gap-2">
+                <Input
+                  size="xs"
+                  value={params.precision}
+                  placeholder="Precision"
+                  onChange={(event) =>
+                    onChangeTypeParams?.({ precision: event.target.value })
+                  }
+                />
+              <div className="text-[10px] font-semibold uppercase tracking-wide opacity-70">
+                Scale
+              </div>
+                <Input
+                  size="xs"
+                  value={params.scale}
+                  placeholder="Scale"
+                  onChange={(event) =>
+                    onChangeTypeParams?.({ scale: event.target.value })
+                  }
+                />
+              </div>
+            </div>
+          ) : null}
+          {typeParamKind === 'enum' ? (
+            <div className="mt-2 flex items-center justify-between gap-3">
+              <div className="text-[10px] font-semibold uppercase tracking-wide opacity-70">
+                Enumeration
+              </div>
+              <div className="min-w-[140px] max-w-[220px] flex-1">
+                <Input
+                  size="xs"
+                  value={params.enumValues}
+                  placeholder="A, B, C"
+                  onChange={(event) =>
+                    onChangeTypeParams?.({ enumValues: event.target.value })
+                  }
+                />
+              </div>
+            </div>
+          ) : null}
           <div className="flex items-center justify-center pt-2">
             <button
               className="inline-flex h-7 items-center justify-center gap-2 whitespace-nowrap rounded-md px-2 text-xs font-medium text-red-700 transition-colors hover:bg-base-300 focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:pointer-events-none disabled:opacity-50 [&_svg]:pointer-events-none [&_svg]:size-4 [&_svg]:shrink-0"

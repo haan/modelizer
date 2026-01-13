@@ -445,11 +445,20 @@ export function useModelState({
             nodeId,
             node.data?.attributes,
           )
-          const nextAttributes = currentAttributes.map((attribute) =>
-            attribute.id === attributeId
-              ? { ...attribute, ...patch }
-              : attribute,
-          )
+          const nextAttributes = currentAttributes.map((attribute) => {
+            if (attribute.id !== attributeId) {
+              return attribute
+            }
+
+            const nextTypeParams = patch.typeParams
+              ? { ...attribute.typeParams, ...patch.typeParams }
+              : attribute.typeParams
+            return {
+              ...attribute,
+              ...patch,
+              typeParams: nextTypeParams,
+            }
+          })
           return {
             ...node,
             data: {
