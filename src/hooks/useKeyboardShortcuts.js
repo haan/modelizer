@@ -5,6 +5,7 @@ export function useKeyboardShortcuts({
   edges,
   onDeleteAssociation,
   onDeleteClass,
+  onDeleteSelection,
   onOpenModel,
   onRequestNewModel,
   onSaveModel,
@@ -40,15 +41,17 @@ export function useKeyboardShortcuts({
 
       if (key === 'delete' || key === 'backspace') {
         const selectedNodes = nodes.filter((node) => node.selected)
-        if (selectedNodes.length > 0) {
-          event.preventDefault()
-          selectedNodes.forEach((node) => onDeleteClass(node.id))
-          return
-        }
-
         const selectedEdges = edges.filter((edge) => edge.selected)
-        if (selectedEdges.length > 0) {
+        if (selectedNodes.length > 0 || selectedEdges.length > 0) {
           event.preventDefault()
+          if (onDeleteSelection) {
+            onDeleteSelection({
+              nodeIds: selectedNodes.map((node) => node.id),
+              edgeIds: selectedEdges.map((edge) => edge.id),
+            })
+            return
+          }
+          selectedNodes.forEach((node) => onDeleteClass(node.id))
           selectedEdges.forEach((edge) => onDeleteAssociation(edge.id))
         }
       }
@@ -63,6 +66,7 @@ export function useKeyboardShortcuts({
     nodes,
     onDeleteAssociation,
     onDeleteClass,
+    onDeleteSelection,
     onOpenModel,
     onRequestNewModel,
     onSaveModel,

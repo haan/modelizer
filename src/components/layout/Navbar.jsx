@@ -1,5 +1,6 @@
 import { useRef, useState } from 'react'
 import * as Menubar from '@radix-ui/react-menubar'
+import { CheckIcon } from '@radix-ui/react-icons'
 import Input from '../ui/Input.jsx'
 
 export default function Navbar({
@@ -18,6 +19,8 @@ export default function Navbar({
   onToggleBackground,
   showAccentColors,
   onToggleAccentColors,
+  confirmDelete,
+  onToggleConfirmDelete,
   isDirty,
 }) {
   const [isEditing, setIsEditing] = useState(false)
@@ -28,6 +31,8 @@ export default function Navbar({
     typeof navigator !== 'undefined' &&
     /Mac|iPhone|iPad|iPod/.test(navigator.platform)
   const shortcutPrefix = isMac ? 'Cmd' : 'Ctrl'
+  const viewItemClass =
+    'relative cursor-pointer rounded-sm px-2 py-1 pl-6 text-xs text-base-content transition-colors hover:bg-base-200 focus:outline-none'
 
   const startEditing = () => {
     originalNameRef.current = modelName ?? ''
@@ -192,23 +197,36 @@ export default function Navbar({
                   sideOffset={6}
                 >
                   <Menubar.Item
-                    className="cursor-pointer rounded-sm px-2 py-1 text-xs text-base-content transition-colors hover:bg-base-200 focus:outline-none"
+                    className={viewItemClass}
                     onSelect={() => onToggleMiniMap?.()}
                   >
                     {showMiniMap ? 'Hide' : 'Show'} Mini Map
                   </Menubar.Item>
                   <Menubar.Item
-                    className="cursor-pointer rounded-sm px-2 py-1 text-xs text-base-content transition-colors hover:bg-base-200 focus:outline-none"
+                    className={viewItemClass}
                     onSelect={() => onToggleBackground?.()}
                   >
                     {showBackground ? 'Hide' : 'Show'} Background
                   </Menubar.Item>
                   <Menubar.Item
-                    className="cursor-pointer rounded-sm px-2 py-1 text-xs text-base-content transition-colors hover:bg-base-200 focus:outline-none"
+                    className={viewItemClass}
                     onSelect={() => onToggleAccentColors?.()}
                   >
                     {showAccentColors ? 'Hide' : 'Show'} Accent Colors
                   </Menubar.Item>
+                  <Menubar.Separator className="my-1 h-px bg-base-content/20" />
+                  <Menubar.CheckboxItem
+                    className={viewItemClass}
+                    checked={confirmDelete}
+                    onCheckedChange={(value) =>
+                      onToggleConfirmDelete?.(Boolean(value))
+                    }
+                  >
+                    <Menubar.ItemIndicator className="absolute left-1.5 inline-flex h-3.5 w-3.5 items-center justify-center">
+                      <CheckIcon className="h-3.5 w-3.5" aria-hidden="true" />
+                    </Menubar.ItemIndicator>
+                    <span>Always ask for delete confirmation</span>
+                  </Menubar.CheckboxItem>
                 </Menubar.Content>
               </Menubar.Portal>
             </Menubar.Menu>

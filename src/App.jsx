@@ -25,7 +25,14 @@ function App() {
   const [showMiniMap, setShowMiniMap] = useState(false)
   const [showBackground, setShowBackground] = useState(true)
   const [showAccentColors, setShowAccentColors] = useState(true)
+  const [confirmDelete, setConfirmDelete] = useState(false)
+  const [deleteDialog, setDeleteDialog] = useState({
+    open: false,
+    title: '',
+    description: '',
+  })
   const resizeState = useRef(null)
+  const deleteActionRef = useRef(null)
 
   useEffect(() => {
     const handlePointerMove = (event) => {
@@ -78,7 +85,7 @@ function App() {
     onAddClass,
     onRenameClass,
     onRenameAssociation,
-    onDeleteAssociation,
+    onDeleteAssociation: deleteAssociation,
     onUpdateAssociationMultiplicity,
     onUpdateAssociationRole,
     onHighlightAssociation,
@@ -86,9 +93,9 @@ function App() {
     onReorderAttributes,
     onUpdateAttribute,
     onAddAttribute,
-    onDeleteAttribute,
+    onDeleteAttribute: deleteAttribute,
     onUpdateClassColor,
-    onDeleteClass,
+    onDeleteClass: deleteClass,
     onHighlightClass,
     onPaneClick,
     flowNodes,
@@ -97,6 +104,84 @@ function App() {
     reactFlowWrapper,
     showAccentColors,
   })
+
+  const requestDelete = useCallback(
+    ({ title, description, action }) => {
+      if (!confirmDelete) {
+        action()
+        return
+      }
+
+      deleteActionRef.current = action
+      setDeleteDialog({ open: true, title, description })
+    },
+    [confirmDelete],
+  )
+
+  const onDeleteDialogOpenChange = useCallback((open) => {
+    if (!open) {
+      deleteActionRef.current = null
+    }
+    setDeleteDialog((current) => ({ ...current, open }))
+  }, [])
+
+  const onConfirmDelete = useCallback(() => {
+    deleteActionRef.current?.()
+    deleteActionRef.current = null
+    setDeleteDialog((current) => ({ ...current, open: false }))
+  }, [])
+
+  const onDeleteClass = useCallback(
+    (nodeId) =>
+      requestDelete({
+        title: 'Delete class?',
+        description:
+          'This removes the class and any connected associations. This action cannot be undone.',
+        action: () => deleteClass(nodeId),
+      }),
+    [deleteClass, requestDelete],
+  )
+
+  const onDeleteAssociation = useCallback(
+    (edgeId) =>
+      requestDelete({
+        title: 'Delete association?',
+        description:
+          'This removes the association. This action cannot be undone.',
+        action: () => deleteAssociation(edgeId),
+      }),
+    [deleteAssociation, requestDelete],
+  )
+
+  const onDeleteAttribute = useCallback(
+    (nodeId, attributeId) =>
+      requestDelete({
+        title: 'Delete attribute?',
+        description:
+          'This removes the attribute from the class. This action cannot be undone.',
+        action: () => deleteAttribute(nodeId, attributeId),
+      }),
+    [deleteAttribute, requestDelete],
+  )
+
+  const onDeleteSelection = useCallback(
+    ({ nodeIds, edgeIds }) => {
+      if (!nodeIds.length && !edgeIds.length) {
+        return
+      }
+
+      requestDelete({
+        title: 'Delete selected items?',
+        description:
+          'This removes the selected items. This action cannot be undone.',
+        action: () => {
+          nodeIds.forEach((nodeId) => deleteClass(nodeId))
+          edgeIds.forEach((edgeId) => deleteAssociation(edgeId))
+        },
+      })
+    },
+    [deleteAssociation, deleteClass, requestDelete],
+  )
 
   const {
     isDirty,
@@ -124,6 +209,7 @@ function App() {
     edges,
     onDeleteAssociation,
     onDeleteClass,
+    onDeleteSelection,
     onOpenModel,
     onRequestNewModel,
     onSaveModel,
@@ -203,8 +289,8 @@ function App() {
   )
 
   return (
-    <div className="min-h-screen bg-base-200 text-base-content">
-      <div className="flex min-h-screen flex-col">
+    <div className="h-screen overflow-hidden bg-base-200 text-base-content">
+      <div className="flex h-full flex-col">
         <Navbar
           modelName={modelName}
           onRenameModel={setModelName}
@@ -223,6 +309,8 @@ function App() {
           onToggleAccentColors={() =>
             setShowAccentColors((current) => !current)
           }
+          confirmDelete={confirmDelete}
+          onToggleConfirmDelete={setConfirmDelete}
           isDirty={isDirty}
         />
         <div className="flex flex-1 min-h-0">
@@ -309,6 +397,36 @@ function App() {
                 onClick={onConfirmDiscardChanges}
               >
                 Discard
+              </AlertDialog.Action>
+            </div>
+          </AlertDialog.Content>
+        </AlertDialog.Portal>
+      </AlertDialog.Root>
+      <AlertDialog.Root
+        open={deleteDialog.open}
+        onOpenChange={onDeleteDialogOpenChange}
+      >
+        <AlertDialog.Portal>
+          <AlertDialog.Overlay className="fixed inset-0 z-40 bg-black/40" />
+          <AlertDialog.Content className="fixed left-1/2 top-1/2 z-50 w-[320px] -translate-x-1/2 -translate-y-1/2 rounded-lg border border-base-content/20 bg-base-100 p-4 shadow-xl">
+            <AlertDialog.Title className="text-sm font-semibold">
+              {deleteDialog.title}
+            </AlertDialog.Title>
+            <AlertDialog.Description className="mt-2 text-xs text-base-content/70">
+              {deleteDialog.description}
+            </AlertDialog.Description>
+            <div className="mt-4 flex justify-end gap-2">
+              <AlertDialog.Cancel
+                className="inline-flex h-8 items-center justify-center rounded-md border border-base-content/20 px-3 text-xs font-medium transition-colors hover:bg-base-200"
+                onClick={() => onDeleteDialogOpenChange(false)}
+              >
+                Cancel
+              </AlertDialog.Cancel>
+              <AlertDialog.Action
+                className="inline-flex h-8 items-center justify-center rounded-md bg-primary px-3 text-xs font-medium text-primary-content transition-colors hover:bg-primary/90"
+                onClick={onConfirmDelete}
+              >
+                Delete
               </AlertDialog.Action>
             </div>
           </AlertDialog.Content>

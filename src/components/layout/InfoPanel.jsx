@@ -25,10 +25,11 @@ export default function InfoPanel({
 }) {
   return (
     <aside
-      className="relative min-w-[350px] overflow-auto border-r border-base-content/10 bg-base-100"
+      className="relative flex min-w-[350px] flex-col border-r border-base-content/10 bg-base-100"
       style={{ width }}
     >
-      <div className="flex h-full flex-col gap-4 p-6">
+      <div className="flex-1 overflow-y-auto">
+        <div className="flex flex-col gap-4 p-6">
         {activeItem === 'tables' ? (
           <ClassesPanel
             nodes={nodes}
@@ -59,6 +60,7 @@ export default function InfoPanel({
             Select Classes to browse classes in this model.
           </p>
         )}
+        </div>
       </div>
       <div
         className="absolute right-0 top-0 h-full w-2 cursor-col-resize hover:bg-base-300/60"
