@@ -62,15 +62,22 @@ export default function ClassesPanelAttributesPanel({
               key={attribute.id}
               id={attribute.id}
               name={attribute.name}
+              logicalName={attribute.logicalName}
               type={attribute.type}
               typeParams={attribute.typeParams}
               defaultValue={attribute.defaultValue}
               nullable={attribute.nullable}
               unique={attribute.unique}
               autoIncrement={attribute.autoIncrement}
+              visibility={attribute.visibility}
               onChangeName={(nextValue) =>
                 onUpdateAttribute?.(nodeId, attribute.id, {
                   name: nextValue,
+                })
+              }
+              onChangeLogicalName={(nextValue) =>
+                onUpdateAttribute?.(nodeId, attribute.id, {
+                  logicalName: nextValue,
                 })
               }
               onChangeType={(nextValue) =>
@@ -103,6 +110,11 @@ export default function ClassesPanelAttributesPanel({
               onToggleAutoIncrement={() =>
                 onUpdateAttribute?.(nodeId, attribute.id, {
                   autoIncrement: !attribute.autoIncrement,
+                })
+              }
+              onChangeVisibility={(nextVisibility) =>
+                onUpdateAttribute?.(nodeId, attribute.id, {
+                  visibility: nextVisibility,
                 })
               }
               onDelete={() => onDeleteAttribute?.(nodeId, attribute.id)}

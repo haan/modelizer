@@ -23,6 +23,7 @@ export default function ClassesPanel({
   onAddAttribute,
   onDeleteAttribute,
   onUpdateClassColor,
+  onUpdateClassVisibility,
   onDeleteClass,
   onHighlightClass,
   showAccentColors,
@@ -128,6 +129,7 @@ export default function ClassesPanel({
               onAddAttribute={onAddAttribute}
               onDeleteAttribute={onDeleteAttribute}
               onUpdateClassColor={onUpdateClassColor}
+              onUpdateClassVisibility={onUpdateClassVisibility}
               onDeleteClass={onDeleteClass}
               onHighlightClass={onHighlightClass}
               showAccentColors={showAccentColors}

@@ -1,7 +1,8 @@
-import { useCallback, useMemo, useState } from 'react'
+import { useCallback, useEffect, useMemo, useState } from 'react'
 import {
   addEdge,
   applyEdgeChanges,
+  applyNodeChanges,
   useEdgesState,
   useNodesState,
 } from 'reactflow'
@@ -15,9 +16,18 @@ import {
   ASSOCIATION_NODE_SIZE,
   ASSOCIATIVE_EDGE_TYPE,
   CLASS_NODE_TYPE,
+  DEFAULT_VIEW,
   HIGHLIGHT_ZOOM,
   REFLEXIVE_EDGE_TYPE,
+  VIEW_CONCEPTUAL,
+  VIEW_LOGICAL,
+  VIEW_PHYSICAL,
 } from '../model/constants.js'
+import {
+  DEFAULT_VIEW_VISIBILITY,
+  normalizeVisibility,
+  normalizeViewPositions,
+} from '../model/viewUtils.js'
 
 const initialNodes = []
 const initialEdges = []
@@ -27,18 +37,91 @@ export function useModelState({
   reactFlowWrapper,
   showAccentColors,
   alternateNNDisplay,
+  activeView = DEFAULT_VIEW,
 }) {
-  const [nodes, setNodes, onNodesChange] = useNodesState(initialNodes)
+  const [nodes, setNodes] = useNodesState(initialNodes)
   const [edges, setEdges] = useEdgesState(normalizeEdges(initialEdges))
   const [modelName, setModelName] = useState('Untitled model')
   const [activeSidebarItem, setActiveSidebarItem] = useState('tables')
   const [isConnecting, setIsConnecting] = useState(false)
+
+  const normalizedActiveView =
+    activeView === VIEW_LOGICAL || activeView === VIEW_PHYSICAL
+      ? activeView
+      : VIEW_CONCEPTUAL
+
+  const isVisibleInView = useCallback(
+    (visibility) => {
+      const normalized = normalizeVisibility(visibility)
+      if (normalizedActiveView === VIEW_LOGICAL) {
+        return normalized.logical
+      }
+      if (normalizedActiveView === VIEW_PHYSICAL) {
+        return normalized.physical
+      }
+      return normalized.conceptual
+    },
+    [normalizedActiveView],
+  )
 
   const onEdgesChange = useCallback(
     (changes) =>
       setEdges((current) => normalizeEdges(applyEdgeChanges(changes, current))),
     [setEdges],
   )
+
+  const onNodesChange = useCallback(
+    (changes) => {
+      setNodes((current) => {
+        const nextNodes = applyNodeChanges(changes, current)
+        return nextNodes.map((node) => {
+          if (node.type !== CLASS_NODE_TYPE) {
+            return node
+          }
+
+          const viewPositions = normalizeViewPositions(
+            node.data?.viewPositions,
+            node.position,
+          )
+          return {
+            ...node,
+            data: {
+              ...node.data,
+              viewPositions: {
+                ...viewPositions,
+                [normalizedActiveView]: { ...node.position },
+              },
+            },
+          }
+        })
+      })
+    },
+    [normalizedActiveView, setNodes],
+  )
+
+  useEffect(() => {
+    setNodes((current) =>
+      current.map((node) => {
+        if (node.type !== CLASS_NODE_TYPE) {
+          return node
+        }
+
+        const viewPositions = normalizeViewPositions(
+          node.data?.viewPositions,
+          node.position,
+        )
+        const nextPosition = viewPositions[normalizedActiveView]
+        return {
+          ...node,
+          position: nextPosition,
+          data: {
+            ...node.data,
+            viewPositions,
+          },
+        }
+      }),
+    )
+  }, [normalizedActiveView, setNodes])
 
   const isAssociationHelperNode = useCallback(
     (nodeId) => {
@@ -193,6 +276,8 @@ export function useModelState({
             label: `Class${current.length + 1}`,
             attributes: [],
             color: nextColor,
+            visibility: { ...DEFAULT_VIEW_VISIBILITY },
+            viewPositions: normalizeViewPositions(null, position),
           },
         },
       ]
@@ -454,10 +539,14 @@ export function useModelState({
             const nextTypeParams = patch.typeParams
               ? { ...attribute.typeParams, ...patch.typeParams }
               : attribute.typeParams
+            const nextVisibility = patch.visibility
+              ? { ...attribute.visibility, ...patch.visibility }
+              : attribute.visibility
             return {
               ...attribute,
               ...patch,
               typeParams: nextTypeParams,
+              visibility: nextVisibility,
             }
           })
           return {
@@ -485,12 +574,11 @@ export function useModelState({
             nodeId,
             node.data?.attributes,
           )
-          currentAttributes.push(
-            createAttribute(
-              nodeId,
-              `attribute${currentAttributes.length + 1}`,
-            ),
+          const nextAttribute = createAttribute(
+            nodeId,
+            `attribute${currentAttributes.length + 1}`,
           )
+          currentAttributes.push(nextAttribute)
 
           return {
             ...node,
@@ -546,6 +634,29 @@ export function useModelState({
     },
     [setNodes],
   )
+
+  const onUpdateClassVisibility = useCallback(
+    (nodeId, nextVisibility) => {
+      setNodes((current) =>
+        current.map((node) => {
+          if (node.id !== nodeId) {
+            return node
+          }
+
+          const currentVisibility = normalizeVisibility(node.data?.visibility)
+          return {
+            ...node,
+            data: {
+              ...node.data,
+              visibility: { ...currentVisibility, ...nextVisibility },
+            },
+          }
+        }),
+      )
+    },
+    [setNodes],
+  )
+
 
   const onDeleteClass = useCallback(
     (nodeId) => {
@@ -629,7 +740,24 @@ export function useModelState({
     clearAssociationHighlight()
   }, [clearAssociationHighlight])
 
+  const visibleClassIds = useMemo(() => {
+    const ids = new Set()
+    nodes.forEach((node) => {
+      if (node.type !== CLASS_NODE_TYPE) {
+        return
+      }
+      if (isVisibleInView(node.data?.visibility)) {
+        ids.add(node.id)
+      }
+    })
+    return ids
+  }, [isVisibleInView, nodes])
+
   const associationEdgeNodes = useMemo(() => {
+    if (normalizedActiveView !== VIEW_CONCEPTUAL) {
+      return []
+    }
+
     const nodeMap = new Map(nodes.map((node) => [node.id, node]))
     const getNode = (nodeId) =>
       reactFlowInstance?.getNode(nodeId) ?? nodeMap.get(nodeId)
@@ -652,8 +780,10 @@ export function useModelState({
     return edges
       .filter(
         (edge) =>
-          edge.type === ASSOCIATION_EDGE_TYPE ||
-          edge.type === REFLEXIVE_EDGE_TYPE,
+          (edge.type === ASSOCIATION_EDGE_TYPE ||
+            edge.type === REFLEXIVE_EDGE_TYPE) &&
+          visibleClassIds.has(edge.source) &&
+          visibleClassIds.has(edge.target),
       )
       .map((edge) => {
         if (edge.type === REFLEXIVE_EDGE_TYPE) {
@@ -742,19 +872,83 @@ export function useModelState({
         }
       })
       .filter(Boolean)
-  }, [edges, nodes, reactFlowInstance])
+  }, [edges, nodes, normalizedActiveView, reactFlowInstance, visibleClassIds])
+
+  const flowEdges = useMemo(() => {
+    if (normalizedActiveView !== VIEW_CONCEPTUAL) {
+      return []
+    }
+
+    const visibleAssociationEdges = edges.filter(
+      (edge) =>
+        (edge.type === ASSOCIATION_EDGE_TYPE ||
+          edge.type === REFLEXIVE_EDGE_TYPE) &&
+        visibleClassIds.has(edge.source) &&
+        visibleClassIds.has(edge.target),
+    )
+    const visibleAssociationIds = new Set(
+      visibleAssociationEdges.map((edge) => edge.id),
+    )
+    const visibleHelperIds = new Set(
+      visibleAssociationEdges.map((edge) => `assoc-edge-${edge.id}`),
+    )
+
+    const visibleAssociativeEdges = edges.filter((edge) => {
+      if (edge.type !== ASSOCIATIVE_EDGE_TYPE) {
+        return false
+      }
+
+      const helperId = edge.source?.startsWith('assoc-edge-')
+        ? edge.source
+        : edge.target?.startsWith('assoc-edge-')
+          ? edge.target
+          : null
+      if (!helperId || !visibleHelperIds.has(helperId)) {
+        return false
+      }
+
+      const classId =
+        helperId === edge.source ? edge.target : edge.source
+      if (!classId || !visibleClassIds.has(classId)) {
+        return false
+      }
+
+      const baseAssociationId = helperId.replace('assoc-edge-', '')
+      return visibleAssociationIds.has(baseAssociationId)
+    })
+
+    return [...visibleAssociationEdges, ...visibleAssociativeEdges]
+  }, [edges, normalizedActiveView, visibleClassIds])
 
   const flowNodes = useMemo(() => {
-    const decoratedNodes = nodes.map((node) =>
-      node.type === CLASS_NODE_TYPE
-        ? {
-            ...node,
-            data: { ...node.data, showAccentColors, alternateNNDisplay },
-          }
-        : node,
-    )
+    const decoratedNodes = nodes
+      .filter((node) =>
+        node.type === CLASS_NODE_TYPE
+          ? isVisibleInView(node.data?.visibility)
+          : true,
+      )
+      .map((node) =>
+        node.type === CLASS_NODE_TYPE
+          ? {
+              ...node,
+              data: {
+                ...node.data,
+                showAccentColors,
+                alternateNNDisplay,
+                activeView: normalizedActiveView,
+              },
+            }
+          : node,
+      )
     return [...decoratedNodes, ...associationEdgeNodes]
-  }, [alternateNNDisplay, associationEdgeNodes, nodes, showAccentColors])
+  }, [
+    alternateNNDisplay,
+    associationEdgeNodes,
+    isVisibleInView,
+    nodes,
+    normalizedActiveView,
+    showAccentColors,
+  ])
 
   return {
     nodes,
@@ -785,9 +979,11 @@ export function useModelState({
     onAddAttribute,
     onDeleteAttribute,
     onUpdateClassColor,
+    onUpdateClassVisibility,
     onDeleteClass,
     onHighlightClass,
     onPaneClick,
     flowNodes,
+    flowEdges,
   }
 }

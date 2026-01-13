@@ -1,3 +1,5 @@
+import { normalizeVisibility } from './model/viewUtils.js'
+
 export function normalizeAttributes(nodeId, attributes) {
   if (!Array.isArray(attributes)) {
     return []
@@ -8,12 +10,14 @@ export function normalizeAttributes(nodeId, attributes) {
       return {
         id: `${nodeId}-attr-${index}`,
         name: attribute,
+        logicalName: '',
         type: '',
         typeParams: normalizeTypeParams(),
         defaultValue: '',
-        nullable: true,
+        nullable: false,
         unique: false,
         autoIncrement: false,
+        visibility: normalizeVisibility(),
       }
     }
 
@@ -27,6 +31,8 @@ export function normalizeAttributes(nodeId, attributes) {
       return {
         id: attribute.id ?? `${nodeId}-attr-${index}`,
         name,
+        logicalName:
+          typeof attribute.logicalName === 'string' ? attribute.logicalName : '',
         type: typeof attribute.type === 'string' ? attribute.type : '',
         typeParams: normalizeTypeParams(attribute.typeParams),
         defaultValue:
@@ -37,18 +43,21 @@ export function normalizeAttributes(nodeId, attributes) {
           typeof attribute.autoIncrement === 'boolean'
             ? attribute.autoIncrement
             : false,
+        visibility: normalizeVisibility(attribute.visibility),
       }
     }
 
     return {
       id: `${nodeId}-attr-${index}`,
       name: '',
+      logicalName: '',
       type: '',
       typeParams: normalizeTypeParams(),
       defaultValue: '',
-      nullable: true,
+      nullable: false,
       unique: false,
       autoIncrement: false,
+      visibility: normalizeVisibility(),
     }
   })
 }
@@ -146,11 +155,13 @@ export function createAttribute(nodeId, name) {
   return {
     id: `attr-${nodeId}-${idSuffix}`,
     name,
+    logicalName: '',
     type: '',
     typeParams: normalizeTypeParams(),
     defaultValue: '',
-    nullable: true,
+    nullable: false,
     unique: false,
     autoIncrement: false,
+    visibility: normalizeVisibility(),
   }
 }

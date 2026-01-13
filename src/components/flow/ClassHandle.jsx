@@ -8,6 +8,7 @@ const HANDLE_TARGET_CLASS = `${HANDLE_BASE_CLASS} pointer-events-none group-[.is
 export default function ClassHandle({
   className,
   id,
+  isActive = true,
   position,
   type,
 }) {
@@ -17,7 +18,10 @@ export default function ClassHandle({
       : { isConnectableStart: false }
   const handleClass =
     type === 'source' ? HANDLE_SOURCE_CLASS : HANDLE_TARGET_CLASS
-  const finalClassName = className ? `${handleClass} ${className}` : handleClass
+  const inactiveClass = isActive ? '' : 'opacity-0 pointer-events-none'
+  const finalClassName = [handleClass, inactiveClass, className]
+    .filter(Boolean)
+    .join(' ')
 
   return (
     <Handle
@@ -25,6 +29,7 @@ export default function ClassHandle({
       id={id}
       type={type}
       position={position}
+      isConnectable={isActive}
       {...connectableProps}
     />
   )

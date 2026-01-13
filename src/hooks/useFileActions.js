@@ -2,11 +2,19 @@ import { useCallback, useEffect, useRef, useState } from 'react'
 import { normalizeAttributes } from '../attributes.js'
 import {
   CLASS_NODE_TYPE,
+  DEFAULT_VIEW,
   MODEL_FILE_EXTENSION,
   MODEL_VERSION,
+  VIEW_CONCEPTUAL,
+  VIEW_LOGICAL,
+  VIEW_PHYSICAL,
 } from '../model/constants.js'
 import { normalizeEdges } from '../model/edgeUtils.js'
 import { sanitizeFileName } from '../model/fileUtils.js'
+import {
+  normalizeVisibility,
+  normalizeViewPositions,
+} from '../model/viewUtils.js'
 
 export function useFileActions({
   nodes,
@@ -16,10 +24,15 @@ export function useFileActions({
   setEdges,
   setModelName,
   setActiveSidebarItem,
+  activeView = DEFAULT_VIEW,
 }) {
   const [isDirty, setIsDirty] = useState(false)
   const [isConfirmDialogOpen, setIsConfirmDialogOpen] = useState(false)
   const fileHandleRef = useRef(null)
+  const normalizedActiveView =
+    activeView === VIEW_LOGICAL || activeView === VIEW_PHYSICAL
+      ? activeView
+      : VIEW_CONCEPTUAL
   const lastSavedRef = useRef(
     JSON.stringify(
       {
@@ -66,16 +79,25 @@ export function useFileActions({
       const nextNodes = (payload?.nodes ?? []).map((node, index) => {
         const nodeId = node?.id ?? `class-${Date.now()}-${index}`
         const data = node?.data ?? {}
+        const viewPositions = normalizeViewPositions(
+          data.viewPositions,
+          node?.position,
+        )
+        const visibility = normalizeVisibility(data.visibility)
+        const attributes = normalizeAttributes(nodeId, data.attributes)
 
         return {
           ...node,
           id: nodeId,
           type: node?.type ?? CLASS_NODE_TYPE,
           selected: false,
+          position: viewPositions[normalizedActiveView] ?? node?.position,
           data: {
             ...data,
             label: typeof data.label === 'string' ? data.label : '',
-            attributes: normalizeAttributes(nodeId, data.attributes),
+            attributes,
+            visibility,
+            viewPositions,
           },
         }
       })
@@ -112,7 +134,7 @@ export function useFileActions({
       lastSavedRef.current = nextSerialized
       setIsDirty(false)
     },
-    [setActiveSidebarItem, setEdges, setModelName, setNodes],
+    [normalizedActiveView, setActiveSidebarItem, setEdges, setModelName, setNodes],
   )
 
   const requestDiscardChanges = useCallback(

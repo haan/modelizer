@@ -14,6 +14,7 @@ export default function InfoPanel({
   onAddAttribute,
   onDeleteAttribute,
   onUpdateClassColor,
+  onUpdateClassVisibility,
   onDeleteClass,
   onHighlightClass,
   showAccentColors,
@@ -41,6 +42,7 @@ export default function InfoPanel({
             onAddAttribute={onAddAttribute}
             onDeleteAttribute={onDeleteAttribute}
             onUpdateClassColor={onUpdateClassColor}
+            onUpdateClassVisibility={onUpdateClassVisibility}
             onDeleteClass={onDeleteClass}
             onHighlightClass={onHighlightClass}
             showAccentColors={showAccentColors}

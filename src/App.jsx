@@ -17,6 +17,7 @@ import { useModelState } from './hooks/useModelState.js'
 import { normalizeAttributes } from './attributes.js'
 import DefaultValuesPanel from './components/flow/DefaultValuesPanel.jsx'
 import { sanitizeFileName } from './model/fileUtils.js'
+import { DEFAULT_VIEW, VIEW_PHYSICAL } from './model/constants.js'
 
 const MIN_INFO_WIDTH = 350
 
@@ -30,6 +31,7 @@ function App() {
   const [alternateNNDisplay, setAlternateNNDisplay] = useState(false)
   const [isExportingPng, setIsExportingPng] = useState(false)
   const [confirmDelete, setConfirmDelete] = useState(false)
+  const [activeView, setActiveView] = useState(DEFAULT_VIEW)
   const [deleteDialog, setDeleteDialog] = useState({
     open: false,
     title: '',
@@ -99,15 +101,18 @@ function App() {
     onAddAttribute,
     onDeleteAttribute: deleteAttribute,
     onUpdateClassColor,
+    onUpdateClassVisibility,
     onDeleteClass: deleteClass,
     onHighlightClass,
     onPaneClick,
     flowNodes,
+    flowEdges,
   } = useModelState({
     reactFlowInstance,
     reactFlowWrapper,
     showAccentColors,
     alternateNNDisplay,
+    activeView,
   })
 
   const requestDelete = useCallback(
@@ -207,6 +212,7 @@ function App() {
     setEdges,
     setModelName,
     setActiveSidebarItem,
+    activeView,
   })
 
   useKeyboardShortcuts({
@@ -305,10 +311,15 @@ function App() {
         if (!value) {
           return []
         }
+        const logicalName =
+          typeof attribute.logicalName === 'string' && attribute.logicalName.trim()
+            ? attribute.logicalName.trim()
+            : ''
         const attributeName =
-          typeof attribute.name === 'string' && attribute.name.trim()
+          logicalName ||
+          (typeof attribute.name === 'string' && attribute.name.trim()
             ? attribute.name.trim()
-            : 'attribute'
+            : 'attribute')
         return [
           {
             key: `${className}.${attributeName}`,
@@ -350,6 +361,8 @@ function App() {
           <Sidebar
             activeItem={activeSidebarItem}
             onSelect={onSidebarSelect}
+            activeView={activeView}
+            onViewChange={setActiveView}
           />
           <InfoPanel
             width={infoWidth}
@@ -365,6 +378,7 @@ function App() {
             onAddAttribute={onAddAttribute}
             onDeleteAttribute={onDeleteAttribute}
             onUpdateClassColor={onUpdateClassColor}
+            onUpdateClassVisibility={onUpdateClassVisibility}
             onDeleteClass={onDeleteClass}
             onHighlightClass={onHighlightClass}
             showAccentColors={showAccentColors}
@@ -381,7 +395,7 @@ function App() {
             >
               <ReactFlow
                 nodes={flowNodes}
-                edges={edges}
+                edges={flowEdges}
                 onNodesChange={onNodesChange}
                 onEdgesChange={onEdgesChange}
                 onConnect={onConnect}
@@ -407,10 +421,12 @@ function App() {
                 ) : null}
                 {showBackground ? <Background gap={16} size={1} /> : null}
               </ReactFlow>
-              <DefaultValuesPanel
-                entries={defaultValueEntries}
-                isExporting={isExportingPng}
-              />
+              {activeView === VIEW_PHYSICAL ? (
+                <DefaultValuesPanel
+                  entries={defaultValueEntries}
+                  isExporting={isExportingPng}
+                />
+              ) : null}
             </div>
           </main>
         </div>

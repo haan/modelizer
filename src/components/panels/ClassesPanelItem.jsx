@@ -16,6 +16,7 @@ export default function ClassesPanelItem({
   onAddAttribute,
   onDeleteAttribute,
   onUpdateClassColor,
+  onUpdateClassVisibility,
   onDeleteClass,
   onHighlightClass,
   showAccentColors = true,
@@ -25,6 +26,7 @@ export default function ClassesPanelItem({
   const attributes = normalizeAttributes(node.id, node.data?.attributes)
   const label = node.data?.label ?? ''
   const color = node.data?.color ?? CLASS_COLOR_PALETTE[0]
+  const classVisibility = node.data?.visibility
   const {
     attributes: sortableAttributes,
     listeners,
@@ -217,6 +219,10 @@ export default function ClassesPanelItem({
       <ClassesPanelVisibilityPanel
         accentColor={accentColor}
         showAccentColors={showAccentColors}
+        classVisibility={classVisibility}
+        onUpdateClassVisibility={(nextVisibility) =>
+          onUpdateClassVisibility?.(node.id, nextVisibility)
+        }
       />
       <div className="w-full">
         <div

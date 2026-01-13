@@ -1,4 +1,10 @@
-export default function Sidebar({ activeItem, onSelect }) {
+import {
+  VIEW_CONCEPTUAL,
+  VIEW_LOGICAL,
+  VIEW_PHYSICAL,
+} from '../../model/constants.js'
+
+export default function Sidebar({ activeItem, onSelect, activeView, onViewChange }) {
   const sidebarButtonClass =
     'peer/menu-button flex w-full flex-col items-center justify-center gap-1 rounded-md px-1 py-2 text-[10px] leading-tight text-center outline-none transition-[width,height,padding] focus-visible:ring-2 focus-visible:ring-base-content/20 hover:bg-base-300 data-[active=true]:bg-base-300 data-[active=true]:font-medium data-[active=true]:text-primary'
 
@@ -201,6 +207,63 @@ export default function Sidebar({ activeItem, onSelect }) {
                       <rect width="8" height="8" x="13" y="13" rx="2" />
                     </svg>
                     <span>Refs</span>
+                  </button>
+                </li>
+              </ul>
+            </div>
+          </div>
+          <div
+            data-sidebar="separator"
+            className="mx-2 h-px w-auto bg-base-content/10"
+            data-orientation="horizontal"
+            role="none"
+          />
+          <div
+            data-sidebar="group"
+            className="relative flex w-full min-w-0 flex-col p-2"
+          >
+            <div data-sidebar="group-content" className="w-full text-sm">
+              <ul
+                data-sidebar="menu"
+                className="flex w-full min-w-0 flex-col gap-1"
+              >
+                <li data-sidebar="menu-item" className="group/menu-item relative">
+                  <button
+                    data-sidebar="menu-button"
+                    data-size="default"
+                    data-active={activeView === VIEW_CONCEPTUAL ? 'true' : 'false'}
+                    className={sidebarButtonClass}
+                    onClick={() => onViewChange?.(VIEW_CONCEPTUAL)}
+                    type="button"
+                  >
+                    <span className="text-[10px] font-semibold">C</span>
+                    <span>Concept</span>
+                  </button>
+                </li>
+                <li data-sidebar="menu-item" className="group/menu-item relative">
+                  <button
+                    data-sidebar="menu-button"
+                    data-size="default"
+                    data-active={activeView === VIEW_LOGICAL ? 'true' : 'false'}
+                    className={sidebarButtonClass}
+                    onClick={() => onViewChange?.(VIEW_LOGICAL)}
+                    type="button"
+                  >
+                    <span className="text-[10px] font-semibold">L</span>
+                    <span>Logical</span>
+                  </button>
+                </li>
+                <li data-sidebar="menu-item" className="group/menu-item relative">
+                  <button
+                    data-sidebar="menu-button"
+                    data-size="default"
+                    data-active={activeView === VIEW_PHYSICAL ? 'true' : 'false'}
+                    className={sidebarButtonClass}
+                    onClick={() => onViewChange?.(VIEW_PHYSICAL)}
+                    type="button"
+                  >
+                    <span className="text-[10px] font-semibold">P</span>
+                    <span>Physical</span>
                   </button>
                 </li>
               </ul>

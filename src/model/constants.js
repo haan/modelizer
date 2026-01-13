@@ -7,3 +7,7 @@ export const ASSOCIATION_NODE_SIZE = 1
 export const HIGHLIGHT_ZOOM = 1.4
 export const MODEL_FILE_EXTENSION = '.mdlz'
 export const MODEL_VERSION = 1
+export const VIEW_CONCEPTUAL = 'conceptual'
+export const VIEW_LOGICAL = 'logical'
+export const VIEW_PHYSICAL = 'physical'
+export const DEFAULT_VIEW = VIEW_CONCEPTUAL

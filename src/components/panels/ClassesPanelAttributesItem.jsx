@@ -4,29 +4,35 @@ import { useSortable } from '@dnd-kit/sortable'
 import { CSS } from '@dnd-kit/utilities'
 import Input from '../ui/Input.jsx'
 import SelectField from '../ui/Select.jsx'
+import CheckboxInput from '../ui/Checkbox.jsx'
 import {
   ATTRIBUTE_TYPE_OPTIONS,
   ATTRIBUTE_TYPE_PARAMS_DEFAULT,
   ATTRIBUTE_TYPE_UNDEFINED,
   getTypeParamKind,
 } from '../../attributes.js'
+import { normalizeVisibility } from '../../model/viewUtils.js'
 
 export default function ClassesPanelAttributesItem({
   id,
   name,
+  logicalName,
   type,
   typeParams,
   defaultValue,
   nullable,
   unique,
   autoIncrement,
+  visibility,
   onChangeName,
+  onChangeLogicalName,
   onChangeType,
   onChangeTypeParams,
   onChangeDefaultValue,
   onToggleNullable,
   onToggleUnique,
   onToggleAutoIncrement,
+  onChangeVisibility,
   onDelete,
 }) {
   const {
@@ -43,6 +49,7 @@ export default function ClassesPanelAttributesItem({
     transition,
   }
   const isNullable = Boolean(nullable)
+  const isNotNull = !isNullable
   const isUnique = Boolean(unique)
   const isAutoIncrement = Boolean(autoIncrement)
   const [isOpen, setIsOpen] = useState(false)
@@ -56,6 +63,9 @@ export default function ClassesPanelAttributesItem({
   const typeParamKind = getTypeParamKind(
     selectTypeValue === ATTRIBUTE_TYPE_UNDEFINED ? '' : typeValue,
   )
+  const visibilityState = normalizeVisibility(visibility)
+  const isConceptualVisible = visibilityState.conceptual
+  const isLogicalVisible = visibilityState.logical
 
   return (
     <li
@@ -148,9 +158,9 @@ export default function ClassesPanelAttributesItem({
                   <Tooltip.Trigger asChild>
                     <button
                       type="button"
-                      aria-pressed={isNullable}
+                      aria-pressed={isNotNull}
                       className={`inline-flex h-6 w-6 items-center justify-center rounded-md text-[10px] font-semibold transition-colors hover:bg-base-300 ${
-                        isNullable ? 'text-accent' : 'text-base-content/60'
+                        isNotNull ? 'text-accent' : 'text-base-content/60'
                       }`}
                       onClick={(event) => {
                         event.stopPropagation()
@@ -158,7 +168,7 @@ export default function ClassesPanelAttributesItem({
                       }}
                       onMouseDown={(event) => event.stopPropagation()}
                     >
-                      N
+                      NN
                     </button>
                   </Tooltip.Trigger>
                   <Tooltip.Portal>
@@ -168,7 +178,37 @@ export default function ClassesPanelAttributesItem({
                       sideOffset={6}
                       className="rounded-md border border-base-content/20 bg-base-100 px-2 py-1 text-[10px] text-base-content shadow-lg"
                     >
-                      {isNullable ? 'Null' : 'Not Null'}
+                      {isNotNull ? 'Not Null' : 'Null'}
+                      <Tooltip.Arrow className="fill-base-100" />
+                    </Tooltip.Content>
+                  </Tooltip.Portal>
+                </Tooltip.Root>
+                <Tooltip.Root>
+                  <Tooltip.Trigger asChild>
+                    <button
+                      type="button"
+                      aria-pressed={isUnique}
+                      className={`inline-flex h-6 min-w-[24px] px-1 items-center justify-center rounded-md text-[10px] font-semibold transition-colors hover:bg-base-300 ${
+                        isUnique ? 'text-accent' : 'text-base-content/60'
+                      }`}
+                      onClick={(event) => {
+                        event.stopPropagation()
+                        onToggleUnique?.()
+                      }}
+                      onMouseDown={(event) => event.stopPropagation()}
+                      aria-label="Unique"
+                    >
+                      UQ
+                    </button>
+                  </Tooltip.Trigger>
+                  <Tooltip.Portal>
+                    <Tooltip.Content
+                      side="top"
+                      align="center"
+                      sideOffset={6}
+                      className="rounded-md border border-base-content/20 bg-base-100 px-2 py-1 text-[10px] text-base-content shadow-lg"
+                    >
+                      {isUnique ? 'Unique' : 'Not Unique'}
                       <Tooltip.Arrow className="fill-base-100" />
                     </Tooltip.Content>
                   </Tooltip.Portal>
@@ -205,38 +245,51 @@ export default function ClassesPanelAttributesItem({
                     </Tooltip.Content>
                   </Tooltip.Portal>
                 </Tooltip.Root>
-                <Tooltip.Root>
-                  <Tooltip.Trigger asChild>
-                    <button
-                      type="button"
-                      aria-pressed={isUnique}
-                      className={`inline-flex h-6 w-6 items-center justify-center rounded-md text-[10px] font-semibold transition-colors hover:bg-base-300 ${
-                        isUnique ? 'text-accent' : 'text-base-content/60'
-                      }`}
-                      onClick={(event) => {
-                        event.stopPropagation()
-                        onToggleUnique?.()
-                      }}
-                      onMouseDown={(event) => event.stopPropagation()}
-                      aria-label="Unique"
-                    >
-                      U
-                    </button>
-                  </Tooltip.Trigger>
-                  <Tooltip.Portal>
-                    <Tooltip.Content
-                      side="top"
-                      align="center"
-                      sideOffset={6}
-                      className="rounded-md border border-base-content/20 bg-base-100 px-2 py-1 text-[10px] text-base-content shadow-lg"
-                    >
-                      {isUnique ? 'Unique' : 'Not Unique'}
-                      <Tooltip.Arrow className="fill-base-100" />
-                    </Tooltip.Content>
-                  </Tooltip.Portal>
-                </Tooltip.Root>
               </div>
             </Tooltip.Provider>
+          </div>
+          <div className="flex items-center justify-between gap-3 pb-2">
+            <div className="text-[10px] font-semibold uppercase tracking-wide opacity-70">
+              Visibility
+            </div>
+            <div className="flex flex-wrap items-center gap-3 text-[11px]">
+              <label className="flex items-center gap-2">
+                <CheckboxInput
+                  checked={isConceptualVisible}
+                  onCheckedChange={(value) =>
+                    onChangeVisibility?.({ conceptual: Boolean(value) })
+                  }
+                />
+                <span>Conceptual</span>
+              </label>
+              <label className="flex items-center gap-2">
+                <CheckboxInput
+                  checked={isLogicalVisible}
+                  onCheckedChange={(value) =>
+                    onChangeVisibility?.({
+                      logical: Boolean(value),
+                      physical: Boolean(value),
+                    })
+                  }
+                />
+                <span>Logical/Physical</span>
+              </label>
+            </div>
+          </div>
+          <div className="flex items-center justify-between gap-3 pb-2">
+            <div className="text-[10px] font-semibold uppercase tracking-wide opacity-70">
+              Logical name
+            </div>
+            <div className="min-w-[140px] max-w-[220px] flex-1">
+              <Input
+                size="xs"
+                value={logicalName ?? ''}
+                placeholder="Logical name"
+                onChange={(event) =>
+                  onChangeLogicalName?.(event.target.value)
+                }
+              />
+            </div>
           </div>
           <div className="flex items-center justify-between gap-3">
             <div className="text-[10px] font-semibold uppercase tracking-wide opacity-70">
