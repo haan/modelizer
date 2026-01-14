@@ -1,4 +1,4 @@
-import { useLayoutEffect, useMemo, useRef } from 'react'
+import { useLayoutEffect, useRef } from 'react'
 import { Position, useUpdateNodeInternals } from 'reactflow'
 import { CLASS_COLOR_PALETTE } from '../../classPalette.js'
 import { normalizeVisibility } from '../../model/viewUtils.js'
@@ -13,10 +13,6 @@ import ClassHandle from './ClassHandle.jsx'
 export function Class({ data, id, selected }) {
   const nodeRef = useRef(null)
   const updateNodeInternals = useUpdateNodeInternals()
-  const attributes = useMemo(
-    () => (Array.isArray(data?.attributes) ? data.attributes : []),
-    [data?.attributes],
-  )
   const accentColor = data?.color ?? CLASS_COLOR_PALETTE[0]
   const showAccentColors = data?.showAccentColors ?? true
   const alternateNNDisplay = data?.alternateNNDisplay ?? false
@@ -26,7 +22,8 @@ export function Class({ data, id, selected }) {
   const handleVisibilityClass = showHandles ? '' : 'opacity-0 pointer-events-none'
   const showTypeDetails = activeView === VIEW_PHYSICAL
   const showConstraints = activeView === VIEW_PHYSICAL
-  const visibleAttributes = useMemo(() => {
+  const visibleAttributes = (() => {
+    const attributes = Array.isArray(data?.attributes) ? data.attributes : []
     return attributes.filter((attribute) => {
       const visibility = normalizeVisibility(attribute.visibility)
       if (activeView === VIEW_LOGICAL) {
@@ -37,11 +34,10 @@ export function Class({ data, id, selected }) {
       }
       return visibility.conceptual
     })
-  }, [activeView, attributes])
-  const visibleAttributeKey = useMemo(
-    () => visibleAttributes.map((attribute) => attribute.id).join('|'),
-    [visibleAttributes],
-  )
+  })()
+  const visibleAttributeKey = visibleAttributes
+    .map((attribute) => attribute.id)
+    .join('|')
   const borderClass = selected ? 'border-primary' : 'border-base-content/70'
 
   useLayoutEffect(() => {

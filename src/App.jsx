@@ -18,18 +18,23 @@ import DefaultValuesPanel from './components/flow/DefaultValuesPanel.jsx'
 import { sanitizeFileName } from './model/fileUtils.js'
 import { DEFAULT_VIEW, VIEW_PHYSICAL } from './model/constants.js'
 
-const MIN_INFO_WIDTH = 350
+const MIN_INFO_WIDTH = 370
 
 function App() {
   const reactFlowWrapper = useRef(null)
   const [reactFlowInstance, setReactFlowInstance] = useState(null)
-  const [infoWidth, setInfoWidth] = useState(360)
+  const [infoWidth, setInfoWidth] = useState(370)
   const [showMiniMap, setShowMiniMap] = useState(false)
   const [showBackground, setShowBackground] = useState(true)
   const [showAccentColors, setShowAccentColors] = useState(true)
   const [alternateNNDisplay, setAlternateNNDisplay] = useState(false)
   const [confirmDelete, setConfirmDelete] = useState(false)
   const [activeView, setActiveView] = useState(DEFAULT_VIEW)
+  const [duplicateDialog, setDuplicateDialog] = useState({
+    open: false,
+    title: '',
+    description: '',
+  })
   const [deleteDialog, setDeleteDialog] = useState({
     open: false,
     title: '',
@@ -69,6 +74,41 @@ function App() {
     event.preventDefault()
     resizeState.current = { startX: event.clientX, startWidth: infoWidth }
   }, [infoWidth])
+
+  const onDuplicateEdge = useCallback(({ kind }) => {
+    const config =
+      kind === 'relationship'
+        ? {
+            title: 'Duplicate relationship',
+            description:
+              'A relationship between these attribute handles already exists. Remove the existing relationship before creating another.',
+          }
+        : kind === 'associative'
+          ? {
+              title: 'Duplicate associative association',
+              description:
+                'An associative association between this class handle and the association helper node already exists. Remove the existing associative association before creating another.',
+            }
+          : kind === 'reflexive'
+            ? {
+                title: 'Duplicate reflexive association',
+                description:
+                  'A reflexive association between these class handles already exists. Remove the existing reflexive association before creating another.',
+              }
+            : {
+                title: 'Duplicate association',
+                description:
+                  'An association between these class handles already exists. Remove the existing association before creating another.',
+              }
+
+    setDuplicateDialog({ open: true, ...config })
+  }, [])
+
+  const onDuplicateDialogOpenChange = useCallback((open) => {
+    if (!open) {
+      setDuplicateDialog((current) => ({ ...current, open: false }))
+    }
+  }, [])
 
   const {
     nodes,
@@ -113,6 +153,7 @@ function App() {
     reactFlowWrapper,
     showAccentColors,
     alternateNNDisplay,
+    onDuplicateEdge,
     activeView,
   })
 
@@ -266,7 +307,7 @@ function App() {
     } catch (error) {
       console.error('Failed to export PNG', error)
     }
-  }, [modelName, reactFlowInstance])
+  }, [modelName])
 
   const onSidebarSelect = useCallback(
     (item) => {
@@ -484,6 +525,30 @@ function App() {
                 onClick={onConfirmDelete}
               >
                 Delete
+              </AlertDialog.Action>
+            </div>
+          </AlertDialog.Content>
+        </AlertDialog.Portal>
+      </AlertDialog.Root>
+      <AlertDialog.Root
+        open={duplicateDialog.open}
+        onOpenChange={onDuplicateDialogOpenChange}
+      >
+        <AlertDialog.Portal>
+          <AlertDialog.Overlay className="fixed inset-0 z-40 bg-black/40" />
+          <AlertDialog.Content className="fixed left-1/2 top-1/2 z-50 w-[360px] -translate-x-1/2 -translate-y-1/2 rounded-lg border border-base-content/20 bg-base-100 p-4 shadow-xl">
+            <AlertDialog.Title className="text-sm font-semibold">
+              {duplicateDialog.title}
+            </AlertDialog.Title>
+            <AlertDialog.Description className="mt-2 text-xs text-base-content/70">
+              {duplicateDialog.description}
+            </AlertDialog.Description>
+            <div className="mt-4 flex justify-end">
+              <AlertDialog.Action
+                className="inline-flex h-8 items-center justify-center rounded-md bg-primary px-3 text-xs font-medium text-primary-content transition-colors hover:bg-primary/90"
+                onClick={() => onDuplicateDialogOpenChange(false)}
+              >
+                OK
               </AlertDialog.Action>
             </div>
           </AlertDialog.Content>

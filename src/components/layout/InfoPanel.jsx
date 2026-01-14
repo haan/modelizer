@@ -1,4 +1,4 @@
-import { memo, useEffect, useRef } from 'react'
+import { memo } from 'react'
 import { ClassesPanel, RefsPanel } from '../panels/index.js'
 
 function InfoPanel({
@@ -25,13 +25,6 @@ function InfoPanel({
   onUpdateAssociationRole,
   onHighlightAssociation,
 }) {
-  const renderCountRef = useRef(0)
-  renderCountRef.current += 1
-
-  useEffect(() => {
-    console.log(`[InfoPanel] render #${renderCountRef.current}`)
-  })
-
   return (
     <aside
       className="relative flex min-w-[350px] flex-col border-r border-base-content/10 bg-base-100"

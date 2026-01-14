@@ -79,6 +79,7 @@ export function useModelState({
   reactFlowWrapper,
   showAccentColors,
   alternateNNDisplay,
+  onDuplicateEdge,
   activeView = DEFAULT_VIEW,
 }) {
   const [nodes, setNodes] = useNodesState(initialNodes)
@@ -113,6 +114,8 @@ export function useModelState({
 
   const setModel = useCallback(
     (nextNodes, nextEdges) => {
+      nodesRef.current = nextNodes
+      edgesRef.current = nextEdges
       setNodes(nextNodes)
       setEdges(nextEdges)
       setPanelNodes(nextNodes)
@@ -274,6 +277,60 @@ export function useModelState({
                   : params.source,
               ) ?? 'Association'
             : null
+        const isDuplicate = current.some((edge) => {
+          if (edge.type !== nextType) {
+            return false
+          }
+
+          if (nextType === REFLEXIVE_EDGE_TYPE) {
+            return edge.source === params.source && edge.target === params.target
+          }
+
+          if (nextType === RELATIONSHIP_EDGE_TYPE) {
+            const nextSourceAttr = getAttributeIdFromHandle(params.sourceHandle)
+            const nextTargetAttr = getAttributeIdFromHandle(params.targetHandle)
+            const existingSourceAttr = getAttributeIdFromHandle(edge.sourceHandle)
+            const existingTargetAttr = getAttributeIdFromHandle(edge.targetHandle)
+            if (!nextSourceAttr || !nextTargetAttr) {
+              return false
+            }
+            if (!existingSourceAttr || !existingTargetAttr) {
+              return false
+            }
+
+            const matchesDirect =
+              edge.source === params.source &&
+              edge.target === params.target &&
+              existingSourceAttr === nextSourceAttr &&
+              existingTargetAttr === nextTargetAttr
+            const matchesReverse =
+              edge.source === params.target &&
+              edge.target === params.source &&
+              existingSourceAttr === nextTargetAttr &&
+              existingTargetAttr === nextSourceAttr
+
+            return matchesDirect || matchesReverse
+          }
+
+          const matchesDirect =
+            edge.source === params.source &&
+            edge.target === params.target &&
+            edge.sourceHandle === params.sourceHandle &&
+            edge.targetHandle === params.targetHandle
+          const matchesReverse =
+            edge.source === params.target &&
+            edge.target === params.source &&
+            edge.sourceHandle === params.targetHandle &&
+            edge.targetHandle === params.sourceHandle
+
+          return matchesDirect || matchesReverse
+        })
+
+        if (isDuplicate) {
+          onDuplicateEdge?.({ kind: typeData })
+          return current
+        }
+
         const baseEdge = {
           ...params,
           type: nextType,
@@ -304,7 +361,13 @@ export function useModelState({
         return [...current, nextEdge]
       })
     },
-    [isAssociationHelperNode, nodes, reactFlowInstance, updateEdgesAndPanel],
+    [
+      isAssociationHelperNode,
+      nodes,
+      onDuplicateEdge,
+      reactFlowInstance,
+      updateEdgesAndPanel,
+    ],
   )
 
   const onConnectStart = useCallback(() => {
@@ -630,10 +693,9 @@ export function useModelState({
             return node
           }
 
-          const currentAttributes = normalizeAttributes(
-            nodeId,
-            node.data?.attributes,
-          )
+          const currentAttributes = Array.isArray(node.data?.attributes)
+            ? node.data.attributes
+            : normalizeAttributes(nodeId, node.data?.attributes)
           const nextAttributes = currentAttributes.map((attribute) => {
             if (attribute.id !== attributeId) {
               return attribute
@@ -861,7 +923,7 @@ export function useModelState({
     }
 
     const ids = new Set()
-    nodes.forEach((node) => {
+    panelNodes.forEach((node) => {
       if (node.type !== CLASS_NODE_TYPE) {
         return
       }
@@ -876,7 +938,7 @@ export function useModelState({
       })
     })
     return ids
-  }, [isVisibleInView, nodes, normalizedActiveView])
+  }, [isVisibleInView, normalizedActiveView, panelNodes])
 
   const associationEdgeNodes = useMemo(() => {
     if (normalizedActiveView !== VIEW_CONCEPTUAL) {

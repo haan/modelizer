@@ -1,4 +1,4 @@
-import { useEffect } from 'react'
+import { useEffect, useRef } from 'react'
 
 export function useKeyboardShortcuts({
   nodes,
@@ -10,6 +10,14 @@ export function useKeyboardShortcuts({
   onRequestNewModel,
   onSaveModel,
 }) {
+  const nodesRef = useRef(nodes)
+  const edgesRef = useRef(edges)
+
+  useEffect(() => {
+    nodesRef.current = nodes
+    edgesRef.current = edges
+  }, [edges, nodes])
+
   useEffect(() => {
     const handleKeyDown = (event) => {
       const target = event.target
@@ -40,8 +48,8 @@ export function useKeyboardShortcuts({
       }
 
       if (key === 'delete' || key === 'backspace') {
-        const selectedNodes = nodes.filter((node) => node.selected)
-        const selectedEdges = edges.filter((edge) => edge.selected)
+        const selectedNodes = nodesRef.current.filter((node) => node.selected)
+        const selectedEdges = edgesRef.current.filter((edge) => edge.selected)
         if (selectedNodes.length > 0 || selectedEdges.length > 0) {
           event.preventDefault()
           if (onDeleteSelection) {
@@ -62,8 +70,6 @@ export function useKeyboardShortcuts({
       window.removeEventListener('keydown', handleKeyDown)
     }
   }, [
-    edges,
-    nodes,
     onDeleteAssociation,
     onDeleteClass,
     onDeleteSelection,
