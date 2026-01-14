@@ -6,4 +6,6 @@ export { default as ClassesPanelOptionsPanel } from './ClassesPanelOptionsPanel.
 export { default as ClassesPanelVisibilityPanel } from './ClassesPanelVisibilityPanel.jsx'
 export { default as AssociationsPanel } from './AssociationsPanel.jsx'
 export { default as AssociationsPanelItem } from './AssociationsPanelItem.jsx'
+export { default as RelationshipsPanel } from './RelationshipsPanel.jsx'
+export { default as RelationshipsPanelItem } from './RelationshipsPanelItem.jsx'
 export { default as RefsPanel } from './RefsPanel.jsx'

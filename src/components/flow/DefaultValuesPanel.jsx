@@ -1,13 +1,11 @@
-export default function DefaultValuesPanel({ entries, isExporting }) {
+export default function DefaultValuesPanel({ entries }) {
   if (!entries?.length) {
     return null
   }
 
   return (
     <div
-      className={`pointer-events-none absolute bottom-4 rounded-md border border-base-content/20 bg-base-100/90 px-3 py-2 text-xs shadow-md ${
-        isExporting ? 'left-4' : 'left-16'
-      }`}
+      className="pointer-events-none absolute bottom-4 left-4 rounded-md border border-base-content/20 bg-base-100/90 px-3 py-2 text-xs shadow-md"
     >
       <div className="text-sm font-semibold uppercase tracking-wide text-base-content/70">
         Default values

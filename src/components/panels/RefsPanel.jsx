@@ -1,4 +1,5 @@
 import AssociationsPanel from './AssociationsPanel.jsx'
+import RelationshipsPanel from './RelationshipsPanel.jsx'
 
 export default function RefsPanel({
   edges,
@@ -20,6 +21,7 @@ export default function RefsPanel({
         onUpdateAssociationRole={onUpdateAssociationRole}
         onHighlightAssociation={onHighlightAssociation}
       />
+      <RelationshipsPanel edges={edges} nodes={nodes} />
     </div>
   )
 }

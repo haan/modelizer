@@ -2,7 +2,6 @@ import { useEffect, useRef, useState } from 'react'
 import { useSortable } from '@dnd-kit/sortable'
 import { CSS } from '@dnd-kit/utilities'
 import { CLASS_COLOR_PALETTE } from '../../classPalette.js'
-import { normalizeAttributes } from '../../attributes.js'
 import ClassesPanelAttributesPanel from './ClassesPanelAttributesPanel.jsx'
 import ClassesPanelOptionsPanel from './ClassesPanelOptionsPanel.jsx'
 import ClassesPanelVisibilityPanel from './ClassesPanelVisibilityPanel.jsx'
@@ -23,7 +22,9 @@ export default function ClassesPanelItem({
 }) {
   const accentColor = node.data?.color ?? CLASS_COLOR_PALETTE[0]
   const accentBorderColor = showAccentColors ? accentColor : 'transparent'
-  const attributes = normalizeAttributes(node.id, node.data?.attributes)
+  const attributes = Array.isArray(node.data?.attributes)
+    ? node.data.attributes
+    : []
   const label = node.data?.label ?? ''
   const color = node.data?.color ?? CLASS_COLOR_PALETTE[0]
   const classVisibility = node.data?.visibility

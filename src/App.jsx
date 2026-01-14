@@ -14,7 +14,6 @@ import { InfoPanel, Navbar, Sidebar } from './components/layout/index.js'
 import { useFileActions } from './hooks/useFileActions.js'
 import { useKeyboardShortcuts } from './hooks/useKeyboardShortcuts.js'
 import { useModelState } from './hooks/useModelState.js'
-import { normalizeAttributes } from './attributes.js'
 import DefaultValuesPanel from './components/flow/DefaultValuesPanel.jsx'
 import { sanitizeFileName } from './model/fileUtils.js'
 import { DEFAULT_VIEW, VIEW_PHYSICAL } from './model/constants.js'
@@ -29,7 +28,6 @@ function App() {
   const [showBackground, setShowBackground] = useState(true)
   const [showAccentColors, setShowAccentColors] = useState(true)
   const [alternateNNDisplay, setAlternateNNDisplay] = useState(false)
-  const [isExportingPng, setIsExportingPng] = useState(false)
   const [confirmDelete, setConfirmDelete] = useState(false)
   const [activeView, setActiveView] = useState(DEFAULT_VIEW)
   const [deleteDialog, setDeleteDialog] = useState({
@@ -77,6 +75,9 @@ function App() {
     edges,
     setNodes,
     setEdges,
+    setModel,
+    panelNodes,
+    panelEdges,
     onNodesChange,
     onEdgesChange,
     modelName,
@@ -208,6 +209,7 @@ function App() {
     nodes,
     edges,
     modelName,
+    setModel,
     setNodes,
     setEdges,
     setModelName,
@@ -242,11 +244,6 @@ function App() {
 
     const backgroundColor = '#ffffff'
 
-    setIsExportingPng(true)
-    await new Promise((resolve) => {
-      requestAnimationFrame(() => requestAnimationFrame(resolve))
-    })
-
     try {
       const dataUrl = await toPng(container, {
         backgroundColor,
@@ -268,8 +265,6 @@ function App() {
       link.click()
     } catch (error) {
       console.error('Failed to export PNG', error)
-    } finally {
-      setIsExportingPng(false)
     }
   }, [modelName, reactFlowInstance])
 
@@ -297,12 +292,18 @@ function App() {
   )
 
   const defaultValueEntries = useMemo(() => {
+    if (activeView !== VIEW_PHYSICAL) {
+      return []
+    }
+
     return nodes.flatMap((node) => {
       const className =
         typeof node.data?.label === 'string' && node.data.label.trim()
           ? node.data.label.trim()
           : 'Class'
-      const attributes = normalizeAttributes(node.id, node.data?.attributes)
+      const attributes = Array.isArray(node.data?.attributes)
+        ? node.data.attributes
+        : []
       return attributes.flatMap((attribute) => {
         const value =
           typeof attribute.defaultValue === 'string'
@@ -328,7 +329,7 @@ function App() {
         ]
       })
     })
-  }, [nodes])
+  }, [activeView, nodes])
 
   return (
     <div className="h-screen overflow-hidden bg-base-200 text-base-content">
@@ -368,8 +369,8 @@ function App() {
             width={infoWidth}
             onResizeStart={onResizeStart}
             activeItem={activeSidebarItem}
-            nodes={nodes}
-            edges={edges}
+            nodes={panelNodes}
+            edges={panelEdges}
             onAddClass={onAddClass}
             onRenameClass={onRenameClass}
             onReorderClasses={onReorderClasses}
@@ -412,7 +413,7 @@ function App() {
                 defaultEdgeOptions={{ interactionWidth: 20 }}
               >
                 <div data-no-export="true">
-                  <Controls />
+                  <Controls position="bottom-right" />
                 </div>
                 {showMiniMap ? (
                   <div data-no-export="true">
@@ -422,10 +423,7 @@ function App() {
                 {showBackground ? <Background gap={16} size={1} /> : null}
               </ReactFlow>
               {activeView === VIEW_PHYSICAL ? (
-                <DefaultValuesPanel
-                  entries={defaultValueEntries}
-                  isExporting={isExportingPng}
-                />
+                <DefaultValuesPanel entries={defaultValueEntries} />
               ) : null}
             </div>
           </main>

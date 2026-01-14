@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo, useState } from 'react'
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import {
   addEdge,
   applyEdgeChanges,
@@ -19,6 +19,7 @@ import {
   DEFAULT_VIEW,
   HIGHLIGHT_ZOOM,
   REFLEXIVE_EDGE_TYPE,
+  RELATIONSHIP_EDGE_TYPE,
   VIEW_CONCEPTUAL,
   VIEW_LOGICAL,
   VIEW_PHYSICAL,
@@ -31,6 +32,47 @@ import {
 
 const initialNodes = []
 const initialEdges = []
+const CLASS_HANDLE_IDS = new Set([
+  'left-source',
+  'left-target',
+  'right-source',
+  'right-target',
+  'top-source',
+  'top-target',
+  'bottom-source',
+  'bottom-target',
+])
+const ASSOCIATION_HANDLE_ID = 'association-target'
+
+const getAttributeIdFromHandle = (handleId) => {
+  if (!handleId || handleId === ASSOCIATION_HANDLE_ID) {
+    return null
+  }
+
+  if (CLASS_HANDLE_IDS.has(handleId)) {
+    return null
+  }
+
+  const suffix = handleId.endsWith('-source')
+    ? '-source'
+    : handleId.endsWith('-target')
+      ? '-target'
+      : null
+  if (!suffix) {
+    return null
+  }
+
+  const trimmed = handleId.slice(0, -suffix.length)
+  if (trimmed.startsWith('left-')) {
+    return trimmed.slice('left-'.length)
+  }
+  if (trimmed.startsWith('right-')) {
+    return trimmed.slice('right-'.length)
+  }
+  return null
+}
+
+const isAttributeHandle = (handleId) => Boolean(getAttributeIdFromHandle(handleId))
 
 export function useModelState({
   reactFlowInstance,
@@ -41,9 +83,43 @@ export function useModelState({
 }) {
   const [nodes, setNodes] = useNodesState(initialNodes)
   const [edges, setEdges] = useEdgesState(normalizeEdges(initialEdges))
+  const [panelNodes, setPanelNodes] = useState(initialNodes)
+  const [panelEdges, setPanelEdges] = useState(normalizeEdges(initialEdges))
   const [modelName, setModelName] = useState('Untitled model')
   const [activeSidebarItem, setActiveSidebarItem] = useState('tables')
   const [isConnecting, setIsConnecting] = useState(false)
+  const nodesRef = useRef(nodes)
+  const edgesRef = useRef(edges)
+
+  const updateNodesAndPanel = useCallback(
+    (updater) => {
+      const nextNodes = updater(nodesRef.current)
+      nodesRef.current = nextNodes
+      setNodes(nextNodes)
+      setPanelNodes(nextNodes)
+    },
+    [setNodes, setPanelNodes],
+  )
+
+  const updateEdgesAndPanel = useCallback(
+    (updater) => {
+      const nextEdges = normalizeEdges(updater(edgesRef.current))
+      edgesRef.current = nextEdges
+      setEdges(nextEdges)
+      setPanelEdges(nextEdges)
+    },
+    [setEdges, setPanelEdges],
+  )
+
+  const setModel = useCallback(
+    (nextNodes, nextEdges) => {
+      setNodes(nextNodes)
+      setEdges(nextEdges)
+      setPanelNodes(nextNodes)
+      setPanelEdges(nextEdges)
+    },
+    [setEdges, setNodes, setPanelEdges, setPanelNodes],
+  )
 
   const normalizedActiveView =
     activeView === VIEW_LOGICAL || activeView === VIEW_PHYSICAL
@@ -70,12 +146,30 @@ export function useModelState({
     [setEdges],
   )
 
+  useEffect(() => {
+    nodesRef.current = nodes
+    edgesRef.current = edges
+  }, [edges, nodes])
+
   const onNodesChange = useCallback(
     (changes) => {
       setNodes((current) => {
         const nextNodes = applyNodeChanges(changes, current)
+        const updatedClassIds = new Set(
+          changes
+            .filter(
+              (change) =>
+                change.type === 'position' && change.dragging === false,
+            )
+            .map((change) => change.id),
+        )
+
+        if (updatedClassIds.size === 0) {
+          return nextNodes
+        }
+
         return nextNodes.map((node) => {
-          if (node.type !== CLASS_NODE_TYPE) {
+          if (node.type !== CLASS_NODE_TYPE || !updatedClassIds.has(node.id)) {
             return node
           }
 
@@ -146,7 +240,7 @@ export function useModelState({
         return node?.data?.label
       }
 
-      return setEdges((current) => {
+      return updateEdgesAndPanel((current) => {
         const connectsToAssociationHelper =
           params.source?.startsWith('assoc-edge-') ||
           params.target?.startsWith('assoc-edge-') ||
@@ -154,13 +248,20 @@ export function useModelState({
           params.targetHandle === 'association-target' ||
           isAssociationHelperNode(params.source) ||
           isAssociationHelperNode(params.target)
-        const nextType = connectsToAssociationHelper
-          ? ASSOCIATIVE_EDGE_TYPE
-          : params.source === params.target
-            ? REFLEXIVE_EDGE_TYPE
-            : ASSOCIATION_EDGE_TYPE
+        const isAttributeConnection =
+          isAttributeHandle(params.sourceHandle) &&
+          isAttributeHandle(params.targetHandle)
+        const nextType = isAttributeConnection
+          ? RELATIONSHIP_EDGE_TYPE
+          : connectsToAssociationHelper
+            ? ASSOCIATIVE_EDGE_TYPE
+            : params.source === params.target
+              ? REFLEXIVE_EDGE_TYPE
+              : ASSOCIATION_EDGE_TYPE
         const typeData =
-          nextType === ASSOCIATIVE_EDGE_TYPE
+          nextType === RELATIONSHIP_EDGE_TYPE
+            ? 'relationship'
+            : nextType === ASSOCIATIVE_EDGE_TYPE
             ? 'associative'
             : nextType === REFLEXIVE_EDGE_TYPE
               ? 'reflexive'
@@ -179,18 +280,20 @@ export function useModelState({
           data:
             nextType === ASSOCIATIVE_EDGE_TYPE
               ? { name: classLabel, type: typeData, autoName: true }
-              : {
-                  multiplicityA: '',
-                  multiplicityB: '',
-                  name: '',
-                  type: typeData,
-                  roleA: '',
-                  roleB: '',
-                },
+              : nextType === RELATIONSHIP_EDGE_TYPE
+                ? { type: typeData }
+                : {
+                    multiplicityA: '',
+                    multiplicityB: '',
+                    name: '',
+                    type: typeData,
+                    roleA: '',
+                    roleB: '',
+                  },
         }
 
         if (nextType !== ASSOCIATION_EDGE_TYPE) {
-          return normalizeEdges(addEdge(baseEdge, current))
+          return addEdge(baseEdge, current)
         }
 
         const idSuffix =
@@ -198,10 +301,10 @@ export function useModelState({
             ? crypto.randomUUID()
             : `${Date.now()}-${current.length + 1}`
         const nextEdge = { ...baseEdge, id: `edge-${idSuffix}` }
-        return normalizeEdges([...current, nextEdge])
+        return [...current, nextEdge]
       })
     },
-    [isAssociationHelperNode, nodes, reactFlowInstance, setEdges],
+    [isAssociationHelperNode, nodes, reactFlowInstance, updateEdgesAndPanel],
   )
 
   const onConnectStart = useCallback(() => {
@@ -242,7 +345,7 @@ export function useModelState({
           ? reactFlowInstance.project(centerPosition)
           : null
 
-    setNodes((current) => {
+    const buildNode = (current) => {
       const idSuffix =
         typeof crypto !== 'undefined' && crypto.randomUUID
           ? crypto.randomUUID()
@@ -266,34 +369,36 @@ export function useModelState({
           ? availableColors[Math.floor(Math.random() * availableColors.length)]
           : getRandomPaletteColor()
 
-      return [
-        ...current,
-        {
-          id: `class-${idSuffix}`,
-          type: CLASS_NODE_TYPE,
-          position,
-          data: {
-            label: `Class${current.length + 1}`,
-            attributes: [],
-            color: nextColor,
-            visibility: { ...DEFAULT_VIEW_VISIBILITY },
-            viewPositions: normalizeViewPositions(null, position),
-          },
+      return {
+        id: `class-${idSuffix}`,
+        type: CLASS_NODE_TYPE,
+        position,
+        data: {
+          label: `Class${current.length + 1}`,
+          attributes: [],
+          color: nextColor,
+          visibility: { ...DEFAULT_VIEW_VISIBILITY },
+          viewPositions: normalizeViewPositions(null, position),
         },
-      ]
+      }
+    }
+
+    updateNodesAndPanel((current) => {
+      const nextNode = buildNode(current)
+      return [...current, nextNode]
     })
-  }, [reactFlowInstance, reactFlowWrapper, setNodes])
+  }, [reactFlowInstance, reactFlowWrapper, updateNodesAndPanel])
 
   const onRenameClass = useCallback(
     (nodeId, nextLabel) => {
-      setNodes((current) =>
+      updateNodesAndPanel((current) =>
         current.map((node) =>
           node.id === nodeId
             ? { ...node, data: { ...node.data, label: nextLabel } }
             : node,
         ),
       )
-      setEdges((current) =>
+      updateEdgesAndPanel((current) =>
         current.map((edge) =>
           edge.type === ASSOCIATIVE_EDGE_TYPE &&
           (edge.source === nodeId || edge.target === nodeId) &&
@@ -309,12 +414,12 @@ export function useModelState({
         ),
       )
     },
-    [setEdges, setNodes],
+    [updateEdgesAndPanel, updateNodesAndPanel],
   )
 
   const onRenameAssociation = useCallback(
     (edgeId, nextName) => {
-      setEdges((current) =>
+      updateEdgesAndPanel((current) =>
         current.map((edge) =>
           edge.id === edgeId
             ? {
@@ -331,29 +436,27 @@ export function useModelState({
         ),
       )
     },
-    [setEdges],
+    [updateEdgesAndPanel],
   )
 
   const onDeleteAssociation = useCallback(
     (edgeId) => {
       const helperNodeId = `assoc-edge-${edgeId}`
-      setEdges((current) =>
-        normalizeEdges(
-          current.filter(
-            (edge) =>
-              edge.id !== edgeId &&
-              edge.source !== helperNodeId &&
-              edge.target !== helperNodeId,
-          ),
+      updateEdgesAndPanel((current) =>
+        current.filter(
+          (edge) =>
+            edge.id !== edgeId &&
+            edge.source !== helperNodeId &&
+            edge.target !== helperNodeId,
         ),
       )
     },
-    [setEdges],
+    [updateEdgesAndPanel],
   )
 
   const onUpdateAssociationMultiplicity = useCallback(
     (edgeId, side, nextValue) => {
-      setEdges((current) =>
+      updateEdgesAndPanel((current) =>
         current.map((edge) => {
           if (edge.id !== edgeId) {
             return edge
@@ -370,12 +473,12 @@ export function useModelState({
         }),
       )
     },
-    [setEdges],
+    [updateEdgesAndPanel],
   )
 
   const onUpdateAssociationRole = useCallback(
     (edgeId, side, nextValue) => {
-      setEdges((current) =>
+      updateEdgesAndPanel((current) =>
         current.map((edge) => {
           if (edge.id !== edgeId) {
             return edge
@@ -392,7 +495,7 @@ export function useModelState({
         }),
       )
     },
-    [setEdges],
+    [updateEdgesAndPanel],
   )
 
   const focusEdge = useCallback(
@@ -423,10 +526,10 @@ export function useModelState({
       if (!center) {
         const sourceNode =
           reactFlowInstance.getNode?.(edge.source) ??
-          nodes.find((node) => node.id === edge.source)
+          nodesRef.current.find((node) => node.id === edge.source)
         const targetNode =
           reactFlowInstance.getNode?.(edge.target) ??
-          nodes.find((node) => node.id === edge.target)
+          nodesRef.current.find((node) => node.id === edge.target)
         const sourceCenter = getNodeCenter(sourceNode)
         const targetCenter = getNodeCenter(targetNode)
 
@@ -449,12 +552,12 @@ export function useModelState({
         duration: 300,
       })
     },
-    [nodes, reactFlowInstance],
+    [reactFlowInstance],
   )
 
   const onHighlightAssociation = useCallback(
     (edgeId) => {
-      const edgeToFocus = edges.find((edge) => edge.id === edgeId)
+      const edgeToFocus = edgesRef.current.find((edge) => edge.id === edgeId)
       focusEdge(edgeToFocus)
       setEdges((current) =>
         current.map((edge) => {
@@ -466,12 +569,12 @@ export function useModelState({
         }),
       )
     },
-    [edges, focusEdge, setEdges],
+    [focusEdge, setEdges],
   )
 
   const onReorderClasses = useCallback(
     (nextOrderIds) => {
-      setNodes((current) => {
+      updateNodesAndPanel((current) => {
         const byId = new Map(current.map((node) => [node.id, node]))
         const ordered = []
         const seen = new Set()
@@ -493,12 +596,12 @@ export function useModelState({
         return ordered
       })
     },
-    [setNodes],
+    [updateNodesAndPanel],
   )
 
   const onReorderAttributes = useCallback(
     (nodeId, nextAttributes) => {
-      setNodes((current) =>
+      updateNodesAndPanel((current) =>
         current.map((node) =>
           node.id === nodeId
             ? {
@@ -512,7 +615,7 @@ export function useModelState({
         ),
       )
     },
-    [setNodes],
+    [updateNodesAndPanel],
   )
 
   const onUpdateAttribute = useCallback(
@@ -521,7 +624,7 @@ export function useModelState({
         typeof nextValue === 'string'
           ? { name: nextValue }
           : nextValue ?? {}
-      setNodes((current) =>
+      updateNodesAndPanel((current) =>
         current.map((node) => {
           if (node.id !== nodeId) {
             return node
@@ -559,12 +662,12 @@ export function useModelState({
         }),
       )
     },
-    [setNodes],
+    [updateNodesAndPanel],
   )
 
   const onAddAttribute = useCallback(
     (nodeId) => {
-      setNodes((current) =>
+      updateNodesAndPanel((current) =>
         current.map((node) => {
           if (node.id !== nodeId) {
             return node
@@ -590,12 +693,12 @@ export function useModelState({
         }),
       )
     },
-    [setNodes],
+    [updateNodesAndPanel],
   )
 
   const onDeleteAttribute = useCallback(
     (nodeId, attributeId) => {
-      setNodes((current) =>
+      updateNodesAndPanel((current) =>
         current.map((node) => {
           if (node.id !== nodeId) {
             return node
@@ -619,12 +722,12 @@ export function useModelState({
         }),
       )
     },
-    [setNodes],
+    [updateNodesAndPanel],
   )
 
   const onUpdateClassColor = useCallback(
     (nodeId, nextColor) => {
-      setNodes((current) =>
+      updateNodesAndPanel((current) =>
         current.map((node) =>
           node.id === nodeId
             ? { ...node, data: { ...node.data, color: nextColor } }
@@ -632,12 +735,12 @@ export function useModelState({
         ),
       )
     },
-    [setNodes],
+    [updateNodesAndPanel],
   )
 
   const onUpdateClassVisibility = useCallback(
     (nodeId, nextVisibility) => {
-      setNodes((current) =>
+      updateNodesAndPanel((current) =>
         current.map((node) => {
           if (node.id !== nodeId) {
             return node
@@ -654,14 +757,15 @@ export function useModelState({
         }),
       )
     },
-    [setNodes],
+    [updateNodesAndPanel],
   )
-
 
   const onDeleteClass = useCallback(
     (nodeId) => {
-      setNodes((current) => current.filter((node) => node.id !== nodeId))
-      setEdges((current) => {
+      updateNodesAndPanel((current) =>
+        current.filter((node) => node.id !== nodeId),
+      )
+      updateEdgesAndPanel((current) => {
         const removedAssociationIds = current
           .filter(
             (edge) =>
@@ -674,18 +778,16 @@ export function useModelState({
           removedAssociationIds.map((edgeId) => `assoc-edge-${edgeId}`),
         )
 
-        return normalizeEdges(
-          current.filter(
-            (edge) =>
-              edge.source !== nodeId &&
-              edge.target !== nodeId &&
-              !helperNodeIds.has(edge.source) &&
-              !helperNodeIds.has(edge.target),
-          ),
+        return current.filter(
+          (edge) =>
+            edge.source !== nodeId &&
+            edge.target !== nodeId &&
+            !helperNodeIds.has(edge.source) &&
+            !helperNodeIds.has(edge.target),
         )
       })
     },
-    [setEdges, setNodes],
+    [updateEdgesAndPanel, updateNodesAndPanel],
   )
 
   const onHighlightClass = useCallback(
@@ -699,7 +801,7 @@ export function useModelState({
 
       const node =
         reactFlowInstance?.getNode(nodeId) ??
-        nodes.find((entry) => entry.id === nodeId)
+        nodesRef.current.find((entry) => entry.id === nodeId)
       if (!node || !reactFlowInstance?.setCenter) {
         return
       }
@@ -722,7 +824,7 @@ export function useModelState({
         duration: 300,
       })
     },
-    [nodes, reactFlowInstance, setNodes],
+    [reactFlowInstance, setNodes],
   )
 
   const clearAssociationHighlight = useCallback(() => {
@@ -752,6 +854,29 @@ export function useModelState({
     })
     return ids
   }, [isVisibleInView, nodes])
+
+  const visibleAttributeIds = useMemo(() => {
+    if (normalizedActiveView === VIEW_CONCEPTUAL) {
+      return new Set()
+    }
+
+    const ids = new Set()
+    nodes.forEach((node) => {
+      if (node.type !== CLASS_NODE_TYPE) {
+        return
+      }
+      const attributes = Array.isArray(node.data?.attributes)
+        ? node.data.attributes
+        : []
+      attributes.forEach((attribute) => {
+        const visibility = normalizeVisibility(attribute?.visibility)
+        if (isVisibleInView(visibility)) {
+          ids.add(`${node.id}:${attribute.id}`)
+        }
+      })
+    })
+    return ids
+  }, [isVisibleInView, nodes, normalizedActiveView])
 
   const associationEdgeNodes = useMemo(() => {
     if (normalizedActiveView !== VIEW_CONCEPTUAL) {
@@ -876,7 +1001,31 @@ export function useModelState({
 
   const flowEdges = useMemo(() => {
     if (normalizedActiveView !== VIEW_CONCEPTUAL) {
-      return []
+      return edges.filter((edge) => {
+        if (edge.type !== RELATIONSHIP_EDGE_TYPE) {
+          return false
+        }
+
+        if (!visibleClassIds.has(edge.source) || !visibleClassIds.has(edge.target)) {
+          return false
+        }
+
+        const sourceAttributeId = getAttributeIdFromHandle(edge.sourceHandle)
+        const targetAttributeId = getAttributeIdFromHandle(edge.targetHandle)
+        if (!sourceAttributeId || !targetAttributeId) {
+          return false
+        }
+
+        if (!visibleAttributeIds.has(`${edge.source}:${sourceAttributeId}`)) {
+          return false
+        }
+
+        if (!visibleAttributeIds.has(`${edge.target}:${targetAttributeId}`)) {
+          return false
+        }
+
+        return true
+      })
     }
 
     const visibleAssociationEdges = edges.filter(
@@ -918,7 +1067,7 @@ export function useModelState({
     })
 
     return [...visibleAssociationEdges, ...visibleAssociativeEdges]
-  }, [edges, normalizedActiveView, visibleClassIds])
+  }, [edges, normalizedActiveView, visibleAttributeIds, visibleClassIds])
 
   const flowNodes = useMemo(() => {
     const decoratedNodes = nodes
@@ -985,5 +1134,8 @@ export function useModelState({
     onPaneClick,
     flowNodes,
     flowEdges,
+    panelNodes,
+    panelEdges,
+    setModel,
   }
 }

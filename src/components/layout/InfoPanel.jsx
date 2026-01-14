@@ -1,6 +1,7 @@
+import { memo, useEffect, useRef } from 'react'
 import { ClassesPanel, RefsPanel } from '../panels/index.js'
 
-export default function InfoPanel({
+function InfoPanel({
   width,
   onResizeStart,
   activeItem,
@@ -24,6 +25,13 @@ export default function InfoPanel({
   onUpdateAssociationRole,
   onHighlightAssociation,
 }) {
+  const renderCountRef = useRef(0)
+  renderCountRef.current += 1
+
+  useEffect(() => {
+    console.log(`[InfoPanel] render #${renderCountRef.current}`)
+  })
+
   return (
     <aside
       className="relative flex min-w-[350px] flex-col border-r border-base-content/10 bg-base-100"
@@ -31,37 +39,37 @@ export default function InfoPanel({
     >
       <div className="flex-1 overflow-y-auto">
         <div className="flex flex-col gap-4 p-6">
-        {activeItem === 'tables' ? (
-          <ClassesPanel
-            nodes={nodes}
-            onAddClass={onAddClass}
-            onRenameClass={onRenameClass}
-            onReorderClasses={onReorderClasses}
-            onReorderAttributes={onReorderAttributes}
-            onUpdateAttribute={onUpdateAttribute}
-            onAddAttribute={onAddAttribute}
-            onDeleteAttribute={onDeleteAttribute}
-            onUpdateClassColor={onUpdateClassColor}
-            onUpdateClassVisibility={onUpdateClassVisibility}
-            onDeleteClass={onDeleteClass}
-            onHighlightClass={onHighlightClass}
-            showAccentColors={showAccentColors}
-          />
-        ) : activeItem === 'refs' ? (
-          <RefsPanel
-            edges={edges}
-            nodes={nodes}
-            onRenameAssociation={onRenameAssociation}
-            onDeleteAssociation={onDeleteAssociation}
-            onUpdateAssociationMultiplicity={onUpdateAssociationMultiplicity}
-            onUpdateAssociationRole={onUpdateAssociationRole}
-            onHighlightAssociation={onHighlightAssociation}
-          />
-        ) : (
-          <p className="text-sm opacity-70">
-            Select Classes to browse classes in this model.
-          </p>
-        )}
+          {activeItem === 'tables' ? (
+            <ClassesPanel
+              nodes={nodes}
+              onAddClass={onAddClass}
+              onRenameClass={onRenameClass}
+              onReorderClasses={onReorderClasses}
+              onReorderAttributes={onReorderAttributes}
+              onUpdateAttribute={onUpdateAttribute}
+              onAddAttribute={onAddAttribute}
+              onDeleteAttribute={onDeleteAttribute}
+              onUpdateClassColor={onUpdateClassColor}
+              onUpdateClassVisibility={onUpdateClassVisibility}
+              onDeleteClass={onDeleteClass}
+              onHighlightClass={onHighlightClass}
+              showAccentColors={showAccentColors}
+            />
+          ) : activeItem === 'refs' ? (
+            <RefsPanel
+              edges={edges}
+              nodes={nodes}
+              onRenameAssociation={onRenameAssociation}
+              onDeleteAssociation={onDeleteAssociation}
+              onUpdateAssociationMultiplicity={onUpdateAssociationMultiplicity}
+              onUpdateAssociationRole={onUpdateAssociationRole}
+              onHighlightAssociation={onHighlightAssociation}
+            />
+          ) : (
+            <p className="text-sm opacity-70">
+              Select Classes to browse classes in this model.
+            </p>
+          )}
         </div>
       </div>
       <div
@@ -74,3 +82,5 @@ export default function InfoPanel({
     </aside>
   )
 }
+
+export default memo(InfoPanel)

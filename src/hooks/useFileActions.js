@@ -20,6 +20,7 @@ export function useFileActions({
   nodes,
   edges,
   modelName,
+  setModel,
   setNodes,
   setEdges,
   setModelName,
@@ -126,15 +127,26 @@ export function useFileActions({
           2,
         )
 
-      setNodes(nextNodes)
-      setEdges(nextEdges)
+      if (setModel) {
+        setModel(nextNodes, nextEdges)
+      } else {
+        setNodes(nextNodes)
+        setEdges(nextEdges)
+      }
       setModelName(nextModelName)
       setActiveSidebarItem('tables')
       fileHandleRef.current = handle ?? null
       lastSavedRef.current = nextSerialized
       setIsDirty(false)
     },
-    [normalizedActiveView, setActiveSidebarItem, setEdges, setModelName, setNodes],
+    [
+      normalizedActiveView,
+      setActiveSidebarItem,
+      setEdges,
+      setModel,
+      setModelName,
+      setNodes,
+    ],
   )
 
   const requestDiscardChanges = useCallback(
@@ -168,8 +180,12 @@ export function useFileActions({
   }, [])
 
   const onNewModel = useCallback(() => {
-    setNodes([])
-    setEdges(normalizeEdges([]))
+    if (setModel) {
+      setModel([], normalizeEdges([]))
+    } else {
+      setNodes([])
+      setEdges(normalizeEdges([]))
+    }
     setActiveSidebarItem('tables')
     setModelName('Untitled model')
     fileHandleRef.current = null
@@ -184,7 +200,7 @@ export function useFileActions({
       2,
     )
     setIsDirty(false)
-  }, [setActiveSidebarItem, setEdges, setModelName, setNodes])
+  }, [setActiveSidebarItem, setEdges, setModel, setModelName, setNodes])
 
   const onRequestNewModel = useCallback(() => {
     requestDiscardChanges(onNewModel)
