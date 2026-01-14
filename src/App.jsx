@@ -297,9 +297,12 @@ function App() {
       })
 
       const normalizedName = sanitizeFileName(modelName ?? 'Untitled model')
-      const fileName = normalizedName
-        ? `${normalizedName}.png`
-        : 'untitled-model.png'
+      const viewLabel = activeView?.trim() ? activeView.trim() : 'conceptual'
+      const viewSuffix = sanitizeFileName(viewLabel)
+      const baseName = normalizedName || 'untitled-model'
+      const fileName = viewSuffix
+        ? `${baseName}-${viewSuffix}.png`
+        : `${baseName}.png`
       const link = document.createElement('a')
       link.href = dataUrl
       link.download = fileName
@@ -307,7 +310,7 @@ function App() {
     } catch (error) {
       console.error('Failed to export PNG', error)
     }
-  }, [modelName])
+  }, [activeView, modelName])
 
   const onSidebarSelect = useCallback(
     (item) => {
