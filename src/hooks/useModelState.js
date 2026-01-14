@@ -432,6 +432,11 @@ export function useModelState({
           ? availableColors[Math.floor(Math.random() * availableColors.length)]
           : getRandomPaletteColor()
 
+      const defaultVisibility = {
+        ...DEFAULT_VIEW_VISIBILITY,
+        conceptual: normalizedActiveView === VIEW_CONCEPTUAL,
+      }
+
       return {
         id: `class-${idSuffix}`,
         type: CLASS_NODE_TYPE,
@@ -440,7 +445,7 @@ export function useModelState({
           label: `Class${current.length + 1}`,
           attributes: [],
           color: nextColor,
-          visibility: { ...DEFAULT_VIEW_VISIBILITY },
+          visibility: defaultVisibility,
           viewPositions: normalizeViewPositions(null, position),
         },
       }
@@ -450,7 +455,7 @@ export function useModelState({
       const nextNode = buildNode(current)
       return [...current, nextNode]
     })
-  }, [reactFlowInstance, reactFlowWrapper, updateNodesAndPanel])
+  }, [normalizedActiveView, reactFlowInstance, reactFlowWrapper, updateNodesAndPanel])
 
   const onRenameClass = useCallback(
     (nodeId, nextLabel) => {
@@ -743,6 +748,12 @@ export function useModelState({
             nodeId,
             `attribute${currentAttributes.length + 1}`,
           )
+          if (normalizedActiveView !== VIEW_CONCEPTUAL) {
+            nextAttribute.visibility = {
+              ...nextAttribute.visibility,
+              conceptual: false,
+            }
+          }
           currentAttributes.push(nextAttribute)
 
           return {
@@ -755,7 +766,7 @@ export function useModelState({
         }),
       )
     },
-    [updateNodesAndPanel],
+    [normalizedActiveView, updateNodesAndPanel],
   )
 
   const onDeleteAttribute = useCallback(
