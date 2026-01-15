@@ -449,31 +449,149 @@ export function useModelState({
 
   const onAddClass = useCallback(() => {
     const wrapperBounds = reactFlowWrapper.current?.getBoundingClientRect()
+    const toFlowPosition =
+      reactFlowInstance?.screenToFlowPosition && wrapperBounds
+        ? (point) => reactFlowInstance.screenToFlowPosition(point)
+        : reactFlowInstance?.project && wrapperBounds
+          ? (point) =>
+              reactFlowInstance.project({
+                x: point.x - wrapperBounds.left,
+                y: point.y - wrapperBounds.top,
+              })
+          : null
     const centerPosition =
-      wrapperBounds && reactFlowInstance
+      wrapperBounds && toFlowPosition
+        ? toFlowPosition({
+            x: wrapperBounds.left + wrapperBounds.width / 2,
+            y: wrapperBounds.top + wrapperBounds.height / 2,
+          })
+        : null
+    const preferredPosition = centerPosition
+    const viewBounds =
+      wrapperBounds && toFlowPosition
         ? {
-            x: wrapperBounds.width / 2,
-            y: wrapperBounds.height / 2,
+            min: toFlowPosition({
+              x: wrapperBounds.left,
+              y: wrapperBounds.top,
+            }),
+            max: toFlowPosition({
+              x: wrapperBounds.right,
+              y: wrapperBounds.bottom,
+            }),
           }
         : null
 
-    const preferredPosition =
-      centerPosition && reactFlowInstance?.screenToFlowPosition
-        ? reactFlowInstance.screenToFlowPosition(centerPosition)
-        : centerPosition && reactFlowInstance?.project
-          ? reactFlowInstance.project(centerPosition)
-          : null
-
     const buildNode = (current) => {
+      const DEFAULT_NODE_WIDTH = 220
+      const DEFAULT_NODE_HEIGHT = 140
+      const PADDING = 24
+      const STEP = 40
+      const MAX_RING = 10
+      const classRects = current
+        .filter((node) => node.type === CLASS_NODE_TYPE)
+        .map((node) => {
+          const width = node.measured?.width ?? node.width ?? DEFAULT_NODE_WIDTH
+          const height =
+            node.measured?.height ?? node.height ?? DEFAULT_NODE_HEIGHT
+          return {
+            x: node.position.x,
+            y: node.position.y,
+            width,
+            height,
+          }
+        })
+
+      const withinBounds = (position) => {
+        if (!viewBounds) {
+          return true
+        }
+        return (
+          position.x >= viewBounds.min.x + PADDING &&
+          position.y >= viewBounds.min.y + PADDING &&
+          position.x + DEFAULT_NODE_WIDTH <= viewBounds.max.x - PADDING &&
+          position.y + DEFAULT_NODE_HEIGHT <= viewBounds.max.y - PADDING
+        )
+      }
+
+      const overlaps = (position) =>
+        classRects.some((rect) => {
+          const right = rect.x + rect.width + PADDING
+          const bottom = rect.y + rect.height + PADDING
+          const nextRight = position.x + DEFAULT_NODE_WIDTH + PADDING
+          const nextBottom = position.y + DEFAULT_NODE_HEIGHT + PADDING
+          return (
+            position.x < right &&
+            nextRight > rect.x &&
+            position.y < bottom &&
+            nextBottom > rect.y
+          )
+        })
+
+      const clampToBounds = (position) => {
+        if (!viewBounds) {
+          return position
+        }
+        const maxX = viewBounds.max.x - PADDING - DEFAULT_NODE_WIDTH
+        const maxY = viewBounds.max.y - PADDING - DEFAULT_NODE_HEIGHT
+        return {
+          x: Math.min(Math.max(position.x, viewBounds.min.x + PADDING), maxX),
+          y: Math.min(Math.max(position.y, viewBounds.min.y + PADDING), maxY),
+        }
+      }
+
+      const findAvailablePosition = (origin) => {
+        if (origin && withinBounds(origin) && !overlaps(origin)) {
+          return origin
+        }
+
+        if (!origin) {
+          return null
+        }
+
+        for (let ring = 1; ring <= MAX_RING; ring += 1) {
+          const offsets = []
+          for (let y = 0; y <= ring; y += 1) {
+            offsets.push([ring, y])
+          }
+          for (let x = ring - 1; x >= -ring; x -= 1) {
+            offsets.push([x, ring])
+          }
+          for (let y = ring - 1; y >= -ring; y -= 1) {
+            offsets.push([-ring, y])
+          }
+          for (let x = -ring + 1; x <= ring; x += 1) {
+            offsets.push([x, -ring])
+          }
+          for (let y = -ring + 1; y < 0; y += 1) {
+            offsets.push([ring, y])
+          }
+
+          for (const [dx, dy] of offsets) {
+            const candidate = {
+              x: origin.x + dx * STEP,
+              y: origin.y + dy * STEP,
+            }
+            if (withinBounds(candidate) && !overlaps(candidate)) {
+              return candidate
+            }
+          }
+        }
+
+        return null
+      }
+
       const idSuffix =
         typeof crypto !== 'undefined' && crypto.randomUUID
           ? crypto.randomUUID()
           : `${Date.now()}-${current.length + 1}`
+      const fallbackPosition = {
+        x: 120 + current.length * 30,
+        y: 80 + current.length * 30,
+      }
       const position =
-        preferredPosition ?? {
-          x: 120 + current.length * 30,
-          y: 80 + current.length * 30,
-        }
+        findAvailablePosition(preferredPosition) ??
+        findAvailablePosition(fallbackPosition) ??
+        clampToBounds(preferredPosition ?? fallbackPosition)
 
       const usedColors = new Set(
         current

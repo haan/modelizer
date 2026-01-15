@@ -37,12 +37,12 @@ export const DIALOG_COPY = {
     relationship: {
       title: 'Duplicate relationship',
       description:
-        'A relationship between these attribute handles already exists. Remove the existing relationship before creating another.',
+        'A relationship between these attributes already exists. Remove the existing relationship before creating another.',
     },
     associative: {
       title: 'Duplicate associative association',
       description:
-        'An associative association between this class handle and the association helper node already exists. Remove the existing associative association before creating another.',
+        'An associative association between this class and the association already exists. Remove the existing associative association before creating another.',
     },
     reflexive: {
       title: 'Duplicate reflexive association',
