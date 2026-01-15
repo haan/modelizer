@@ -24,6 +24,41 @@ import {
   VIEW_LOGICAL,
   VIEW_PHYSICAL,
 } from '../model/constants.js'
+
+const samePosition = (a, b) => a?.x === b?.x && a?.y === b?.y
+
+const deriveViewPositionsMeta = (node, viewPositions) => {
+  const meta = node.data?.viewPositionsMeta
+  if (
+    meta &&
+    typeof meta.conceptual === 'boolean' &&
+    typeof meta.logical === 'boolean' &&
+    typeof meta.physical === 'boolean'
+  ) {
+    return {
+      conceptual: meta.conceptual,
+      logical: meta.logical,
+      physical: meta.physical,
+    }
+  }
+
+  return {
+    conceptual: true,
+    logical: !samePosition(
+      viewPositions[VIEW_LOGICAL],
+      viewPositions[VIEW_CONCEPTUAL],
+    ),
+    physical:
+      !samePosition(
+        viewPositions[VIEW_PHYSICAL],
+        viewPositions[VIEW_CONCEPTUAL],
+      ) &&
+      !samePosition(
+        viewPositions[VIEW_PHYSICAL],
+        viewPositions[VIEW_LOGICAL],
+      ),
+  }
+}
 import {
   DEFAULT_VIEW_VISIBILITY,
   normalizeVisibility,
@@ -128,40 +163,6 @@ export function useModelState({
     activeView === VIEW_LOGICAL || activeView === VIEW_PHYSICAL
       ? activeView
       : VIEW_CONCEPTUAL
-
-  const samePosition = (a, b) => a?.x === b?.x && a?.y === b?.y
-  const deriveViewPositionsMeta = (node, viewPositions) => {
-    const meta = node.data?.viewPositionsMeta
-    if (
-      meta &&
-      typeof meta.conceptual === 'boolean' &&
-      typeof meta.logical === 'boolean' &&
-      typeof meta.physical === 'boolean'
-    ) {
-      return {
-        conceptual: meta.conceptual,
-        logical: meta.logical,
-        physical: meta.physical,
-      }
-    }
-
-    return {
-      conceptual: true,
-      logical: !samePosition(
-        viewPositions[VIEW_LOGICAL],
-        viewPositions[VIEW_CONCEPTUAL],
-      ),
-      physical:
-        !samePosition(
-          viewPositions[VIEW_PHYSICAL],
-          viewPositions[VIEW_CONCEPTUAL],
-        ) &&
-        !samePosition(
-          viewPositions[VIEW_PHYSICAL],
-          viewPositions[VIEW_LOGICAL],
-        ),
-    }
-  }
 
   const isVisibleInView = useCallback(
     (visibility) => {

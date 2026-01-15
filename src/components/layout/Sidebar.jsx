@@ -5,6 +5,23 @@ import {
 } from '../../model/constants.js'
 import * as Tooltip from '@radix-ui/react-tooltip'
 
+const SIDEBAR_TOOLTIP_CLASS =
+  'rounded-md border border-base-content/10 bg-base-100 px-2 py-1 text-xs text-base-content shadow-lg'
+
+function SidebarTooltip({ label, children }) {
+  return (
+    <Tooltip.Root>
+      <Tooltip.Trigger asChild>{children}</Tooltip.Trigger>
+      <Tooltip.Portal>
+        <Tooltip.Content side="right" sideOffset={10} className={SIDEBAR_TOOLTIP_CLASS}>
+          {label}
+          <Tooltip.Arrow className="fill-base-100" />
+        </Tooltip.Content>
+      </Tooltip.Portal>
+    </Tooltip.Root>
+  )
+}
+
 export default function Sidebar({
   activeItem,
   onSelect,
@@ -14,20 +31,6 @@ export default function Sidebar({
 }) {
   const sidebarButtonClass =
     'peer/menu-button flex w-full flex-col items-center justify-center gap-1 rounded-md px-1 py-2 text-[10px] leading-tight text-center outline-none transition-[width,height,padding] focus-visible:ring-2 focus-visible:ring-base-content/20 hover:bg-base-300 data-[active=true]:bg-base-300 data-[active=true]:font-medium data-[active=true]:text-primary disabled:cursor-not-allowed disabled:opacity-50 disabled:hover:bg-transparent'
-  const tooltipContentClass =
-    'rounded-md border border-base-content/10 bg-base-100 px-2 py-1 text-xs text-base-content shadow-lg'
-
-  const SidebarTooltip = ({ label, children }) => (
-    <Tooltip.Root>
-      <Tooltip.Trigger asChild>{children}</Tooltip.Trigger>
-      <Tooltip.Portal>
-        <Tooltip.Content side="right" sideOffset={10} className={tooltipContentClass}>
-          {label}
-          <Tooltip.Arrow className="fill-base-100" />
-        </Tooltip.Content>
-      </Tooltip.Portal>
-    </Tooltip.Root>
-  )
 
   return (
     <aside className="w-16 shrink-0 border-r border-base-content/10 bg-base-200">
