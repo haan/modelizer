@@ -1,5 +1,4 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
-import * as AlertDialog from '@radix-ui/react-alert-dialog'
 import ReactFlow, {
   Background,
   ConnectionMode,
@@ -10,13 +9,22 @@ import ReactFlow, {
 import { toPng } from 'html-to-image'
 import { edgeTypes, nodeTypes } from './flowTypes.js'
 import { MODEL_EXAMPLES } from './examples.js'
+import {
+  ConfirmDiscardDialog,
+  DeleteDialog,
+  DuplicateDialog,
+} from './components/dialogs/index.js'
 import { InfoPanel, Navbar, Sidebar } from './components/layout/index.js'
 import { useFileActions } from './hooks/useFileActions.js'
 import { useKeyboardShortcuts } from './hooks/useKeyboardShortcuts.js'
 import { useModelState } from './hooks/useModelState.js'
 import DefaultValuesPanel from './components/flow/DefaultValuesPanel.jsx'
 import { sanitizeFileName } from './model/fileUtils.js'
-import { DEFAULT_VIEW, VIEW_PHYSICAL } from './model/constants.js'
+import {
+  DEFAULT_VIEW,
+  RELATIONSHIP_EDGE_TYPE,
+  VIEW_PHYSICAL,
+} from './model/constants.js'
 
 const MIN_INFO_WIDTH = 370
 
@@ -32,13 +40,11 @@ function App() {
   const [activeView, setActiveView] = useState(DEFAULT_VIEW)
   const [duplicateDialog, setDuplicateDialog] = useState({
     open: false,
-    title: '',
-    description: '',
+    kind: 'association',
   })
   const [deleteDialog, setDeleteDialog] = useState({
     open: false,
-    title: '',
-    description: '',
+    kind: 'selection',
   })
   const resizeState = useRef(null)
   const deleteActionRef = useRef(null)
@@ -76,32 +82,7 @@ function App() {
   }, [infoWidth])
 
   const onDuplicateEdge = useCallback(({ kind }) => {
-    const config =
-      kind === 'relationship'
-        ? {
-            title: 'Duplicate relationship',
-            description:
-              'A relationship between these attribute handles already exists. Remove the existing relationship before creating another.',
-          }
-        : kind === 'associative'
-          ? {
-              title: 'Duplicate associative association',
-              description:
-                'An associative association between this class handle and the association helper node already exists. Remove the existing associative association before creating another.',
-            }
-          : kind === 'reflexive'
-            ? {
-                title: 'Duplicate reflexive association',
-                description:
-                  'A reflexive association between these class handles already exists. Remove the existing reflexive association before creating another.',
-              }
-            : {
-                title: 'Duplicate association',
-                description:
-                  'An association between these class handles already exists. Remove the existing association before creating another.',
-              }
-
-    setDuplicateDialog({ open: true, ...config })
+    setDuplicateDialog({ open: true, kind: kind ?? 'association' })
   }, [])
 
   const onDuplicateDialogOpenChange = useCallback((open) => {
@@ -158,14 +139,14 @@ function App() {
   })
 
   const requestDelete = useCallback(
-    ({ title, description, action }) => {
+    ({ kind, action }) => {
       if (!confirmDelete) {
         action()
         return
       }
 
       deleteActionRef.current = action
-      setDeleteDialog({ open: true, title, description })
+      setDeleteDialog({ open: true, kind })
     },
     [confirmDelete],
   )
@@ -186,31 +167,29 @@ function App() {
   const onDeleteClass = useCallback(
     (nodeId) =>
       requestDelete({
-        title: 'Delete class?',
-        description:
-          'This removes the class and any connected associations. This action cannot be undone.',
+        kind: 'class',
         action: () => deleteClass(nodeId),
       }),
     [deleteClass, requestDelete],
   )
 
   const onDeleteAssociation = useCallback(
-    (edgeId) =>
+    (edgeId) => {
+      const edge = edges.find((entry) => entry.id === edgeId)
+      const kind =
+        edge?.type === RELATIONSHIP_EDGE_TYPE ? 'relationship' : 'association'
       requestDelete({
-        title: 'Delete association?',
-        description:
-          'This removes the association. This action cannot be undone.',
+        kind,
         action: () => deleteAssociation(edgeId),
-      }),
-    [deleteAssociation, requestDelete],
+      })
+    },
+    [deleteAssociation, edges, requestDelete],
   )
 
   const onDeleteAttribute = useCallback(
     (nodeId, attributeId) =>
       requestDelete({
-        title: 'Delete attribute?',
-        description:
-          'This removes the attribute from the class. This action cannot be undone.',
+        kind: 'attribute',
         action: () => deleteAttribute(nodeId, attributeId),
       }),
     [deleteAttribute, requestDelete],
@@ -223,9 +202,7 @@ function App() {
       }
 
       requestDelete({
-        title: 'Delete selected items?',
-        description:
-          'This removes the selected items. This action cannot be undone.',
+        kind: 'selection',
         action: () => {
           nodeIds.forEach((nodeId) => deleteClass(nodeId))
           edgeIds.forEach((edgeId) => deleteAssociation(edgeId))
@@ -473,90 +450,24 @@ function App() {
           </main>
         </div>
       </div>
-      <AlertDialog.Root
+      <ConfirmDiscardDialog
         open={isConfirmDialogOpen}
         onOpenChange={onConfirmDialogOpenChange}
-      >
-        <AlertDialog.Portal>
-          <AlertDialog.Overlay className="fixed inset-0 z-40 bg-black/40" />
-          <AlertDialog.Content className="fixed left-1/2 top-1/2 z-50 w-[320px] -translate-x-1/2 -translate-y-1/2 rounded-lg border border-base-content/20 bg-base-100 p-4 shadow-xl">
-            <AlertDialog.Title className="text-sm font-semibold">
-              Discard changes?
-            </AlertDialog.Title>
-            <AlertDialog.Description className="mt-2 text-xs text-base-content/70">
-              Your unsaved changes will be lost.
-            </AlertDialog.Description>
-            <div className="mt-4 flex justify-end gap-2">
-              <AlertDialog.Cancel
-                className="inline-flex h-8 items-center justify-center rounded-md border border-base-content/20 px-3 text-xs font-medium transition-colors hover:bg-base-200"
-                onClick={onCancelDiscardChanges}
-              >
-                Cancel
-              </AlertDialog.Cancel>
-              <AlertDialog.Action
-                className="inline-flex h-8 items-center justify-center rounded-md bg-primary px-3 text-xs font-medium text-primary-content transition-colors hover:bg-primary/90"
-                onClick={onConfirmDiscardChanges}
-              >
-                Discard
-              </AlertDialog.Action>
-            </div>
-          </AlertDialog.Content>
-        </AlertDialog.Portal>
-      </AlertDialog.Root>
-      <AlertDialog.Root
+        onConfirm={onConfirmDiscardChanges}
+        onCancel={onCancelDiscardChanges}
+      />
+      <DeleteDialog
         open={deleteDialog.open}
+        kind={deleteDialog.kind}
         onOpenChange={onDeleteDialogOpenChange}
-      >
-        <AlertDialog.Portal>
-          <AlertDialog.Overlay className="fixed inset-0 z-40 bg-black/40" />
-          <AlertDialog.Content className="fixed left-1/2 top-1/2 z-50 w-[320px] -translate-x-1/2 -translate-y-1/2 rounded-lg border border-base-content/20 bg-base-100 p-4 shadow-xl">
-            <AlertDialog.Title className="text-sm font-semibold">
-              {deleteDialog.title}
-            </AlertDialog.Title>
-            <AlertDialog.Description className="mt-2 text-xs text-base-content/70">
-              {deleteDialog.description}
-            </AlertDialog.Description>
-            <div className="mt-4 flex justify-end gap-2">
-              <AlertDialog.Cancel
-                className="inline-flex h-8 items-center justify-center rounded-md border border-base-content/20 px-3 text-xs font-medium transition-colors hover:bg-base-200"
-                onClick={() => onDeleteDialogOpenChange(false)}
-              >
-                Cancel
-              </AlertDialog.Cancel>
-              <AlertDialog.Action
-                className="inline-flex h-8 items-center justify-center rounded-md bg-primary px-3 text-xs font-medium text-primary-content transition-colors hover:bg-primary/90"
-                onClick={onConfirmDelete}
-              >
-                Delete
-              </AlertDialog.Action>
-            </div>
-          </AlertDialog.Content>
-        </AlertDialog.Portal>
-      </AlertDialog.Root>
-      <AlertDialog.Root
+        onConfirm={onConfirmDelete}
+        onCancel={() => onDeleteDialogOpenChange(false)}
+      />
+      <DuplicateDialog
         open={duplicateDialog.open}
+        kind={duplicateDialog.kind}
         onOpenChange={onDuplicateDialogOpenChange}
-      >
-        <AlertDialog.Portal>
-          <AlertDialog.Overlay className="fixed inset-0 z-40 bg-black/40" />
-          <AlertDialog.Content className="fixed left-1/2 top-1/2 z-50 w-[360px] -translate-x-1/2 -translate-y-1/2 rounded-lg border border-base-content/20 bg-base-100 p-4 shadow-xl">
-            <AlertDialog.Title className="text-sm font-semibold">
-              {duplicateDialog.title}
-            </AlertDialog.Title>
-            <AlertDialog.Description className="mt-2 text-xs text-base-content/70">
-              {duplicateDialog.description}
-            </AlertDialog.Description>
-            <div className="mt-4 flex justify-end">
-              <AlertDialog.Action
-                className="inline-flex h-8 items-center justify-center rounded-md bg-primary px-3 text-xs font-medium text-primary-content transition-colors hover:bg-primary/90"
-                onClick={() => onDuplicateDialogOpenChange(false)}
-              >
-                OK
-              </AlertDialog.Action>
-            </div>
-          </AlertDialog.Content>
-        </AlertDialog.Portal>
-      </AlertDialog.Root>
+      />
     </div>
   )
 }

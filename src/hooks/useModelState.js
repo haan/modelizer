@@ -254,6 +254,20 @@ export function useModelState({
         const isAttributeConnection =
           isAttributeHandle(params.sourceHandle) &&
           isAttributeHandle(params.targetHandle)
+        const sourceAttributeId = isAttributeConnection
+          ? getAttributeIdFromHandle(params.sourceHandle)
+          : null
+        const targetAttributeId = isAttributeConnection
+          ? getAttributeIdFromHandle(params.targetHandle)
+          : null
+        if (
+          isAttributeConnection &&
+          sourceAttributeId &&
+          targetAttributeId &&
+          sourceAttributeId === targetAttributeId
+        ) {
+          return current
+        }
         const nextType = isAttributeConnection
           ? RELATIONSHIP_EDGE_TYPE
           : connectsToAssociationHelper
@@ -277,54 +291,78 @@ export function useModelState({
                   : params.source,
               ) ?? 'Association'
             : null
-        const isDuplicate = current.some((edge) => {
-          if (edge.type !== nextType) {
-            return false
-          }
+        const isDuplicate =
+          nextType === ASSOCIATION_EDGE_TYPE
+            ? false
+            : current.some((edge) => {
+                if (edge.type !== nextType) {
+                  return false
+                }
 
-          if (nextType === REFLEXIVE_EDGE_TYPE) {
-            return edge.source === params.source && edge.target === params.target
-          }
+                if (nextType === REFLEXIVE_EDGE_TYPE) {
+                  return (
+                    edge.source === params.source &&
+                    edge.target === params.target
+                  )
+                }
 
-          if (nextType === RELATIONSHIP_EDGE_TYPE) {
-            const nextSourceAttr = getAttributeIdFromHandle(params.sourceHandle)
-            const nextTargetAttr = getAttributeIdFromHandle(params.targetHandle)
-            const existingSourceAttr = getAttributeIdFromHandle(edge.sourceHandle)
-            const existingTargetAttr = getAttributeIdFromHandle(edge.targetHandle)
-            if (!nextSourceAttr || !nextTargetAttr) {
-              return false
-            }
-            if (!existingSourceAttr || !existingTargetAttr) {
-              return false
-            }
+                if (nextType === ASSOCIATIVE_EDGE_TYPE) {
+                  const matchesDirect =
+                    edge.source === params.source &&
+                    edge.target === params.target
+                  const matchesReverse =
+                    edge.source === params.target &&
+                    edge.target === params.source
+                  return matchesDirect || matchesReverse
+                }
 
-            const matchesDirect =
-              edge.source === params.source &&
-              edge.target === params.target &&
-              existingSourceAttr === nextSourceAttr &&
-              existingTargetAttr === nextTargetAttr
-            const matchesReverse =
-              edge.source === params.target &&
-              edge.target === params.source &&
-              existingSourceAttr === nextTargetAttr &&
-              existingTargetAttr === nextSourceAttr
+                if (nextType === RELATIONSHIP_EDGE_TYPE) {
+                  const nextSourceAttr = getAttributeIdFromHandle(
+                    params.sourceHandle,
+                  )
+                  const nextTargetAttr = getAttributeIdFromHandle(
+                    params.targetHandle,
+                  )
+                  const existingSourceAttr = getAttributeIdFromHandle(
+                    edge.sourceHandle,
+                  )
+                  const existingTargetAttr = getAttributeIdFromHandle(
+                    edge.targetHandle,
+                  )
+                  if (!nextSourceAttr || !nextTargetAttr) {
+                    return false
+                  }
+                  if (!existingSourceAttr || !existingTargetAttr) {
+                    return false
+                  }
 
-            return matchesDirect || matchesReverse
-          }
+                  const matchesDirect =
+                    edge.source === params.source &&
+                    edge.target === params.target &&
+                    existingSourceAttr === nextSourceAttr &&
+                    existingTargetAttr === nextTargetAttr
+                  const matchesReverse =
+                    edge.source === params.target &&
+                    edge.target === params.source &&
+                    existingSourceAttr === nextTargetAttr &&
+                    existingTargetAttr === nextSourceAttr
 
-          const matchesDirect =
-            edge.source === params.source &&
-            edge.target === params.target &&
-            edge.sourceHandle === params.sourceHandle &&
-            edge.targetHandle === params.targetHandle
-          const matchesReverse =
-            edge.source === params.target &&
-            edge.target === params.source &&
-            edge.sourceHandle === params.targetHandle &&
-            edge.targetHandle === params.sourceHandle
+                  return matchesDirect || matchesReverse
+                }
 
-          return matchesDirect || matchesReverse
-        })
+                const matchesDirect =
+                  edge.source === params.source &&
+                  edge.target === params.target &&
+                  edge.sourceHandle === params.sourceHandle &&
+                  edge.targetHandle === params.targetHandle
+                const matchesReverse =
+                  edge.source === params.target &&
+                  edge.target === params.source &&
+                  edge.sourceHandle === params.targetHandle &&
+                  edge.targetHandle === params.sourceHandle
+
+                return matchesDirect || matchesReverse
+              })
 
         if (isDuplicate) {
           onDuplicateEdge?.({ kind: typeData })
@@ -387,6 +425,24 @@ export function useModelState({
     }
     if (connection.targetHandle.endsWith('-source')) {
       return false
+    }
+    if (
+      isAttributeHandle(connection.sourceHandle) &&
+      isAttributeHandle(connection.targetHandle)
+    ) {
+      const sourceAttributeId = getAttributeIdFromHandle(
+        connection.sourceHandle,
+      )
+      const targetAttributeId = getAttributeIdFromHandle(
+        connection.targetHandle,
+      )
+      if (
+        sourceAttributeId &&
+        targetAttributeId &&
+        sourceAttributeId === targetAttributeId
+      ) {
+        return false
+      }
     }
     return true
   }, [])
