@@ -21,7 +21,12 @@ export default function RefsPanel({
         onUpdateAssociationRole={onUpdateAssociationRole}
         onHighlightAssociation={onHighlightAssociation}
       />
-      <RelationshipsPanel edges={edges} nodes={nodes} />
+      <RelationshipsPanel
+        edges={edges}
+        nodes={nodes}
+        onDeleteAssociation={onDeleteAssociation}
+        onHighlightAssociation={onHighlightAssociation}
+      />
     </div>
   )
 }
