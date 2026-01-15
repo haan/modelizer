@@ -5,8 +5,6 @@ Modelizer is a lightweight database modeling tool developed for teaching the dat
 Online version: https://modelizer.haan.lu/  
 Download: GitHub Releases
 
----
-
 ## Run locally (Windows)
 
 1. Download the latest release from the GitHub Releases page.
@@ -16,8 +14,6 @@ Download: GitHub Releases
 
 The release includes a tiny local webserver based on miniserve:
 https://github.com/svenstaro/miniserve
-
----
 
 ## Supported modeling elements
 
@@ -36,23 +32,17 @@ Modelizer supports:
 - default values
 - constraints: Null, Unique, Auto Increment
 
----
-
 ## What Modelizer does (and does not do)
 
 Modelizer is intentionally a teaching tool that simplifies drawing and defining models.
 It contains no validation logic and does not generate relationships automatically from associations.
 It does not help you make the "right" modeling decisions — you do.
 
----
-
 ## Export & storage
 
 - Export format: PNG
 - Models must be downloaded manually (no server-side storage)
 - Settings are stored in browser localStorage
-
----
 
 ## Acknowledgments
 
