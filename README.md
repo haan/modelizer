@@ -1,16 +1,61 @@
-# React + Vite
+# Modelizer
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+Modelizer is a lightweight database modeling tool developed for teaching the database modeling process (initially for courses in Luxembourg).
 
-Currently, two official plugins are available:
+Online version: https://modelizer.haan.lu/  
+Download: GitHub Releases
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Babel](https://babeljs.io/) (or [oxc](https://oxc.rs) when used in [rolldown-vite](https://vite.dev/guide/rolldown)) for Fast Refresh
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/) for Fast Refresh
+---
 
-## React Compiler
+## Run locally (Windows)
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
+1. Download the latest release from the GitHub Releases page.
+2. Unzip it anywhere on your computer.
+3. Double-click `modelizer.bat`
+4. Open your browser at http://localhost:8080
 
-## Expanding the ESLint configuration
+The release includes a tiny local webserver based on miniserve:
+https://github.com/svenstaro/miniserve
 
-If you are developing a production application, we recommend using TypeScript with type-aware lint rules enabled. Check out the [TS template](https://github.com/vitejs/vite/tree/main/packages/create-vite/template-react-ts) for information on how to integrate TypeScript and [`typescript-eslint`](https://typescript-eslint.io) in your project.
+---
+
+## Supported modeling elements
+
+Modelizer supports:
+- different modeling levels:
+  - conceptual model (CDM)
+  - logical model (LDM)
+  - physical model (PDM)
+- classes
+- associations
+- associative associations
+- reflexive associations
+- multiplicities
+- attributes
+- attribute types
+- default values
+- constraints: Null, Unique, Auto Increment
+
+---
+
+## What Modelizer does (and does not do)
+
+Modelizer is intentionally a teaching tool that simplifies drawing and defining models.
+It contains no validation logic and does not generate relationships automatically from associations.
+It does not help you make the "right" modeling decisions — you do.
+
+---
+
+## Export & storage
+
+- Export format: PNG
+- Models must be downloaded manually (no server-side storage)
+- Settings are stored in browser localStorage
+
+---
+
+## Acknowledgments
+
+- ChartDB (interface design inspiration): https://github.com/chartdb/chartdb/
+- Java Modelizer by Bob Fisch: https://modelizer.fisch.lu/
+- miniserve (local webserver used in the release bundle): https://github.com/svenstaro/miniserve
