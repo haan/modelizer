@@ -13,9 +13,7 @@ export default function Navbar({
   onExportPng,
   examples = [],
   onLoadExample,
-  showMiniMap,
   showBackground,
-  onToggleMiniMap,
   onToggleBackground,
   showAccentColors,
   onToggleAccentColors,
@@ -23,6 +21,8 @@ export default function Navbar({
   onToggleAlternateNNDisplay,
   confirmDelete,
   onToggleConfirmDelete,
+  includeAccentColorsInExport,
+  onToggleIncludeAccentColorsInExport,
   isDirty,
 }) {
   const [isEditing, setIsEditing] = useState(false)
@@ -190,7 +190,7 @@ export default function Navbar({
             </Menubar.Menu>
             <Menubar.Menu>
               <Menubar.Trigger className="rounded-sm px-3 py-1 text-sm font-medium text-base-content/80 transition-colors hover:bg-base-200 focus:outline-none">
-                View
+                Settings
               </Menubar.Trigger>
               <Menubar.Portal>
                 <Menubar.Content
@@ -200,16 +200,41 @@ export default function Navbar({
                 >
                   <Menubar.CheckboxItem
                     className={viewItemClass}
-                    checked={showMiniMap}
+                    checked={confirmDelete}
                     onCheckedChange={(value) =>
-                      onToggleMiniMap?.(Boolean(value))
+                      onToggleConfirmDelete?.(Boolean(value))
                     }
                   >
                     <Menubar.ItemIndicator className="absolute left-1.5 inline-flex h-3.5 w-3.5 items-center justify-center">
                       <CheckIcon className="h-3.5 w-3.5" aria-hidden="true" />
                     </Menubar.ItemIndicator>
-                    <span>Mini Map</span>
+                    <span>Always ask for delete confirmation</span>
                   </Menubar.CheckboxItem>
+                  <Menubar.CheckboxItem
+                    className={viewItemClass}
+                    checked={includeAccentColorsInExport}
+                    onCheckedChange={(value) =>
+                      onToggleIncludeAccentColorsInExport?.(Boolean(value))
+                    }
+                  >
+                    <Menubar.ItemIndicator className="absolute left-1.5 inline-flex h-3.5 w-3.5 items-center justify-center">
+                      <CheckIcon className="h-3.5 w-3.5" aria-hidden="true" />
+                    </Menubar.ItemIndicator>
+                    <span>Include accent colors in PNG export</span>
+                  </Menubar.CheckboxItem>
+                </Menubar.Content>
+              </Menubar.Portal>
+            </Menubar.Menu>
+            <Menubar.Menu>
+              <Menubar.Trigger className="rounded-sm px-3 py-1 text-sm font-medium text-base-content/80 transition-colors hover:bg-base-200 focus:outline-none">
+                View
+              </Menubar.Trigger>
+              <Menubar.Portal>
+                <Menubar.Content
+                  className="z-50 min-w-[180px] rounded-sm border border-base-content/20 bg-base-100 p-1 shadow-lg"
+                  align="start"
+                  sideOffset={6}
+                >
                   <Menubar.CheckboxItem
                     className={viewItemClass}
                     checked={showBackground}
@@ -245,19 +270,6 @@ export default function Navbar({
                       <CheckIcon className="h-3.5 w-3.5" aria-hidden="true" />
                     </Menubar.ItemIndicator>
                     <span>Alternate Not Null display</span>
-                  </Menubar.CheckboxItem>
-                  <Menubar.Separator className="my-1 h-px bg-base-content/20" />
-                  <Menubar.CheckboxItem
-                    className={viewItemClass}
-                    checked={confirmDelete}
-                    onCheckedChange={(value) =>
-                      onToggleConfirmDelete?.(Boolean(value))
-                    }
-                  >
-                    <Menubar.ItemIndicator className="absolute left-1.5 inline-flex h-3.5 w-3.5 items-center justify-center">
-                      <CheckIcon className="h-3.5 w-3.5" aria-hidden="true" />
-                    </Menubar.ItemIndicator>
-                    <span>Always ask for delete confirmation</span>
                   </Menubar.CheckboxItem>
                 </Menubar.Content>
               </Menubar.Portal>

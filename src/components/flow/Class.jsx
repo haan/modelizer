@@ -98,7 +98,7 @@ export function Class({ data, id, selected }) {
       className={`group/node min-w-[180px] rounded-lg border-2 bg-base-100 text-base-content shadow-sm hover:border-primary ${borderClass}`}
     >
       <div
-        data-no-export="true"
+        data-accent-bar="true"
         className="h-2 rounded-t-[6px]"
         style={{ backgroundColor: showAccentColors ? accentColor : 'transparent' }}
       />

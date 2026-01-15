@@ -47,7 +47,7 @@ export const DIALOG_COPY = {
     reflexive: {
       title: 'Duplicate reflexive association',
       description:
-        'A reflexive association between these class handles already exists. Remove the existing reflexive association before creating another.',
+        'Two reflexive associations on the same class are not supported. Remove the existing reflexive association before creating another.',
     },
     association: {
       title: 'Duplicate association',

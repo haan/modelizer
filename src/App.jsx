@@ -4,7 +4,6 @@ import ReactFlow, {
   ConnectionMode,
   ConnectionLineType,
   Controls,
-  MiniMap,
 } from 'reactflow'
 import { toPng } from 'html-to-image'
 import { edgeTypes, nodeTypes } from './flowTypes.js'
@@ -27,16 +26,65 @@ import {
 } from './model/constants.js'
 
 const MIN_INFO_WIDTH = 370
+const STORAGE_KEYS = {
+  showBackground: 'modelizer.showBackground',
+  showAccentColors: 'modelizer.showAccentColors',
+  alternateNNDisplay: 'modelizer.alternateNNDisplay',
+  confirmDelete: 'modelizer.confirmDelete',
+  includeAccentColorsInExport: 'modelizer.includeAccentColorsInExport',
+}
+
+const readStoredBool = (key, fallback) => {
+  if (typeof window === 'undefined') {
+    return fallback
+  }
+  try {
+    const value = window.localStorage.getItem(key)
+    if (value === null) {
+      return fallback
+    }
+    if (value === 'true') {
+      return true
+    }
+    if (value === 'false') {
+      return false
+    }
+  } catch (error) {
+    console.warn('Failed to read preference', key, error)
+  }
+  return fallback
+}
+
+const writeStoredBool = (key, value) => {
+  if (typeof window === 'undefined') {
+    return
+  }
+  try {
+    window.localStorage.setItem(key, value ? 'true' : 'false')
+  } catch (error) {
+    console.warn('Failed to store preference', key, error)
+  }
+}
 
 function App() {
   const reactFlowWrapper = useRef(null)
   const [reactFlowInstance, setReactFlowInstance] = useState(null)
   const [infoWidth, setInfoWidth] = useState(370)
-  const [showMiniMap, setShowMiniMap] = useState(false)
-  const [showBackground, setShowBackground] = useState(true)
-  const [showAccentColors, setShowAccentColors] = useState(true)
-  const [alternateNNDisplay, setAlternateNNDisplay] = useState(false)
-  const [confirmDelete, setConfirmDelete] = useState(false)
+  const [showBackground, setShowBackground] = useState(() =>
+    readStoredBool(STORAGE_KEYS.showBackground, true),
+  )
+  const [showAccentColors, setShowAccentColors] = useState(() =>
+    readStoredBool(STORAGE_KEYS.showAccentColors, true),
+  )
+  const [alternateNNDisplay, setAlternateNNDisplay] = useState(() =>
+    readStoredBool(STORAGE_KEYS.alternateNNDisplay, false),
+  )
+  const [confirmDelete, setConfirmDelete] = useState(() =>
+    readStoredBool(STORAGE_KEYS.confirmDelete, false),
+  )
+  const [includeAccentColorsInExport, setIncludeAccentColorsInExport] = useState(() =>
+    readStoredBool(STORAGE_KEYS.includeAccentColorsInExport, false),
+  )
   const [activeView, setActiveView] = useState(DEFAULT_VIEW)
   const [duplicateDialog, setDuplicateDialog] = useState({
     open: false,
@@ -85,6 +133,29 @@ function App() {
     setDuplicateDialog({ open: true, kind: kind ?? 'association' })
   }, [])
 
+  useEffect(() => {
+    writeStoredBool(STORAGE_KEYS.showBackground, showBackground)
+  }, [showBackground])
+
+  useEffect(() => {
+    writeStoredBool(STORAGE_KEYS.showAccentColors, showAccentColors)
+  }, [showAccentColors])
+
+  useEffect(() => {
+    writeStoredBool(STORAGE_KEYS.alternateNNDisplay, alternateNNDisplay)
+  }, [alternateNNDisplay])
+
+  useEffect(() => {
+    writeStoredBool(STORAGE_KEYS.confirmDelete, confirmDelete)
+  }, [confirmDelete])
+
+  useEffect(() => {
+    writeStoredBool(
+      STORAGE_KEYS.includeAccentColorsInExport,
+      includeAccentColorsInExport,
+    )
+  }, [includeAccentColorsInExport])
+
   const onDuplicateDialogOpenChange = useCallback((open) => {
     if (!open) {
       setDuplicateDialog((current) => ({ ...current, open: false }))
@@ -111,6 +182,7 @@ function App() {
     onConnectEnd,
     isValidConnection,
     onAddClass,
+    onSyncViewPositions,
     onRenameClass,
     onRenameAssociation,
     onDeleteAssociation: deleteAssociation,
@@ -268,7 +340,8 @@ function App() {
         filter: (node) =>
           !(node instanceof Element) ||
           (!node.closest('[data-no-export="true"]') &&
-            !node.closest('.react-flow__background')),
+            !node.closest('.react-flow__background') &&
+            (includeAccentColorsInExport || node.dataset.accentBar !== 'true')),
         width: imageWidth,
         height: imageHeight,
       })
@@ -287,7 +360,7 @@ function App() {
     } catch (error) {
       console.error('Failed to export PNG', error)
     }
-  }, [activeView, modelName])
+  }, [activeView, includeAccentColorsInExport, modelName])
 
   const onSidebarSelect = useCallback(
     (item) => {
@@ -365,10 +438,8 @@ function App() {
           onExportPng={onExportPng}
           examples={MODEL_EXAMPLES}
           onLoadExample={onLoadExample}
-          showMiniMap={showMiniMap}
           showBackground={showBackground}
           showAccentColors={showAccentColors}
-          onToggleMiniMap={() => setShowMiniMap((current) => !current)}
           onToggleBackground={() => setShowBackground((current) => !current)}
           onToggleAccentColors={() =>
             setShowAccentColors((current) => !current)
@@ -377,6 +448,8 @@ function App() {
           onToggleAlternateNNDisplay={setAlternateNNDisplay}
           confirmDelete={confirmDelete}
           onToggleConfirmDelete={setConfirmDelete}
+          includeAccentColorsInExport={includeAccentColorsInExport}
+          onToggleIncludeAccentColorsInExport={setIncludeAccentColorsInExport}
           isDirty={isDirty}
         />
         <div className="flex flex-1 min-h-0">
@@ -385,6 +458,7 @@ function App() {
             onSelect={onSidebarSelect}
             activeView={activeView}
             onViewChange={setActiveView}
+            onSyncViewPositions={onSyncViewPositions}
           />
           <InfoPanel
             width={infoWidth}
@@ -436,11 +510,6 @@ function App() {
                 <div data-no-export="true">
                   <Controls position="bottom-right" />
                 </div>
-                {showMiniMap ? (
-                  <div data-no-export="true">
-                    <MiniMap />
-                  </div>
-                ) : null}
                 {showBackground ? <Background gap={16} size={1} /> : null}
               </ReactFlow>
               {activeView === VIEW_PHYSICAL ? (

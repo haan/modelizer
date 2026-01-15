@@ -129,6 +129,40 @@ export function useModelState({
       ? activeView
       : VIEW_CONCEPTUAL
 
+  const samePosition = (a, b) => a?.x === b?.x && a?.y === b?.y
+  const deriveViewPositionsMeta = (node, viewPositions) => {
+    const meta = node.data?.viewPositionsMeta
+    if (
+      meta &&
+      typeof meta.conceptual === 'boolean' &&
+      typeof meta.logical === 'boolean' &&
+      typeof meta.physical === 'boolean'
+    ) {
+      return {
+        conceptual: meta.conceptual,
+        logical: meta.logical,
+        physical: meta.physical,
+      }
+    }
+
+    return {
+      conceptual: true,
+      logical: !samePosition(
+        viewPositions[VIEW_LOGICAL],
+        viewPositions[VIEW_CONCEPTUAL],
+      ),
+      physical:
+        !samePosition(
+          viewPositions[VIEW_PHYSICAL],
+          viewPositions[VIEW_CONCEPTUAL],
+        ) &&
+        !samePosition(
+          viewPositions[VIEW_PHYSICAL],
+          viewPositions[VIEW_LOGICAL],
+        ),
+    }
+  }
+
   const isVisibleInView = useCallback(
     (visibility) => {
       const normalized = normalizeVisibility(visibility)
@@ -180,13 +214,41 @@ export function useModelState({
             node.data?.viewPositions,
             node.position,
           )
+          const viewPositionsMeta = deriveViewPositionsMeta(node, viewPositions)
+          const nextViewPositions = {
+            ...viewPositions,
+            [normalizedActiveView]: { ...node.position },
+          }
+
+          if (
+            normalizedActiveView === VIEW_CONCEPTUAL &&
+            !viewPositionsMeta.logical
+          ) {
+            nextViewPositions[VIEW_LOGICAL] = { ...node.position }
+          }
+
+          if (
+            normalizedActiveView === VIEW_CONCEPTUAL &&
+            !viewPositionsMeta.physical
+          ) {
+            nextViewPositions[VIEW_PHYSICAL] = { ...node.position }
+          }
+
+          if (
+            normalizedActiveView === VIEW_LOGICAL &&
+            !viewPositionsMeta.physical
+          ) {
+            nextViewPositions[VIEW_PHYSICAL] = { ...node.position }
+          }
+
           return {
             ...node,
             data: {
               ...node.data,
-              viewPositions: {
-                ...viewPositions,
-                [normalizedActiveView]: { ...node.position },
+              viewPositions: nextViewPositions,
+              viewPositionsMeta: {
+                ...viewPositionsMeta,
+                [normalizedActiveView]: true,
               },
             },
           }
@@ -621,6 +683,11 @@ export function useModelState({
           color: nextColor,
           visibility: defaultVisibility,
           viewPositions: normalizeViewPositions(null, position),
+          viewPositionsMeta: {
+            conceptual: normalizedActiveView === VIEW_CONCEPTUAL,
+            logical: normalizedActiveView === VIEW_LOGICAL,
+            physical: normalizedActiveView === VIEW_PHYSICAL,
+          },
         },
       }
     }
@@ -630,6 +697,52 @@ export function useModelState({
       return [...current, nextNode]
     })
   }, [normalizedActiveView, reactFlowInstance, reactFlowWrapper, updateNodesAndPanel])
+
+  const onSyncViewPositions = useCallback(() => {
+    if (normalizedActiveView === VIEW_CONCEPTUAL) {
+      return
+    }
+
+    updateNodesAndPanel((current) =>
+      current.map((node) => {
+        if (node.type !== CLASS_NODE_TYPE) {
+          return node
+        }
+
+        const viewPositions = normalizeViewPositions(
+          node.data?.viewPositions,
+          node.position,
+        )
+        const viewPositionsMeta = deriveViewPositionsMeta(node, viewPositions)
+        const nextViewPositions = { ...viewPositions }
+
+        if (normalizedActiveView === VIEW_LOGICAL) {
+          nextViewPositions[VIEW_LOGICAL] = {
+            ...viewPositions[VIEW_CONCEPTUAL],
+          }
+        } else if (normalizedActiveView === VIEW_PHYSICAL) {
+          nextViewPositions[VIEW_PHYSICAL] = {
+            ...viewPositions[VIEW_LOGICAL],
+          }
+        }
+
+        const nextPosition = nextViewPositions[normalizedActiveView]
+
+        return {
+          ...node,
+          position: { ...nextPosition },
+          data: {
+            ...node.data,
+            viewPositions: nextViewPositions,
+            viewPositionsMeta: {
+              ...viewPositionsMeta,
+              [normalizedActiveView]: true,
+            },
+          },
+        }
+      }),
+    )
+  }, [normalizedActiveView, updateNodesAndPanel])
 
   const onRenameClass = useCallback(
     (nodeId, nextLabel) => {
@@ -1363,6 +1476,7 @@ export function useModelState({
     onConnectEnd,
     isValidConnection,
     onAddClass,
+    onSyncViewPositions,
     onRenameClass,
     onRenameAssociation,
     onDeleteAssociation,
