@@ -16,6 +16,7 @@ function Attribute({
   unique,
   autoIncrement,
   showHandles = false,
+  columnTemplate,
 }) {
   const label =
     typeof displayName === 'string'
@@ -35,9 +36,15 @@ function Attribute({
         autoIncrement ? 'AI' : null,
       ].filter(Boolean)
     : []
+  const constraintLabel = constraints.length > 0 ? constraints.join(', ') : ''
+  const useGridLayout = Boolean(columnTemplate)
+  const rowClassName = useGridLayout
+    ? 'grid w-full items-center gap-2'
+    : 'flex w-full items-center gap-2'
+  const rowStyle = useGridLayout ? { gridTemplateColumns: columnTemplate } : undefined
 
   return (
-    <li className="relative -mx-3 flex items-center gap-2 px-3">
+    <li className="relative -mx-3 px-3">
       {showHandles ? (
         <>
           <AttributeHandle
@@ -70,15 +77,19 @@ function Attribute({
           />
         </>
       ) : null}
-      <span className="min-w-0 flex-1 truncate">
-        {label}
-      </span>
-      <span className="shrink-0 whitespace-nowrap pr-2 text-[11px] text-base-content/60">
-        {typeLabel}
-      </span>
-      <span className="shrink-0 whitespace-nowrap text-right text-[10px] text-base-content/60">
-        {constraints.length > 0 ? constraints.join(', ') : ''}
-      </span>
+      <div className={rowClassName} style={rowStyle}>
+        <span className="min-w-0 truncate">{label}</span>
+        {showType ? (
+          <span className="shrink-0 whitespace-nowrap text-xs text-base-content/60">
+            {typeLabel}
+          </span>
+        ) : null}
+        {showConstraints ? (
+          <span className="shrink-0 whitespace-nowrap text-[10px] text-base-content/60">
+            {constraintLabel}
+          </span>
+        ) : null}
+      </div>
     </li>
   )
 }
@@ -98,7 +109,8 @@ const compareProps = (prev, next) => {
     prev.nullable !== next.nullable ||
     prev.unique !== next.unique ||
     prev.autoIncrement !== next.autoIncrement ||
-    prev.showHandles !== next.showHandles
+    prev.showHandles !== next.showHandles ||
+    prev.columnTemplate !== next.columnTemplate
   ) {
     return false
   }

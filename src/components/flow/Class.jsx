@@ -7,6 +7,7 @@ import {
   VIEW_LOGICAL,
   VIEW_PHYSICAL,
 } from '../../model/constants.js'
+import { formatAttributeType } from '../../attributes.js'
 import Attribute from './Attribute.jsx'
 import ClassHandle from './ClassHandle.jsx'
 
@@ -38,6 +39,46 @@ export function Class({ data, id, selected }) {
   const visibleAttributeKey = visibleAttributes
     .map((attribute) => attribute.id)
     .join('|')
+  let columnTemplate = ''
+  if (showTypeDetails || showConstraints) {
+    let maxTypeLength = 0
+    let maxConstraintsLength = 0
+
+    visibleAttributes.forEach((attribute) => {
+      if (showTypeDetails) {
+        const rawTypeLabel = formatAttributeType(
+          attribute.type,
+          attribute.typeParams,
+        )
+        const typeLabel =
+          alternateNNDisplay && !attribute.nullable && rawTypeLabel
+            ? `${rawTypeLabel}?`
+            : rawTypeLabel
+        maxTypeLength = Math.max(maxTypeLength, typeLabel.length)
+      }
+      if (showConstraints) {
+        const constraintLabel = [
+          !attribute.nullable && !alternateNNDisplay ? 'NN' : null,
+          attribute.unique ? 'UQ' : null,
+          attribute.autoIncrement ? 'AI' : null,
+        ]
+          .filter(Boolean)
+          .join(', ')
+        maxConstraintsLength = Math.max(
+          maxConstraintsLength,
+          constraintLabel.length,
+        )
+      }
+    })
+
+    const typeColumnWidth =
+      showTypeDetails && maxTypeLength > 0 ? `${maxTypeLength}ch` : '0px'
+    const constraintsColumnWidth =
+      showConstraints && maxConstraintsLength > 0
+        ? `${maxConstraintsLength}ch`
+        : '0px'
+    columnTemplate = `minmax(0, 1fr) ${typeColumnWidth} ${constraintsColumnWidth}`
+  }
   const borderClass = selected ? 'border-primary' : 'border-base-content/70'
 
   useLayoutEffect(() => {
@@ -93,6 +134,7 @@ export function Class({ data, id, selected }) {
                   unique={attr.unique}
                   autoIncrement={attr.autoIncrement}
                   showHandles={showAttributeHandles}
+                  columnTemplate={columnTemplate}
                 />
               )
             })}
