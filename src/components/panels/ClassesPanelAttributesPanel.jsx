@@ -21,6 +21,8 @@ export default function ClassesPanelAttributesPanel({
   onUpdateAttribute,
   onAddAttribute,
   onDeleteAttribute,
+  activeView,
+  viewSpecificSettingsOnly,
 }) {
   const attributeIds = attributes.map((attribute) => attribute.id)
   const sensors = useSensors(
@@ -70,6 +72,8 @@ export default function ClassesPanelAttributesPanel({
               unique={attribute.unique}
               autoIncrement={attribute.autoIncrement}
               visibility={attribute.visibility}
+              activeView={activeView}
+              viewSpecificSettingsOnly={viewSpecificSettingsOnly}
               onChangeName={(nextValue) =>
                 onUpdateAttribute?.(nodeId, attribute.id, {
                   name: nextValue,

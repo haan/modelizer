@@ -32,6 +32,7 @@ const STORAGE_KEYS = {
   nullDisplayMode: 'modelizer.nullDisplayMode',
   confirmDelete: 'modelizer.confirmDelete',
   includeAccentColorsInExport: 'modelizer.includeAccentColorsInExport',
+  viewSpecificSettingsOnly: 'modelizer.viewSpecificSettingsOnly',
 }
 
 const readStoredBool = (key, fallback) => {
@@ -109,6 +110,9 @@ function App() {
   const [includeAccentColorsInExport, setIncludeAccentColorsInExport] = useState(() =>
     readStoredBool(STORAGE_KEYS.includeAccentColorsInExport, true),
   )
+  const [viewSpecificSettingsOnly, setViewSpecificSettingsOnly] = useState(() =>
+    readStoredBool(STORAGE_KEYS.viewSpecificSettingsOnly, false),
+  )
   const [activeView, setActiveView] = useState(DEFAULT_VIEW)
   const [duplicateDialog, setDuplicateDialog] = useState({
     open: false,
@@ -179,6 +183,12 @@ function App() {
       includeAccentColorsInExport,
     )
   }, [includeAccentColorsInExport])
+  useEffect(() => {
+    writeStoredBool(
+      STORAGE_KEYS.viewSpecificSettingsOnly,
+      viewSpecificSettingsOnly,
+    )
+  }, [viewSpecificSettingsOnly])
 
   const onDuplicateDialogOpenChange = useCallback((open) => {
     if (!open) {
@@ -468,6 +478,10 @@ function App() {
           onToggleAccentColors={() =>
             setShowAccentColors((current) => !current)
           }
+          viewSpecificSettingsOnly={viewSpecificSettingsOnly}
+          onToggleViewSpecificSettingsOnly={() =>
+            setViewSpecificSettingsOnly((current) => !current)
+          }
           nullDisplayMode={nullDisplayMode}
           onNullDisplayModeChange={setNullDisplayMode}
           confirmDelete={confirmDelete}
@@ -490,6 +504,8 @@ function App() {
             activeItem={activeSidebarItem}
             nodes={panelNodes}
             edges={panelEdges}
+            activeView={activeView}
+            viewSpecificSettingsOnly={viewSpecificSettingsOnly}
             onAddClass={onAddClass}
             onRenameClass={onRenameClass}
             onReorderClasses={onReorderClasses}

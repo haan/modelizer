@@ -54,7 +54,7 @@ export function Class({ data, id, selected }) {
           attribute.typeParams,
         )
         const typeLabel =
-          showNullAsQuestion && !attribute.nullable && rawTypeLabel
+          showNullAsQuestion && attribute.nullable && rawTypeLabel
             ? `${rawTypeLabel}?`
             : rawTypeLabel
         maxTypeLength = Math.max(maxTypeLength, typeLabel.length)

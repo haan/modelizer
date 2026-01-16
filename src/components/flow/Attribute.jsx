@@ -29,7 +29,7 @@ function Attribute({
         : ''
   const rawTypeLabel = showType ? formatAttributeType(type, typeParams) : ''
   const typeLabel =
-    showNullAsQuestion && !nullable && rawTypeLabel
+    showNullAsQuestion && nullable && rawTypeLabel
       ? `${rawTypeLabel}?`
       : rawTypeLabel
   const constraints = showConstraints

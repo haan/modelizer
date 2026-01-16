@@ -7,6 +7,8 @@ function InfoPanel({
   activeItem,
   nodes,
   edges,
+  activeView,
+  viewSpecificSettingsOnly,
   onAddClass,
   onRenameClass,
   onReorderClasses,
@@ -47,11 +49,15 @@ function InfoPanel({
               onDeleteClass={onDeleteClass}
               onHighlightClass={onHighlightClass}
               showAccentColors={showAccentColors}
+              activeView={activeView}
+              viewSpecificSettingsOnly={viewSpecificSettingsOnly}
             />
           ) : activeItem === 'refs' ? (
             <RefsPanel
               edges={edges}
               nodes={nodes}
+              activeView={activeView}
+              viewSpecificSettingsOnly={viewSpecificSettingsOnly}
               onRenameAssociation={onRenameAssociation}
               onDeleteAssociation={onDeleteAssociation}
               onUpdateAssociationMultiplicity={onUpdateAssociationMultiplicity}

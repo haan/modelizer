@@ -1,32 +1,48 @@
 import AssociationsPanel from './AssociationsPanel.jsx'
 import RelationshipsPanel from './RelationshipsPanel.jsx'
+import {
+  VIEW_CONCEPTUAL,
+  VIEW_LOGICAL,
+  VIEW_PHYSICAL,
+} from '../../model/constants.js'
 
 export default function RefsPanel({
   edges,
   nodes,
+  activeView,
+  viewSpecificSettingsOnly,
   onRenameAssociation,
   onDeleteAssociation,
   onUpdateAssociationMultiplicity,
   onUpdateAssociationRole,
   onHighlightAssociation,
 }) {
+  const hideAssociations =
+    viewSpecificSettingsOnly && activeView !== VIEW_CONCEPTUAL
+  const hideRelationships =
+    viewSpecificSettingsOnly && activeView === VIEW_CONCEPTUAL
+
   return (
     <div className="flex flex-col gap-2 text-sm">
-      <AssociationsPanel
-        edges={edges}
-        nodes={nodes}
-        onRenameAssociation={onRenameAssociation}
-        onDeleteAssociation={onDeleteAssociation}
-        onUpdateAssociationMultiplicity={onUpdateAssociationMultiplicity}
-        onUpdateAssociationRole={onUpdateAssociationRole}
-        onHighlightAssociation={onHighlightAssociation}
-      />
-      <RelationshipsPanel
-        edges={edges}
-        nodes={nodes}
-        onDeleteAssociation={onDeleteAssociation}
-        onHighlightAssociation={onHighlightAssociation}
-      />
+      {hideAssociations ? null : (
+        <AssociationsPanel
+          edges={edges}
+          nodes={nodes}
+          onRenameAssociation={onRenameAssociation}
+          onDeleteAssociation={onDeleteAssociation}
+          onUpdateAssociationMultiplicity={onUpdateAssociationMultiplicity}
+          onUpdateAssociationRole={onUpdateAssociationRole}
+          onHighlightAssociation={onHighlightAssociation}
+        />
+      )}
+      {hideRelationships ? null : (
+        <RelationshipsPanel
+          edges={edges}
+          nodes={nodes}
+          onDeleteAssociation={onDeleteAssociation}
+          onHighlightAssociation={onHighlightAssociation}
+        />
+      )}
     </div>
   )
 }

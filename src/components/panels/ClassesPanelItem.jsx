@@ -19,6 +19,8 @@ export default function ClassesPanelItem({
   onDeleteClass,
   onHighlightClass,
   showAccentColors = true,
+  activeView,
+  viewSpecificSettingsOnly,
 }) {
   const accentColor = node.data?.color ?? CLASS_COLOR_PALETTE[0]
   const accentBorderColor = showAccentColors ? accentColor : 'transparent'
@@ -265,6 +267,8 @@ export default function ClassesPanelItem({
             onUpdateAttribute={onUpdateAttribute}
             onAddAttribute={onAddAttribute}
             onDeleteAttribute={onDeleteAttribute}
+            activeView={activeView}
+            viewSpecificSettingsOnly={viewSpecificSettingsOnly}
           />
         </div>
       </div>

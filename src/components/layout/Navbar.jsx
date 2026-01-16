@@ -17,6 +17,8 @@ export default function Navbar({
   onToggleBackground,
   showAccentColors,
   onToggleAccentColors,
+  viewSpecificSettingsOnly,
+  onToggleViewSpecificSettingsOnly,
   nullDisplayMode,
   onNullDisplayModeChange,
   confirmDelete,
@@ -257,6 +259,16 @@ export default function Navbar({
                       {showAccentColors
                         ? 'Hide accent colors'
                         : 'Show accent colors'}
+                    </span>
+                  </Menubar.Item>
+                  <Menubar.Item
+                    className={viewPlainItemClass}
+                    onSelect={() => onToggleViewSpecificSettingsOnly?.()}
+                  >
+                    <span>
+                      {viewSpecificSettingsOnly
+                        ? 'Show all the settings'
+                        : 'Show only view-specific settings'}
                     </span>
                   </Menubar.Item>
                   <Menubar.Sub>

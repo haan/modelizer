@@ -27,6 +27,8 @@ export default function ClassesPanel({
   onDeleteClass,
   onHighlightClass,
   showAccentColors,
+  activeView,
+  viewSpecificSettingsOnly,
 }) {
   const sensors = useSensors(
     useSensor(PointerSensor, {
@@ -133,6 +135,8 @@ export default function ClassesPanel({
               onDeleteClass={onDeleteClass}
               onHighlightClass={onHighlightClass}
               showAccentColors={showAccentColors}
+              activeView={activeView}
+              viewSpecificSettingsOnly={viewSpecificSettingsOnly}
             />
           ))}
         </SortableContext>
