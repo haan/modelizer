@@ -17,8 +17,8 @@ export default function Navbar({
   onToggleBackground,
   showAccentColors,
   onToggleAccentColors,
-  alternateNNDisplay,
-  onToggleAlternateNNDisplay,
+  nullDisplayMode,
+  onNullDisplayModeChange,
   confirmDelete,
   onToggleConfirmDelete,
   includeAccentColorsInExport,
@@ -35,6 +35,10 @@ export default function Navbar({
   const shortcutPrefix = isMac ? 'Cmd' : 'Ctrl'
   const viewItemClass =
     'relative cursor-pointer rounded-sm px-2 py-1 pl-6 text-xs text-base-content transition-colors hover:bg-base-200 focus:outline-none'
+  const viewPlainItemClass =
+    'cursor-pointer rounded-sm px-2 py-1 text-xs text-base-content transition-colors hover:bg-base-200 focus:outline-none'
+  const settingsItemClass =
+    'relative cursor-pointer rounded-sm px-2 py-1 text-xs text-base-content transition-colors hover:bg-base-200 focus:outline-none'
 
   const startEditing = () => {
     originalNameRef.current = modelName ?? ''
@@ -198,30 +202,32 @@ export default function Navbar({
                   align="start"
                   sideOffset={6}
                 >
-                  <Menubar.CheckboxItem
-                    className={viewItemClass}
-                    checked={confirmDelete}
-                    onCheckedChange={(value) =>
-                      onToggleConfirmDelete?.(Boolean(value))
+                  <Menubar.Item
+                    className={settingsItemClass}
+                    onSelect={() =>
+                      onToggleConfirmDelete?.(!confirmDelete)
                     }
                   >
-                    <Menubar.ItemIndicator className="absolute left-1.5 inline-flex h-3.5 w-3.5 items-center justify-center">
-                      <CheckIcon className="h-3.5 w-3.5" aria-hidden="true" />
-                    </Menubar.ItemIndicator>
-                    <span>Always ask for delete confirmation</span>
-                  </Menubar.CheckboxItem>
-                  <Menubar.CheckboxItem
-                    className={viewItemClass}
-                    checked={includeAccentColorsInExport}
-                    onCheckedChange={(value) =>
-                      onToggleIncludeAccentColorsInExport?.(Boolean(value))
+                    <span>
+                      {confirmDelete
+                        ? 'Disable confirmation dialogs'
+                        : 'Enable confirmation dialogs'}
+                    </span>
+                  </Menubar.Item>
+                  <Menubar.Item
+                    className={settingsItemClass}
+                    onSelect={() =>
+                      onToggleIncludeAccentColorsInExport?.(
+                        !includeAccentColorsInExport,
+                      )
                     }
                   >
-                    <Menubar.ItemIndicator className="absolute left-1.5 inline-flex h-3.5 w-3.5 items-center justify-center">
-                      <CheckIcon className="h-3.5 w-3.5" aria-hidden="true" />
-                    </Menubar.ItemIndicator>
-                    <span>Include accent colors in PNG export</span>
-                  </Menubar.CheckboxItem>
+                    <span>
+                      {includeAccentColorsInExport
+                        ? 'Exclude accent colors in PNG export'
+                        : 'Include accent colors in PNG export'}
+                    </span>
+                  </Menubar.Item>
                 </Menubar.Content>
               </Menubar.Portal>
             </Menubar.Menu>
@@ -235,42 +241,88 @@ export default function Navbar({
                   align="start"
                   sideOffset={6}
                 >
-                  <Menubar.CheckboxItem
-                    className={viewItemClass}
-                    checked={showBackground}
-                    onCheckedChange={(value) =>
-                      onToggleBackground?.(Boolean(value))
-                    }
+                  <Menubar.Item
+                    className={viewPlainItemClass}
+                    onSelect={() => onToggleBackground?.()}
                   >
-                    <Menubar.ItemIndicator className="absolute left-1.5 inline-flex h-3.5 w-3.5 items-center justify-center">
-                      <CheckIcon className="h-3.5 w-3.5" aria-hidden="true" />
-                    </Menubar.ItemIndicator>
-                    <span>Background</span>
-                  </Menubar.CheckboxItem>
-                  <Menubar.CheckboxItem
-                    className={viewItemClass}
-                    checked={showAccentColors}
-                    onCheckedChange={(value) =>
-                      onToggleAccentColors?.(Boolean(value))
-                    }
+                    <span>
+                      {showBackground ? 'Hide background' : 'Show background'}
+                    </span>
+                  </Menubar.Item>
+                  <Menubar.Item
+                    className={viewPlainItemClass}
+                    onSelect={() => onToggleAccentColors?.()}
                   >
-                    <Menubar.ItemIndicator className="absolute left-1.5 inline-flex h-3.5 w-3.5 items-center justify-center">
-                      <CheckIcon className="h-3.5 w-3.5" aria-hidden="true" />
-                    </Menubar.ItemIndicator>
-                    <span>Accent Colors</span>
-                  </Menubar.CheckboxItem>
-                    <Menubar.CheckboxItem
-                      className={viewItemClass}
-                      checked={alternateNNDisplay}
-                    onCheckedChange={(value) =>
-                      onToggleAlternateNNDisplay?.(Boolean(value))
-                    }
-                  >
-                    <Menubar.ItemIndicator className="absolute left-1.5 inline-flex h-3.5 w-3.5 items-center justify-center">
-                      <CheckIcon className="h-3.5 w-3.5" aria-hidden="true" />
-                    </Menubar.ItemIndicator>
-                    <span>Alternate Not Null display</span>
-                  </Menubar.CheckboxItem>
+                    <span>
+                      {showAccentColors
+                        ? 'Hide accent colors'
+                        : 'Show accent colors'}
+                    </span>
+                  </Menubar.Item>
+                  <Menubar.Sub>
+                    <Menubar.SubTrigger className={`flex items-center justify-between ${viewPlainItemClass}`}>
+                      Constraints
+                      <svg
+                        xmlns="http://www.w3.org/2000/svg"
+                        viewBox="0 0 24 24"
+                        fill="none"
+                        stroke="currentColor"
+                        strokeWidth="2"
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        className="h-3.5 w-3.5 opacity-60"
+                        aria-hidden="true"
+                      >
+                        <path d="M9 18l6-6-6-6" />
+                      </svg>
+                    </Menubar.SubTrigger>
+                    <Menubar.Portal>
+                      <Menubar.SubContent className="z-50 min-w-[160px] rounded-sm border border-base-content/20 bg-base-100 p-1 shadow-lg">
+                        <Menubar.CheckboxItem
+                          className={viewItemClass}
+                          checked={nullDisplayMode === 'null'}
+                          onCheckedChange={(value) => {
+                            if (value) {
+                              onNullDisplayModeChange?.('null')
+                            }
+                          }}
+                        >
+                          <Menubar.ItemIndicator className="absolute left-1.5 inline-flex h-3.5 w-3.5 items-center justify-center">
+                            <CheckIcon className="h-3.5 w-3.5" aria-hidden="true" />
+                          </Menubar.ItemIndicator>
+                          <span>Show Null</span>
+                        </Menubar.CheckboxItem>
+                        <Menubar.CheckboxItem
+                          className={viewItemClass}
+                          checked={nullDisplayMode === 'not-null'}
+                          onCheckedChange={(value) => {
+                            if (value) {
+                              onNullDisplayModeChange?.('not-null')
+                            }
+                          }}
+                        >
+                          <Menubar.ItemIndicator className="absolute left-1.5 inline-flex h-3.5 w-3.5 items-center justify-center">
+                            <CheckIcon className="h-3.5 w-3.5" aria-hidden="true" />
+                          </Menubar.ItemIndicator>
+                          <span>Show Not Null</span>
+                        </Menubar.CheckboxItem>
+                        <Menubar.CheckboxItem
+                          className={viewItemClass}
+                          checked={nullDisplayMode === 'null-as-question'}
+                          onCheckedChange={(value) => {
+                            if (value) {
+                              onNullDisplayModeChange?.('null-as-question')
+                            }
+                          }}
+                        >
+                          <Menubar.ItemIndicator className="absolute left-1.5 inline-flex h-3.5 w-3.5 items-center justify-center">
+                            <CheckIcon className="h-3.5 w-3.5" aria-hidden="true" />
+                          </Menubar.ItemIndicator>
+                          <span>Show Null as ?</span>
+                        </Menubar.CheckboxItem>
+                      </Menubar.SubContent>
+                    </Menubar.Portal>
+                  </Menubar.Sub>
                 </Menubar.Content>
               </Menubar.Portal>
             </Menubar.Menu>

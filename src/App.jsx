@@ -29,7 +29,7 @@ const MIN_INFO_WIDTH = 370
 const STORAGE_KEYS = {
   showBackground: 'modelizer.showBackground',
   showAccentColors: 'modelizer.showAccentColors',
-  alternateNNDisplay: 'modelizer.alternateNNDisplay',
+  nullDisplayMode: 'modelizer.nullDisplayMode',
   confirmDelete: 'modelizer.confirmDelete',
   includeAccentColorsInExport: 'modelizer.includeAccentColorsInExport',
 }
@@ -66,6 +66,30 @@ const writeStoredBool = (key, value) => {
   }
 }
 
+const readStoredString = (key, fallback) => {
+  if (typeof window === 'undefined') {
+    return fallback
+  }
+  try {
+    const value = window.localStorage.getItem(key)
+    return value ?? fallback
+  } catch (error) {
+    console.warn('Failed to read preference', key, error)
+    return fallback
+  }
+}
+
+const writeStoredString = (key, value) => {
+  if (typeof window === 'undefined') {
+    return
+  }
+  try {
+    window.localStorage.setItem(key, value)
+  } catch (error) {
+    console.warn('Failed to store preference', key, error)
+  }
+}
+
 function App() {
   const reactFlowWrapper = useRef(null)
   const [reactFlowInstance, setReactFlowInstance] = useState(null)
@@ -76,14 +100,14 @@ function App() {
   const [showAccentColors, setShowAccentColors] = useState(() =>
     readStoredBool(STORAGE_KEYS.showAccentColors, true),
   )
-  const [alternateNNDisplay, setAlternateNNDisplay] = useState(() =>
-    readStoredBool(STORAGE_KEYS.alternateNNDisplay, false),
+  const [nullDisplayMode, setNullDisplayMode] = useState(() =>
+    readStoredString(STORAGE_KEYS.nullDisplayMode, 'not-null'),
   )
   const [confirmDelete, setConfirmDelete] = useState(() =>
-    readStoredBool(STORAGE_KEYS.confirmDelete, false),
+    readStoredBool(STORAGE_KEYS.confirmDelete, true),
   )
   const [includeAccentColorsInExport, setIncludeAccentColorsInExport] = useState(() =>
-    readStoredBool(STORAGE_KEYS.includeAccentColorsInExport, false),
+    readStoredBool(STORAGE_KEYS.includeAccentColorsInExport, true),
   )
   const [activeView, setActiveView] = useState(DEFAULT_VIEW)
   const [duplicateDialog, setDuplicateDialog] = useState({
@@ -142,8 +166,8 @@ function App() {
   }, [showAccentColors])
 
   useEffect(() => {
-    writeStoredBool(STORAGE_KEYS.alternateNNDisplay, alternateNNDisplay)
-  }, [alternateNNDisplay])
+    writeStoredString(STORAGE_KEYS.nullDisplayMode, nullDisplayMode)
+  }, [nullDisplayMode])
 
   useEffect(() => {
     writeStoredBool(STORAGE_KEYS.confirmDelete, confirmDelete)
@@ -205,7 +229,7 @@ function App() {
     reactFlowInstance,
     reactFlowWrapper,
     showAccentColors,
-    alternateNNDisplay,
+    nullDisplayMode,
     onDuplicateEdge,
     activeView,
   })
@@ -444,8 +468,8 @@ function App() {
           onToggleAccentColors={() =>
             setShowAccentColors((current) => !current)
           }
-          alternateNNDisplay={alternateNNDisplay}
-          onToggleAlternateNNDisplay={setAlternateNNDisplay}
+          nullDisplayMode={nullDisplayMode}
+          onNullDisplayModeChange={setNullDisplayMode}
           confirmDelete={confirmDelete}
           onToggleConfirmDelete={setConfirmDelete}
           includeAccentColorsInExport={includeAccentColorsInExport}

@@ -11,13 +11,16 @@ function Attribute({
   typeParams,
   showType = true,
   showConstraints = true,
-  alternateNNDisplay,
+  nullDisplayMode,
   nullable,
   unique,
   autoIncrement,
   showHandles = false,
   columnTemplate,
 }) {
+  const showNullAsQuestion = nullDisplayMode === 'null-as-question'
+  const showNull = nullDisplayMode === 'null'
+  const showNotNull = nullDisplayMode === 'not-null'
   const label =
     typeof displayName === 'string'
       ? displayName
@@ -26,12 +29,13 @@ function Attribute({
         : ''
   const rawTypeLabel = showType ? formatAttributeType(type, typeParams) : ''
   const typeLabel =
-    alternateNNDisplay && !nullable && rawTypeLabel
+    showNullAsQuestion && !nullable && rawTypeLabel
       ? `${rawTypeLabel}?`
       : rawTypeLabel
   const constraints = showConstraints
     ? [
-        !nullable && !alternateNNDisplay ? 'NN' : null,
+        showNull && nullable ? 'N' : null,
+        showNotNull && !nullable ? 'NN' : null,
         unique ? 'UQ' : null,
         autoIncrement ? 'AI' : null,
       ].filter(Boolean)
@@ -105,7 +109,7 @@ const compareProps = (prev, next) => {
     prev.type !== next.type ||
     prev.showType !== next.showType ||
     prev.showConstraints !== next.showConstraints ||
-    prev.alternateNNDisplay !== next.alternateNNDisplay ||
+    prev.nullDisplayMode !== next.nullDisplayMode ||
     prev.nullable !== next.nullable ||
     prev.unique !== next.unique ||
     prev.autoIncrement !== next.autoIncrement ||

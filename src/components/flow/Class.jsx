@@ -16,7 +16,10 @@ export function Class({ data, id, selected }) {
   const updateNodeInternals = useUpdateNodeInternals()
   const accentColor = data?.color ?? CLASS_COLOR_PALETTE[0]
   const showAccentColors = data?.showAccentColors ?? true
-  const alternateNNDisplay = data?.alternateNNDisplay ?? false
+  const nullDisplayMode = data?.nullDisplayMode ?? 'not-null'
+  const showNullAsQuestion = nullDisplayMode === 'null-as-question'
+  const showNull = nullDisplayMode === 'null'
+  const showNotNull = nullDisplayMode === 'not-null'
   const activeView = data?.activeView ?? VIEW_CONCEPTUAL
   const showHandles = activeView === VIEW_CONCEPTUAL
   const showAttributeHandles = activeView !== VIEW_CONCEPTUAL
@@ -51,14 +54,15 @@ export function Class({ data, id, selected }) {
           attribute.typeParams,
         )
         const typeLabel =
-          alternateNNDisplay && !attribute.nullable && rawTypeLabel
+          showNullAsQuestion && !attribute.nullable && rawTypeLabel
             ? `${rawTypeLabel}?`
             : rawTypeLabel
         maxTypeLength = Math.max(maxTypeLength, typeLabel.length)
       }
       if (showConstraints) {
         const constraintLabel = [
-          !attribute.nullable && !alternateNNDisplay ? 'NN' : null,
+          showNull && attribute.nullable ? 'N' : null,
+          showNotNull && !attribute.nullable ? 'NN' : null,
           attribute.unique ? 'UQ' : null,
           attribute.autoIncrement ? 'AI' : null,
         ]
@@ -129,7 +133,7 @@ export function Class({ data, id, selected }) {
                   typeParams={attr.typeParams}
                   showType={showTypeDetails}
                   showConstraints={showConstraints}
-                  alternateNNDisplay={alternateNNDisplay}
+                  nullDisplayMode={nullDisplayMode}
                   nullable={attr.nullable}
                   unique={attr.unique}
                   autoIncrement={attr.autoIncrement}

@@ -356,7 +356,7 @@ export default function Sidebar({
                   <div className="mx-1 h-px w-auto bg-base-content/10" />
                 </li>
                 <li data-sidebar="menu-item" className="group/menu-item relative">
-                  <SidebarTooltip label="Sync positions from previous view">
+                  <SidebarTooltip label="Sync positions from previous modeling phase">
                     <button
                       data-sidebar="menu-button"
                       data-size="default"

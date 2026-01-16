@@ -113,7 +113,7 @@ export function useModelState({
   reactFlowInstance,
   reactFlowWrapper,
   showAccentColors,
-  alternateNNDisplay,
+  nullDisplayMode,
   onDuplicateEdge,
   activeView = DEFAULT_VIEW,
 }) {
@@ -1444,7 +1444,7 @@ export function useModelState({
               data: {
                 ...node.data,
                 showAccentColors,
-                alternateNNDisplay,
+                nullDisplayMode,
                 activeView: normalizedActiveView,
               },
             }
@@ -1452,7 +1452,7 @@ export function useModelState({
       )
     return [...decoratedNodes, ...associationEdgeNodes]
   }, [
-    alternateNNDisplay,
+    nullDisplayMode,
     associationEdgeNodes,
     isVisibleInView,
     nodes,
