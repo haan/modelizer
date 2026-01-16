@@ -91,7 +91,7 @@ export function useFileActions({
   }, [getSerializedModelForDirty])
 
   const applyLoadedModel = useCallback(
-    (payload, handle, serialized) => {
+    (payload, handle) => {
       const expectedHash =
         typeof payload?.hash === 'string' ? payload.hash : null
       const computedHash = expectedHash ? computeModelHash(payload) : null
@@ -141,8 +141,6 @@ export function useFileActions({
         nodes: nextNodes,
         edges: nextEdges,
       })
-      const nextSerialized = JSON.stringify(nextBasePayload, null, 2)
-
       if (setModel) {
         setModel(nextNodes, nextEdges)
       } else {
@@ -152,7 +150,7 @@ export function useFileActions({
       setModelName(nextModelName)
       setActiveSidebarItem('tables')
       fileHandleRef.current = handle ?? null
-      lastSavedRef.current = nextSerialized
+      lastSavedRef.current = JSON.stringify(nextBasePayload, null, 2)
       setIsDirty(false)
     },
     [
