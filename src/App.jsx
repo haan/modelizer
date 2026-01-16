@@ -18,9 +18,11 @@ import { useFileActions } from './hooks/useFileActions.js'
 import { useKeyboardShortcuts } from './hooks/useKeyboardShortcuts.js'
 import { useModelState } from './hooks/useModelState.js'
 import DefaultValuesPanel from './components/flow/DefaultValuesPanel.jsx'
+import AntiCheatPanel from './components/flow/AntiCheatPanel.jsx'
 import { sanitizeFileName } from './model/fileUtils.js'
 import {
   DEFAULT_VIEW,
+  CLASS_NODE_TYPE,
   RELATIONSHIP_EDGE_TYPE,
   VIEW_PHYSICAL,
 } from './model/constants.js'
@@ -33,6 +35,7 @@ const STORAGE_KEYS = {
   confirmDelete: 'modelizer.confirmDelete',
   includeAccentColorsInExport: 'modelizer.includeAccentColorsInExport',
   viewSpecificSettingsOnly: 'modelizer.viewSpecificSettingsOnly',
+  showAntiCheat: 'modelizer.showAntiCheat',
 }
 
 const readStoredBool = (key, fallback) => {
@@ -113,6 +116,9 @@ function App() {
   const [viewSpecificSettingsOnly, setViewSpecificSettingsOnly] = useState(() =>
     readStoredBool(STORAGE_KEYS.viewSpecificSettingsOnly, false),
   )
+  const [showAntiCheat, setShowAntiCheat] = useState(() =>
+    readStoredBool(STORAGE_KEYS.showAntiCheat, false),
+  )
   const [activeView, setActiveView] = useState(DEFAULT_VIEW)
   const [duplicateDialog, setDuplicateDialog] = useState({
     open: false,
@@ -189,6 +195,9 @@ function App() {
       viewSpecificSettingsOnly,
     )
   }, [viewSpecificSettingsOnly])
+  useEffect(() => {
+    writeStoredBool(STORAGE_KEYS.showAntiCheat, showAntiCheat)
+  }, [showAntiCheat])
 
   const onDuplicateDialogOpenChange = useCallback((open) => {
     if (!open) {
@@ -329,6 +338,7 @@ function App() {
     onSaveModel,
     onSaveModelAs,
     onLoadExample,
+    antiCheatStatus,
   } = useFileActions({
     nodes,
     edges,
@@ -458,6 +468,17 @@ function App() {
       })
     })
   }, [activeView, nodes])
+  const classIdEntries = useMemo(() => {
+    return nodes
+      .filter((node) => node.type === CLASS_NODE_TYPE)
+      .map((node) => ({
+        id: node.id,
+        name:
+          typeof node.data?.label === 'string' && node.data.label.trim()
+            ? node.data.label.trim()
+            : 'Untitled class',
+      }))
+  }, [nodes])
 
   return (
     <div className="h-screen overflow-hidden bg-base-200 text-base-content">
@@ -482,6 +503,8 @@ function App() {
           onToggleViewSpecificSettingsOnly={() =>
             setViewSpecificSettingsOnly((current) => !current)
           }
+          showAntiCheat={showAntiCheat}
+          onToggleAntiCheat={() => setShowAntiCheat((current) => !current)}
           nullDisplayMode={nullDisplayMode}
           onNullDisplayModeChange={setNullDisplayMode}
           confirmDelete={confirmDelete}
@@ -554,6 +577,12 @@ function App() {
               </ReactFlow>
               {activeView === VIEW_PHYSICAL ? (
                 <DefaultValuesPanel entries={defaultValueEntries} />
+              ) : null}
+              {showAntiCheat ? (
+                <AntiCheatPanel
+                  entries={classIdEntries}
+                  status={antiCheatStatus}
+                />
               ) : null}
             </div>
           </main>

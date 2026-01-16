@@ -11,10 +11,24 @@ import {
 } from '../model/constants.js'
 import { normalizeEdges } from '../model/edgeUtils.js'
 import { sanitizeFileName } from '../model/fileUtils.js'
+import { sha256 } from 'js-sha256'
 import {
   normalizeVisibility,
   normalizeViewPositions,
 } from '../model/viewUtils.js'
+
+const buildHashPayload = (payload) => ({
+  version: payload?.version ?? MODEL_VERSION,
+  modelName:
+    typeof payload?.modelName === 'string' && payload.modelName.trim()
+      ? payload.modelName
+      : 'Untitled model',
+  nodes: Array.isArray(payload?.nodes) ? payload.nodes : [],
+  edges: Array.isArray(payload?.edges) ? payload.edges : [],
+})
+
+const computeModelHash = (payload) =>
+  sha256(JSON.stringify(buildHashPayload(payload)))
 
 export function useFileActions({
   nodes,
@@ -29,6 +43,7 @@ export function useFileActions({
 }) {
   const [isDirty, setIsDirty] = useState(false)
   const [isConfirmDialogOpen, setIsConfirmDialogOpen] = useState(false)
+  const [antiCheatStatus, setAntiCheatStatus] = useState('ok')
   const fileHandleRef = useRef(null)
   const normalizedActiveView =
     activeView === VIEW_LOGICAL || activeView === VIEW_PHYSICAL
@@ -36,12 +51,12 @@ export function useFileActions({
       : VIEW_CONCEPTUAL
   const lastSavedRef = useRef(
     JSON.stringify(
-      {
+      buildHashPayload({
         version: MODEL_VERSION,
         modelName: 'Untitled model',
         nodes: [],
         edges: [],
-      },
+      }),
       null,
       2,
     ),
@@ -66,17 +81,23 @@ export function useFileActions({
     }
   }, [edges, modelName, nodes])
 
-  const getSerializedModel = useCallback(
+  const getSerializedModelForDirty = useCallback(
     () => JSON.stringify(buildModelPayload(), null, 2),
     [buildModelPayload],
   )
 
   useEffect(() => {
-    setIsDirty(getSerializedModel() !== lastSavedRef.current)
-  }, [getSerializedModel])
+    setIsDirty(getSerializedModelForDirty() !== lastSavedRef.current)
+  }, [getSerializedModelForDirty])
 
   const applyLoadedModel = useCallback(
     (payload, handle, serialized) => {
+      const expectedHash =
+        typeof payload?.hash === 'string' ? payload.hash : null
+      const computedHash = expectedHash ? computeModelHash(payload) : null
+      setAntiCheatStatus(
+        expectedHash && computedHash === expectedHash ? 'ok' : 'tampered',
+      )
       const nextNodes = (payload?.nodes ?? []).map((node, index) => {
         const nodeId = node?.id ?? `class-${Date.now()}-${index}`
         const data = node?.data ?? {}
@@ -114,18 +135,13 @@ export function useFileActions({
         typeof payload?.modelName === 'string' && payload.modelName.trim()
           ? payload.modelName
           : 'Untitled model'
-      const nextSerialized =
-        serialized ??
-        JSON.stringify(
-          {
-            version: payload?.version ?? MODEL_VERSION,
-            modelName: nextModelName,
-            nodes: nextNodes,
-            edges: nextEdges,
-          },
-          null,
-          2,
-        )
+      const nextBasePayload = buildHashPayload({
+        version: payload?.version ?? MODEL_VERSION,
+        modelName: nextModelName,
+        nodes: nextNodes,
+        edges: nextEdges,
+      })
+      const nextSerialized = JSON.stringify(nextBasePayload, null, 2)
 
       if (setModel) {
         setModel(nextNodes, nextEdges)
@@ -191,15 +207,18 @@ export function useFileActions({
     fileHandleRef.current = null
     lastSavedRef.current = JSON.stringify(
       {
-        version: MODEL_VERSION,
-        modelName: 'Untitled model',
-        nodes: [],
-        edges: [],
+        ...buildHashPayload({
+          version: MODEL_VERSION,
+          modelName: 'Untitled model',
+          nodes: [],
+          edges: [],
+        }),
       },
       null,
       2,
     )
     setIsDirty(false)
+    setAntiCheatStatus('ok')
   }, [setActiveSidebarItem, setEdges, setModel, setModelName, setNodes])
 
   const onRequestNewModel = useCallback(() => {
@@ -292,7 +311,16 @@ export function useFileActions({
   )
 
   const onSaveModelAs = useCallback(async () => {
-    const serialized = getSerializedModel()
+    const basePayload = buildModelPayload()
+    const serialized = JSON.stringify(
+      {
+        ...basePayload,
+        hash: computeModelHash(basePayload),
+      },
+      null,
+      2,
+    )
+    const serializedForDirty = JSON.stringify(basePayload, null, 2)
     const normalizedName = sanitizeFileName(modelName || 'Untitled model')
     const fileName = normalizedName
       ? `${normalizedName}${MODEL_FILE_EXTENSION}`
@@ -315,7 +343,7 @@ export function useFileActions({
         await writable.write(serialized)
         await writable.close()
         fileHandleRef.current = handle
-        lastSavedRef.current = serialized
+        lastSavedRef.current = serializedForDirty
         setIsDirty(false)
       } catch (error) {
         if (error?.name !== 'AbortError') {
@@ -332,18 +360,27 @@ export function useFileActions({
     link.download = fileName
     link.click()
     URL.revokeObjectURL(url)
-    lastSavedRef.current = serialized
+    lastSavedRef.current = serializedForDirty
     setIsDirty(false)
-  }, [getSerializedModel, modelName])
+  }, [buildModelPayload, modelName])
 
   const onSaveModel = useCallback(async () => {
     if (fileHandleRef.current?.createWritable) {
-      const serialized = getSerializedModel()
+      const basePayload = buildModelPayload()
+      const serialized = JSON.stringify(
+        {
+          ...basePayload,
+          hash: computeModelHash(basePayload),
+        },
+        null,
+        2,
+      )
+      const serializedForDirty = JSON.stringify(basePayload, null, 2)
       try {
         const writable = await fileHandleRef.current.createWritable()
         await writable.write(serialized)
         await writable.close()
-        lastSavedRef.current = serialized
+        lastSavedRef.current = serializedForDirty
         setIsDirty(false)
       } catch (error) {
         if (error?.name !== 'AbortError') {
@@ -354,7 +391,7 @@ export function useFileActions({
     }
 
     onSaveModelAs()
-  }, [getSerializedModel, onSaveModelAs])
+  }, [buildModelPayload, onSaveModelAs])
 
   return {
     isDirty,
@@ -367,5 +404,6 @@ export function useFileActions({
     onSaveModel,
     onSaveModelAs,
     onLoadExample,
+    antiCheatStatus,
   }
 }

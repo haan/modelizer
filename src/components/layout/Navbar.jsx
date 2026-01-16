@@ -19,6 +19,8 @@ export default function Navbar({
   onToggleAccentColors,
   viewSpecificSettingsOnly,
   onToggleViewSpecificSettingsOnly,
+  showAntiCheat,
+  onToggleAntiCheat,
   nullDisplayMode,
   onNullDisplayModeChange,
   confirmDelete,
@@ -269,6 +271,14 @@ export default function Navbar({
                       {viewSpecificSettingsOnly
                         ? 'Show all the settings'
                         : 'Show only view-specific settings'}
+                    </span>
+                  </Menubar.Item>
+                  <Menubar.Item
+                    className={viewPlainItemClass}
+                    onSelect={() => onToggleAntiCheat?.()}
+                  >
+                    <span>
+                      {showAntiCheat ? 'Hide Anti-Cheat' : 'Show Anti-Cheat'}
                     </span>
                   </Menubar.Item>
                   <Menubar.Sub>
