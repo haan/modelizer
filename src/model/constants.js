@@ -1,4 +1,5 @@
 export const ASSOCIATION_EDGE_TYPE = 'association'
+export const COMPOSITION_EDGE_TYPE = 'composition'
 export const ASSOCIATIVE_EDGE_TYPE = 'associativeAssociation'
 export const REFLEXIVE_EDGE_TYPE = 'reflexiveAssociation'
 export const RELATIONSHIP_EDGE_TYPE = 'relationship'

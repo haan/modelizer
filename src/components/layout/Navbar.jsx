@@ -20,6 +20,8 @@ export default function Navbar({
   onToggleAccentColors,
   showFullscreen,
   onToggleFullscreen,
+  showCompositionAggregation,
+  onToggleCompositionAggregation,
   viewSpecificSettingsOnly,
   onToggleViewSpecificSettingsOnly,
   showAntiCheat,
@@ -194,6 +196,20 @@ export default function Navbar({
                   align="start"
                   sideOffset={6}
                 >
+                  <Menubar.Item
+                    className={settingsItemClass}
+                    onSelect={() =>
+                      onToggleCompositionAggregation?.(
+                        !showCompositionAggregation,
+                      )
+                    }
+                  >
+                    <span>
+                      {showCompositionAggregation
+                        ? 'Disable composite aggregation'
+                        : 'Enable composite aggregation'}
+                    </span>
+                  </Menubar.Item>
                   <Menubar.Item
                     className={settingsItemClass}
                     onSelect={() =>

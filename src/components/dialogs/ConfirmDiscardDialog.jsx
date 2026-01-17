@@ -31,6 +31,7 @@ export function ConfirmDiscardDialog({
             <AlertDialog.Action
               className={dialogStyles.action}
               onClick={onConfirm}
+              autoFocus
             >
               Discard
             </AlertDialog.Action>

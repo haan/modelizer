@@ -1,4 +1,5 @@
 export { Association } from './Association.jsx'
+export { Composition } from './Composition.jsx'
 export { AssociativeAssociation } from './AssociativeAssociation.jsx'
 export { default as AssociationHelperNode } from './AssociationHelperNode.jsx'
 export { ReflexiveAssociation } from './ReflexiveAssociation.jsx'

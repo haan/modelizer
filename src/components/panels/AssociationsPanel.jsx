@@ -4,6 +4,7 @@ import AssociationsPanelItem from './AssociationsPanelItem.jsx'
 
 const ASSOCIATION_TYPES = new Set([
   'association',
+  'composition',
   'associativeAssociation',
   'reflexiveAssociation',
 ])

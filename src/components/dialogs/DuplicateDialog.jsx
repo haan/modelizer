@@ -21,6 +21,7 @@ export function DuplicateDialog({ open, onOpenChange, kind }) {
             <AlertDialog.Action
               className={dialogStyles.action}
               onClick={() => onOpenChange?.(false)}
+              autoFocus
             >
               OK
             </AlertDialog.Action>

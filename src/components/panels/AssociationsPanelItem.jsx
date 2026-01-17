@@ -28,6 +28,8 @@ export default function AssociationsPanelItem({
 }) {
   const canRename = edge.type !== 'associativeAssociation'
   const canEditMultiplicity = edge.type !== 'associativeAssociation'
+  const canEditRole =
+    edge.type === 'association' || edge.type === 'reflexiveAssociation'
   const isReflexive = edge.source === edge.target
   const label = edge.data?.name ?? ''
   const multiplicityA = edge.data?.multiplicityA ?? ''
@@ -300,23 +302,27 @@ export default function AssociationsPanelItem({
                           }
                         />
                       </div>
-                      <div className="flex flex-row items-center gap-1">
-                        <div className="font-bold text-subtitle">Role</div>
-                      </div>
-                      <div className="p-1">
-                        <Input
-                          size="xs"
-                          value={roleA}
-                          placeholder="Role"
-                          onChange={(event) =>
-                            onUpdateAssociationRole?.(
-                              edge.id,
-                              'A',
-                              event.target.value,
-                            )
-                          }
-                        />
-                      </div>
+                      {canEditRole ? (
+                        <>
+                          <div className="flex flex-row items-center gap-1">
+                            <div className="font-bold text-subtitle">Role</div>
+                          </div>
+                          <div className="p-1">
+                            <Input
+                              size="xs"
+                              value={roleA}
+                              placeholder="Role"
+                              onChange={(event) =>
+                                onUpdateAssociationRole?.(
+                                  edge.id,
+                                  'A',
+                                  event.target.value,
+                                )
+                              }
+                            />
+                          </div>
+                        </>
+                      ) : null}
                     </>
                   ) : null}
                 </div>
@@ -388,23 +394,27 @@ export default function AssociationsPanelItem({
                           }
                         />
                       </div>
-                      <div className="flex flex-row items-center gap-1">
-                        <div className="font-bold text-subtitle">Role</div>
-                      </div>
-                      <div className="p-1">
-                        <Input
-                          size="xs"
-                          value={roleB}
-                          placeholder="Role"
-                          onChange={(event) =>
-                            onUpdateAssociationRole?.(
-                              edge.id,
-                              'B',
-                              event.target.value,
-                            )
-                          }
-                        />
-                      </div>
+                      {canEditRole ? (
+                        <>
+                          <div className="flex flex-row items-center gap-1">
+                            <div className="font-bold text-subtitle">Role</div>
+                          </div>
+                          <div className="p-1">
+                            <Input
+                              size="xs"
+                              value={roleB}
+                              placeholder="Role"
+                              onChange={(event) =>
+                                onUpdateAssociationRole?.(
+                                  edge.id,
+                                  'B',
+                                  event.target.value,
+                                )
+                              }
+                            />
+                          </div>
+                        </>
+                      ) : null}
                     </>
                   ) : null}
                 </div>

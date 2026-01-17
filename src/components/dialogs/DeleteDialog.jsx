@@ -33,6 +33,7 @@ export function DeleteDialog({
             <AlertDialog.Action
               className={dialogStyles.action}
               onClick={onConfirm}
+              autoFocus
             >
               Delete
             </AlertDialog.Action>

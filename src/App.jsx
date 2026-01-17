@@ -37,6 +37,7 @@ const STORAGE_KEYS = {
   viewSpecificSettingsOnly: 'modelizer.viewSpecificSettingsOnly',
   showAntiCheat: 'modelizer.showAntiCheat',
   showFullscreen: 'modelizer.showFullscreen',
+  showCompositionAggregation: 'modelizer.showCompositionAggregation',
 }
 
 const readStoredBool = (key, fallback) => {
@@ -123,6 +124,9 @@ function App() {
   const [showFullscreen, setShowFullscreen] = useState(() =>
     readStoredBool(STORAGE_KEYS.showFullscreen, false),
   )
+  const [showCompositionAggregation, setShowCompositionAggregation] = useState(() =>
+    readStoredBool(STORAGE_KEYS.showCompositionAggregation, false),
+  )
   const [activeView, setActiveView] = useState(DEFAULT_VIEW)
   const [duplicateDialog, setDuplicateDialog] = useState({
     open: false,
@@ -205,6 +209,12 @@ function App() {
   useEffect(() => {
     writeStoredBool(STORAGE_KEYS.showFullscreen, showFullscreen)
   }, [showFullscreen])
+  useEffect(() => {
+    writeStoredBool(
+      STORAGE_KEYS.showCompositionAggregation,
+      showCompositionAggregation,
+    )
+  }, [showCompositionAggregation])
 
   const onDuplicateDialogOpenChange = useCallback((open) => {
     if (!open) {
@@ -255,6 +265,7 @@ function App() {
     reactFlowInstance,
     reactFlowWrapper,
     showAccentColors,
+    showCompositionAggregation,
     nullDisplayMode,
     onDuplicateEdge,
     activeView,
@@ -505,11 +516,15 @@ function App() {
           showBackground={showBackground}
           showAccentColors={showAccentColors}
           showFullscreen={showFullscreen}
+          showCompositionAggregation={showCompositionAggregation}
           onToggleBackground={() => setShowBackground((current) => !current)}
           onToggleAccentColors={() =>
             setShowAccentColors((current) => !current)
           }
           onToggleFullscreen={() => setShowFullscreen((current) => !current)}
+          onToggleCompositionAggregation={() =>
+            setShowCompositionAggregation((current) => !current)
+          }
           viewSpecificSettingsOnly={viewSpecificSettingsOnly}
           onToggleViewSpecificSettingsOnly={() =>
             setViewSpecificSettingsOnly((current) => !current)
