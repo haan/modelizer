@@ -21,7 +21,6 @@ export default function ClassesPanelAttributesPanel({
   nodeId,
   onReorderAttributes,
   onUpdateAttribute,
-  onAddAttribute,
   onDeleteAttribute,
   activeView,
   viewSpecificSettingsOnly,

@@ -33,6 +33,7 @@ export default function RelationshipsPanel({
   onHighlightAssociation,
 }) {
   const relationships = edges.filter((edge) => edge.type === 'relationship')
+  const [openRelationshipId, setOpenRelationshipId] = useState('')
   const nodeLabels = new Map(
     nodes.map((node) => [node.id, node.data?.label ?? node.id]),
   )
@@ -78,8 +79,6 @@ export default function RelationshipsPanel({
       </div>
     )
   }
-
-  const [openRelationshipId, setOpenRelationshipId] = useState('')
 
   return (
     <div className="flex flex-col gap-1">
