@@ -1,3 +1,4 @@
+import * as Accordion from '@radix-ui/react-accordion'
 import RelationshipsPanelItem from './RelationshipsPanelItem.jsx'
 
 const getAttributeIdFromHandle = (handleId) => {
@@ -84,18 +85,20 @@ export default function RelationshipsPanel({
           Relationships
         </div>
       </div>
-      {relationships.map((edge) => (
-        <RelationshipsPanelItem
-          key={edge.id}
-          edge={edge}
-          sourceLabel={getNodeLabel(edge.source)}
-          targetLabel={getNodeLabel(edge.target)}
-          sourceAttributeLabel={getAttributeLabel(edge.source, edge.sourceHandle)}
-          targetAttributeLabel={getAttributeLabel(edge.target, edge.targetHandle)}
-          onDeleteAssociation={onDeleteAssociation}
-          onHighlightAssociation={onHighlightAssociation}
-        />
-      ))}
+      <Accordion.Root type="single" collapsible className="flex flex-col gap-1">
+        {relationships.map((edge) => (
+          <RelationshipsPanelItem
+            key={edge.id}
+            edge={edge}
+            sourceLabel={getNodeLabel(edge.source)}
+            targetLabel={getNodeLabel(edge.target)}
+            sourceAttributeLabel={getAttributeLabel(edge.source, edge.sourceHandle)}
+            targetAttributeLabel={getAttributeLabel(edge.target, edge.targetHandle)}
+            onDeleteAssociation={onDeleteAssociation}
+            onHighlightAssociation={onHighlightAssociation}
+          />
+        ))}
+      </Accordion.Root>
     </div>
   )
 }

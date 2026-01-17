@@ -21,7 +21,7 @@ export default function ClassesPanelOptionsPanel({
         style={{ borderColor: accentBorderColor }}
       >
         <div className="flex items-center justify-between">
-          <span className="text-[10px] font-semibold uppercase tracking-wide opacity-70">
+          <span className="text-xs font-semibold uppercase tracking-wide opacity-70">
             Options
           </span>
         </div>

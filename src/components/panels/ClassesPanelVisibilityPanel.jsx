@@ -22,7 +22,7 @@ export default function ClassesPanelVisibilityPanel({
         className="border-l-[6px] px-2 py-2 text-xs"
         style={{ borderColor: accentBorderColor }}
       >
-        <div className="text-[10px] font-semibold uppercase tracking-wide opacity-70">
+        <div className="text-xs font-semibold uppercase tracking-wide opacity-70">
           Visibility
         </div>
         <div className="mt-2 flex flex-wrap items-center gap-3 text-[11px]">

@@ -1,5 +1,5 @@
-import { useState } from 'react'
 import * as Tooltip from '@radix-ui/react-tooltip'
+import * as Accordion from '@radix-ui/react-accordion'
 import { useSortable } from '@dnd-kit/sortable'
 import { CSS } from '@dnd-kit/utilities'
 import Input from '../ui/Input.jsx'
@@ -31,6 +31,7 @@ export default function ClassesPanelAttributesItem({
   visibility,
   activeView,
   viewSpecificSettingsOnly,
+  isOpen = false,
   onChangeName,
   onChangeLogicalName,
   onChangeType,
@@ -58,7 +59,6 @@ export default function ClassesPanelAttributesItem({
   const isNullable = Boolean(nullable)
   const isUnique = Boolean(unique)
   const isAutoIncrement = Boolean(autoIncrement)
-  const [isOpen, setIsOpen] = useState(false)
   const typeValue = ATTRIBUTE_TYPE_OPTIONS.some(
     (option) => option.value === type,
   )
@@ -81,82 +81,81 @@ export default function ClassesPanelAttributesItem({
     <li
       ref={setNodeRef}
       style={style}
-      className={`rounded-md border-b border-base-content/10 px-1 py-1 pb-2 text-xs transition-colors last:border-b-0 ${isDragging ? 'opacity-60' : ''
+      className={`rounded-md border-b border-base-content/10 px-1 py-1 pb-2 text-xs transition-colors ${isDragging ? 'opacity-60' : ''
         }`}
     >
-      <details className="group/attribute" open={isOpen}>
-        <summary
-          className="flex list-none items-center gap-1 rounded-md px-1 py-1 cursor-default [&::-webkit-details-marker]:hidden"
-          onClick={(event) => event.preventDefault()}
-        >
-          <button
-            type="button"
-            className="inline-flex h-5 w-5 items-center justify-center rounded-md text-base-content/60 transition-colors hover:bg-base-300 hover:text-base-content"
-            aria-label={isOpen ? 'Collapse attribute' : 'Expand attribute'}
-            aria-expanded={isOpen}
-            onClick={(event) => {
-              event.preventDefault()
-              event.stopPropagation()
-              setIsOpen((open) => !open)
-            }}
-            onMouseDown={(event) => event.stopPropagation()}
-          >
-            <svg
-              xmlns="http://www.w3.org/2000/svg"
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="currentColor"
-              strokeWidth="2"
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              className="h-3.5 w-3.5 opacity-60 transition-transform group-open/attribute:rotate-90"
-              aria-hidden="true"
-            >
-              <path d="M9 18l6-6-6-6" />
-            </svg>
-          </button>
-          <button
-            ref={setActivatorNodeRef}
-            type="button"
-            className="inline-flex h-5 w-5 items-center justify-center rounded-md text-base-content/50 hover:bg-base-300 hover:text-base-content cursor-grab active:cursor-grabbing"
-            onClick={(event) => event.stopPropagation()}
-            onMouseDown={(event) => event.stopPropagation()}
-            aria-label="Reorder attribute"
-            {...sortableAttributes}
-            {...listeners}
-          >
-            <svg
-              xmlns="http://www.w3.org/2000/svg"
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="currentColor"
-              strokeWidth="2"
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              className="h-3 w-3"
-              aria-hidden="true"
-            >
-              <circle cx="9" cy="5" r="1" />
-              <circle cx="9" cy="12" r="1" />
-              <circle cx="9" cy="19" r="1" />
-              <circle cx="15" cy="5" r="1" />
-              <circle cx="15" cy="12" r="1" />
-              <circle cx="15" cy="19" r="1" />
-            </svg>
-          </button>
-          <div className="flex min-w-0 flex-1 items-center gap-1">
-            <Input
-              size="xs"
-              className="min-w-0 flex-1"
-              value={name ?? ''}
-              placeholder="Attribute"
-              onChange={(event) => onChangeName?.(event.target.value)}
+      <Accordion.Item value={id} className="group/attribute">
+          <Accordion.Header asChild>
+            <div className="flex items-center gap-1 rounded-md px-1 py-1 cursor-default">
+              <Accordion.Trigger asChild>
+                <button
+                  type="button"
+                  className="inline-flex h-5 w-5 items-center justify-center rounded-md text-base-content/60 transition-colors hover:bg-base-300 hover:text-base-content"
+                  aria-label={isOpen ? 'Collapse attribute' : 'Expand attribute'}
+                  aria-expanded={isOpen}
+                  tabIndex={-1}
+                  onClick={(event) => event.stopPropagation()}
+                  onMouseDown={(event) => event.stopPropagation()}
+                >
+                  <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    strokeWidth="2"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    className="h-3.5 w-3.5 opacity-60 transition-transform group-data-[state=open]/attribute:rotate-90"
+                    aria-hidden="true"
+                  >
+                    <path d="M9 18l6-6-6-6" />
+                  </svg>
+                </button>
+              </Accordion.Trigger>
+            <button
+              ref={setActivatorNodeRef}
+              type="button"
+              className="inline-flex h-5 w-5 items-center justify-center rounded-md text-base-content/50 hover:bg-base-300 hover:text-base-content cursor-grab active:cursor-grabbing"
               onClick={(event) => event.stopPropagation()}
               onMouseDown={(event) => event.stopPropagation()}
-            />
-          </div>
-        </summary>
-        <div className="pl-6 pt-2 text-xs">
+              aria-label="Reorder attribute"
+              {...sortableAttributes}
+              {...listeners}
+              tabIndex={-1}
+            >
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="2"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  className="h-3 w-3"
+                  aria-hidden="true"
+                >
+                  <circle cx="9" cy="5" r="1" />
+                  <circle cx="9" cy="12" r="1" />
+                  <circle cx="9" cy="19" r="1" />
+                  <circle cx="15" cy="5" r="1" />
+                  <circle cx="15" cy="12" r="1" />
+                  <circle cx="15" cy="19" r="1" />
+                </svg>
+              </button>
+              <div className="flex min-w-0 flex-1 items-center gap-1">
+                <Input
+                  size="xs"
+                  className="min-w-0 flex-1"
+                  value={name ?? ''}
+                  placeholder="Attribute"
+                  onChange={(event) => onChangeName?.(event.target.value)}
+                  onClick={(event) => event.stopPropagation()}
+                  onMouseDown={(event) => event.stopPropagation()}
+                />
+              </div>
+            </div>
+          </Accordion.Header>
+          <Accordion.Content className="pl-6 pt-2 text-xs">
           <div className="flex items-center justify-between gap-3 pb-2">
             <div className="text-[10px] font-semibold uppercase tracking-wide opacity-70">
               Visibility
@@ -427,8 +426,8 @@ export default function ClassesPanelAttributesItem({
               Delete
             </button>
           </div>
-        </div>
-      </details>
+          </Accordion.Content>
+        </Accordion.Item>
     </li>
   )
 }

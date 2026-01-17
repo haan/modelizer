@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState } from 'react'
+import * as Accordion from '@radix-ui/react-accordion'
 import { useSortable } from '@dnd-kit/sortable'
 import { CSS } from '@dnd-kit/utilities'
 import { CLASS_COLOR_PALETTE } from '../../classPalette.js'
@@ -9,6 +10,8 @@ import Input from '../ui/Input.jsx'
 
 export default function ClassesPanelItem({
   node,
+  isOpen = false,
+  onToggleOpen,
   onRename,
   onReorderAttributes,
   onUpdateAttribute,
@@ -66,31 +69,48 @@ export default function ClassesPanelItem({
   }
 
 
+  const toggleOpen = () => {
+    onToggleOpen?.(isOpen ? '' : node.id)
+  }
+
   return (
-    <details
+    <Accordion.Item
       ref={setNodeRef}
+      value={node.id}
       style={style}
       className={`group ${isDragging ? 'opacity-60' : ''}`}
     >
-      <summary className="list-none cursor-pointer [&::-webkit-details-marker]:hidden">
-        <div className="w-full rounded-b-md border-b border-base-content/20 group-open:border-b-0">
+      <Accordion.Header asChild>
+        <div
+          className="w-full rounded-b-md border-b border-base-content/20 group-data-[state=open]:border-b-0"
+          onClick={toggleOpen}
+        >
           <div
-            className="flex items-center gap-2 rounded-l-md border-l-[6px] px-2 py-2 text-sm font-semibold transition-colors hover:bg-base-200 group-open:rounded-b-none"
+            className="flex items-center gap-2 rounded-l-md border-l-[6px] px-2 py-2 text-sm font-semibold transition-colors hover:bg-base-200 group-data-[state=open]:rounded-b-none"
             style={{ borderColor: accentBorderColor }}
           >
-            <svg
-              xmlns="http://www.w3.org/2000/svg"
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="currentColor"
-              strokeWidth="2"
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              className="h-4 w-4 opacity-60 transition-transform group-open:rotate-90"
-              aria-hidden="true"
-            >
-              <path d="M9 18l6-6-6-6" />
-            </svg>
+            <Accordion.Trigger asChild>
+              <button
+                type="button"
+                className="inline-flex h-5 w-5 items-center justify-center rounded-md text-base-content/60 hover:bg-base-200 hover:text-base-content"
+                aria-label="Toggle class details"
+                onClick={(event) => event.stopPropagation()}
+              >
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="2"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  className="h-4 w-4 opacity-60 transition-transform group-data-[state=open]:rotate-90"
+                  aria-hidden="true"
+                >
+                  <path d="M9 18l6-6-6-6" />
+                </svg>
+              </button>
+            </Accordion.Trigger>
             <button
               ref={setActivatorNodeRef}
               type="button"
@@ -218,68 +238,72 @@ export default function ClassesPanelItem({
             </div>
           </div>
         </div>
-      </summary>
-      <ClassesPanelVisibilityPanel
-        accentColor={accentColor}
-        showAccentColors={showAccentColors}
-        classVisibility={classVisibility}
-        onUpdateClassVisibility={(nextVisibility) =>
-          onUpdateClassVisibility?.(node.id, nextVisibility)
-        }
-      />
-      <div className="w-full">
-        <div
-          className="border-l-[6px] px-2 pb-3 pt-1 text-xs opacity-100"
-          style={{ borderColor: accentBorderColor }}
-        >
-          <div className="flex items-center justify-between text-[10px] font-semibold uppercase tracking-wide opacity-70">
-            <span>Attributes</span>
-            <button
-              type="button"
-              className="inline-flex h-4 w-4 items-center justify-center rounded-sm text-base-content/60 hover:bg-base-300 hover:text-base-content"
-              onClick={(event) => {
-                event.stopPropagation()
-                onAddAttribute?.(node.id)
-              }}
-              onMouseDown={(event) => event.stopPropagation()}
-              aria-label="Add attribute"
-            >
-              <svg
-                xmlns="http://www.w3.org/2000/svg"
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke="currentColor"
-                strokeWidth="2"
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                className="h-3 w-3"
-                aria-hidden="true"
+      </Accordion.Header>
+      <Accordion.Content>
+        <ClassesPanelVisibilityPanel
+          accentColor={accentColor}
+          showAccentColors={showAccentColors}
+          classVisibility={classVisibility}
+          onUpdateClassVisibility={(nextVisibility) =>
+            onUpdateClassVisibility?.(node.id, nextVisibility)
+          }
+        />
+        <div className="w-full">
+          <div
+            className="border-l-[6px] px-2 pb-3 pt-1 text-xs opacity-100"
+            style={{ borderColor: accentBorderColor }}
+          >
+            <div className="flex items-center justify-between">
+              <span className="text-xs font-semibold uppercase tracking-wide opacity-70">
+                Attributes
+              </span>
+              <button
+                type="button"
+                className="inline-flex items-center gap-1 rounded-md px-2 py-1 text-xs text-base-content/70 hover:bg-base-300 hover:text-base-content"
+                onClick={(event) => {
+                  event.stopPropagation()
+                  onAddAttribute?.(node.id)
+                }}
+                onMouseDown={(event) => event.stopPropagation()}
               >
-                <path d="M12 5v14" />
-                <path d="M5 12h14" />
-              </svg>
-            </button>
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="2"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  className="h-3 w-3"
+                  aria-hidden="true"
+                >
+                  <path d="M12 5v14" />
+                  <path d="M5 12h14" />
+                </svg>
+                Add attribute
+              </button>
+            </div>
+            <ClassesPanelAttributesPanel
+              attributes={attributes}
+              nodeId={node.id}
+              onReorderAttributes={onReorderAttributes}
+              onUpdateAttribute={onUpdateAttribute}
+              onAddAttribute={onAddAttribute}
+              onDeleteAttribute={onDeleteAttribute}
+              activeView={activeView}
+              viewSpecificSettingsOnly={viewSpecificSettingsOnly}
+            />
           </div>
-          <ClassesPanelAttributesPanel
-            attributes={attributes}
-            nodeId={node.id}
-            onReorderAttributes={onReorderAttributes}
-            onUpdateAttribute={onUpdateAttribute}
-            onAddAttribute={onAddAttribute}
-            onDeleteAttribute={onDeleteAttribute}
-            activeView={activeView}
-            viewSpecificSettingsOnly={viewSpecificSettingsOnly}
-          />
         </div>
-      </div>
-      <ClassesPanelOptionsPanel
-        accentColor={accentColor}
-        color={color}
-        nodeId={node.id}
-        onChangeColor={onUpdateClassColor}
-        onDeleteClass={onDeleteClass}
-        showAccentColors={showAccentColors}
-      />
-    </details>
+        <ClassesPanelOptionsPanel
+          accentColor={accentColor}
+          color={color}
+          nodeId={node.id}
+          onChangeColor={onUpdateClassColor}
+          onDeleteClass={onDeleteClass}
+          showAccentColors={showAccentColors}
+        />
+      </Accordion.Content>
+    </Accordion.Item>
   )
 }

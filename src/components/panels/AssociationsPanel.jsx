@@ -1,3 +1,4 @@
+import * as Accordion from '@radix-ui/react-accordion'
 import AssociationsPanelItem from './AssociationsPanelItem.jsx'
 
 const ASSOCIATION_TYPES = new Set([
@@ -57,32 +58,34 @@ export default function AssociationsPanel({
           Associations
         </div>
       </div>
-      {associations.map((edge) => {
-        const sourceIsAssociation = edge.source?.startsWith('assoc-edge-')
-        const targetIsAssociation = edge.target?.startsWith('assoc-edge-')
-        const sourceAssociationLabel = sourceIsAssociation
-          ? getAssociationLabel(edge.source)
-          : null
-        const targetAssociationLabel = targetIsAssociation
-          ? getAssociationLabel(edge.target)
-          : null
+      <Accordion.Root type="single" collapsible className="flex flex-col gap-1">
+        {associations.map((edge) => {
+          const sourceIsAssociation = edge.source?.startsWith('assoc-edge-')
+          const targetIsAssociation = edge.target?.startsWith('assoc-edge-')
+          const sourceAssociationLabel = sourceIsAssociation
+            ? getAssociationLabel(edge.source)
+            : null
+          const targetAssociationLabel = targetIsAssociation
+            ? getAssociationLabel(edge.target)
+            : null
 
-        return (
-          <AssociationsPanelItem
-            key={edge.id}
-            edge={edge}
-            sourceLabel={sourceAssociationLabel ?? getNodeLabel(edge.source)}
-            targetLabel={targetAssociationLabel ?? getNodeLabel(edge.target)}
-            sourceIsAssociation={sourceIsAssociation}
-            targetIsAssociation={targetIsAssociation}
-            onRenameAssociation={onRenameAssociation}
-            onDeleteAssociation={onDeleteAssociation}
-            onUpdateAssociationMultiplicity={onUpdateAssociationMultiplicity}
-            onUpdateAssociationRole={onUpdateAssociationRole}
-            onHighlightAssociation={onHighlightAssociation}
-          />
-        )
-      })}
+          return (
+            <AssociationsPanelItem
+              key={edge.id}
+              edge={edge}
+              sourceLabel={sourceAssociationLabel ?? getNodeLabel(edge.source)}
+              targetLabel={targetAssociationLabel ?? getNodeLabel(edge.target)}
+              sourceIsAssociation={sourceIsAssociation}
+              targetIsAssociation={targetIsAssociation}
+              onRenameAssociation={onRenameAssociation}
+              onDeleteAssociation={onDeleteAssociation}
+              onUpdateAssociationMultiplicity={onUpdateAssociationMultiplicity}
+              onUpdateAssociationRole={onUpdateAssociationRole}
+              onHighlightAssociation={onHighlightAssociation}
+            />
+          )
+        })}
+      </Accordion.Root>
     </div>
   )
 }

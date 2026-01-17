@@ -1,3 +1,5 @@
+import { useState } from 'react'
+import * as Accordion from '@radix-ui/react-accordion'
 import {
   DndContext,
   PointerSensor,
@@ -36,6 +38,7 @@ export default function ClassesPanel({
     }),
   )
   const itemIds = nodes.map((node) => node.id)
+  const [openClassId, setOpenClassId] = useState('')
 
   const handleDragEnd = (event) => {
     const { active, over } = event
@@ -121,24 +124,34 @@ export default function ClassesPanel({
         modifiers={[restrictToVerticalAxis]}
       >
         <SortableContext items={itemIds} strategy={verticalListSortingStrategy}>
-          {nodes.map((node) => (
-            <ClassesPanelItem
-              key={node.id}
-              node={node}
-              onRename={onRenameClass}
-              onReorderAttributes={onReorderAttributes}
-              onUpdateAttribute={onUpdateAttribute}
-              onAddAttribute={onAddAttribute}
-              onDeleteAttribute={onDeleteAttribute}
-              onUpdateClassColor={onUpdateClassColor}
-              onUpdateClassVisibility={onUpdateClassVisibility}
-              onDeleteClass={onDeleteClass}
-              onHighlightClass={onHighlightClass}
-              showAccentColors={showAccentColors}
-              activeView={activeView}
-              viewSpecificSettingsOnly={viewSpecificSettingsOnly}
-            />
-          ))}
+          <Accordion.Root
+            type="single"
+            collapsible
+            value={openClassId}
+            onValueChange={setOpenClassId}
+            className="flex flex-col gap-1"
+          >
+            {nodes.map((node) => (
+              <ClassesPanelItem
+                key={node.id}
+                node={node}
+                isOpen={openClassId === node.id}
+                onToggleOpen={(nextOpen) => setOpenClassId(nextOpen)}
+                onRename={onRenameClass}
+                onReorderAttributes={onReorderAttributes}
+                onUpdateAttribute={onUpdateAttribute}
+                onAddAttribute={onAddAttribute}
+                onDeleteAttribute={onDeleteAttribute}
+                onUpdateClassColor={onUpdateClassColor}
+                onUpdateClassVisibility={onUpdateClassVisibility}
+                onDeleteClass={onDeleteClass}
+                onHighlightClass={onHighlightClass}
+                showAccentColors={showAccentColors}
+                activeView={activeView}
+                viewSpecificSettingsOnly={viewSpecificSettingsOnly}
+              />
+            ))}
+          </Accordion.Root>
         </SortableContext>
       </DndContext>
     </div>
