@@ -10,6 +10,7 @@ export default function Navbar({
   onOpenModel,
   onSaveModel,
   onSaveModelAs,
+  onImportJavaModelizer,
   onExportPng,
   examples = [],
   onLoadExample,
@@ -165,6 +166,12 @@ export default function Navbar({
                       Examples
                     </Menubar.Item>
                   )}
+                  <Menubar.Item
+                    className="cursor-pointer rounded-sm px-2 py-1 text-xs text-base-content transition-colors hover:bg-base-200 focus:outline-none"
+                    onSelect={() => onImportJavaModelizer?.()}
+                  >
+                    Import from Java Modelizer
+                  </Menubar.Item>
                   <Menubar.Sub>
                     <Menubar.SubTrigger className="flex cursor-pointer items-center justify-between rounded-sm px-2 py-1 text-xs text-base-content transition-colors hover:bg-base-200 focus:outline-none">
                       Export as

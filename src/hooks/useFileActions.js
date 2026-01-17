@@ -12,6 +12,7 @@ import {
 import { normalizeEdges } from '../model/edgeUtils.js'
 import { sanitizeFileName } from '../model/fileUtils.js'
 import { sha256 } from 'js-sha256'
+import { importJavaModelizer } from '../model/javaModelizerImport.js'
 import {
   normalizeVisibility,
   normalizeViewPositions,
@@ -295,6 +296,72 @@ export function useFileActions({
     })
   }, [applyLoadedModel, requestDiscardChanges])
 
+  const onImportJavaModelizer = useCallback(async () => {
+    const runImport = async () => {
+      const canPickOpen =
+        typeof window !== 'undefined' && 'showOpenFilePicker' in window
+      let fileText = null
+      let fileName = null
+
+      if (canPickOpen) {
+        try {
+          const [handle] = await window.showOpenFilePicker({
+            multiple: false,
+            types: [
+              {
+                description: 'Java Modelizer Model',
+                accept: { 'application/json': ['.mod'] },
+              },
+            ],
+          })
+          const file = await handle.getFile()
+          fileName = file?.name ?? null
+          fileText = await file.text()
+        } catch (error) {
+          if (error?.name === 'AbortError') {
+            return
+          }
+          console.error('Failed to import model', error)
+          return
+        }
+      } else {
+        fileText = await new Promise((resolve) => {
+          const input = document.createElement('input')
+          input.type = 'file'
+          input.accept = '.mod,application/json'
+          input.onchange = () => {
+            const file = input.files?.[0]
+            if (!file) {
+              resolve(null)
+              return
+            }
+            fileName = file.name
+            file
+              .text()
+              .then(resolve)
+              .catch(() => resolve(null))
+          }
+          input.click()
+        })
+      }
+
+      if (!fileText) {
+        return
+      }
+
+      const payload = importJavaModelizer(fileText, fileName)
+      if (!payload) {
+        return
+      }
+
+      applyLoadedModel(payload, null)
+    }
+
+    requestDiscardChanges(() => {
+      runImport()
+    })
+  }, [applyLoadedModel, requestDiscardChanges])
+
   const onLoadExample = useCallback(
     (example) => {
       if (!example?.model) {
@@ -402,6 +469,7 @@ export function useFileActions({
     onSaveModel,
     onSaveModelAs,
     onLoadExample,
+    onImportJavaModelizer,
     antiCheatStatus,
   }
 }

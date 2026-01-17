@@ -338,6 +338,7 @@ function App() {
     onSaveModel,
     onSaveModelAs,
     onLoadExample,
+    onImportJavaModelizer,
     antiCheatStatus,
   } = useFileActions({
     nodes,
@@ -490,6 +491,7 @@ function App() {
           onOpenModel={onOpenModel}
           onSaveModel={onSaveModel}
           onSaveModelAs={onSaveModelAs}
+          onImportJavaModelizer={onImportJavaModelizer}
           onExportPng={onExportPng}
           examples={MODEL_EXAMPLES}
           onLoadExample={onLoadExample}
