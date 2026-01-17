@@ -12,7 +12,9 @@ export default function AntiCheatPanel({ entries, status }) {
       <div className="text-sm font-semibold uppercase tracking-wide text-base-content/70">
         Anti-cheat
       </div>
-      <div className="mt-1 text-[11px] text-base-content/60">
+      <div
+        className={`mt-1 text-[11px] ${status === 'ok' ? 'text-base-content/60' : 'text-secondary'}`}
+      >
         {statusLabel}
       </div>
       <dl className="mt-1 space-y-1 text-xs">
