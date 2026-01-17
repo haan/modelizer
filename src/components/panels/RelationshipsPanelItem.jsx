@@ -8,17 +8,27 @@ export default function RelationshipsPanelItem({
   targetAttributeLabel,
   onDeleteAssociation,
   onHighlightAssociation,
+  isOpen = false,
+  onToggleOpen,
 }) {
+  const toggleOpen = () => {
+    onToggleOpen?.(isOpen ? '' : edge.id)
+  }
+
   return (
     <Accordion.Item value={edge.id} className="group">
       <Accordion.Header asChild>
-        <div className="w-full rounded-b-md border-b border-base-content/20 group-data-[state=open]:border-b-0">
+        <div
+          className="w-full rounded-b-md border-b border-base-content/20 group-data-[state=open]:border-b-0"
+          onClick={toggleOpen}
+        >
           <div className="flex items-center gap-2 rounded-b-md border-l-[6px] border-transparent px-2 py-2 text-sm font-semibold transition-colors hover:bg-base-200 group-data-[state=open]:rounded-b-none">
             <Accordion.Trigger asChild>
               <button
                 type="button"
                 className="inline-flex h-5 w-5 items-center justify-center rounded-md text-base-content/60 hover:bg-base-200 hover:text-base-content"
                 aria-label="Toggle relationship details"
+                onClick={(event) => event.stopPropagation()}
               >
                 <svg
                   xmlns="http://www.w3.org/2000/svg"

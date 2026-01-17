@@ -12,6 +12,7 @@ dist
 /bundle/modelizer
 dist-ssr
 *.local
+/import
 
 # Editor directories and files
 .vscode/*

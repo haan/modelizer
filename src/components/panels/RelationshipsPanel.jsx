@@ -1,3 +1,4 @@
+import { useState } from 'react'
 import * as Accordion from '@radix-ui/react-accordion'
 import RelationshipsPanelItem from './RelationshipsPanelItem.jsx'
 
@@ -78,6 +79,8 @@ export default function RelationshipsPanel({
     )
   }
 
+  const [openRelationshipId, setOpenRelationshipId] = useState('')
+
   return (
     <div className="flex flex-col gap-1">
       <div className="flex items-center justify-between">
@@ -85,7 +88,13 @@ export default function RelationshipsPanel({
           Relationships
         </div>
       </div>
-      <Accordion.Root type="single" collapsible className="flex flex-col gap-1">
+      <Accordion.Root
+        type="single"
+        collapsible
+        value={openRelationshipId}
+        onValueChange={setOpenRelationshipId}
+        className="flex flex-col gap-1"
+      >
         {relationships.map((edge) => (
           <RelationshipsPanelItem
             key={edge.id}
@@ -94,6 +103,8 @@ export default function RelationshipsPanel({
             targetLabel={getNodeLabel(edge.target)}
             sourceAttributeLabel={getAttributeLabel(edge.source, edge.sourceHandle)}
             targetAttributeLabel={getAttributeLabel(edge.target, edge.targetHandle)}
+            isOpen={openRelationshipId === edge.id}
+            onToggleOpen={setOpenRelationshipId}
             onDeleteAssociation={onDeleteAssociation}
             onHighlightAssociation={onHighlightAssociation}
           />

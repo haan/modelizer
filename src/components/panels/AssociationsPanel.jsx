@@ -1,3 +1,4 @@
+import { useState } from 'react'
 import * as Accordion from '@radix-ui/react-accordion'
 import AssociationsPanelItem from './AssociationsPanelItem.jsx'
 
@@ -16,6 +17,7 @@ export default function AssociationsPanel({
   onUpdateAssociationRole,
   onHighlightAssociation,
 }) {
+  const [openAssociationId, setOpenAssociationId] = useState('')
   const nodeLabels = new Map(
     nodes.map((node) => [node.id, node.data?.label ?? node.id]),
   )
@@ -58,7 +60,13 @@ export default function AssociationsPanel({
           Associations
         </div>
       </div>
-      <Accordion.Root type="single" collapsible className="flex flex-col gap-1">
+      <Accordion.Root
+        type="single"
+        collapsible
+        value={openAssociationId}
+        onValueChange={setOpenAssociationId}
+        className="flex flex-col gap-1"
+      >
         {associations.map((edge) => {
           const sourceIsAssociation = edge.source?.startsWith('assoc-edge-')
           const targetIsAssociation = edge.target?.startsWith('assoc-edge-')
@@ -77,6 +85,8 @@ export default function AssociationsPanel({
               targetLabel={targetAssociationLabel ?? getNodeLabel(edge.target)}
               sourceIsAssociation={sourceIsAssociation}
               targetIsAssociation={targetIsAssociation}
+              isOpen={openAssociationId === edge.id}
+              onToggleOpen={setOpenAssociationId}
               onRenameAssociation={onRenameAssociation}
               onDeleteAssociation={onDeleteAssociation}
               onUpdateAssociationMultiplicity={onUpdateAssociationMultiplicity}
