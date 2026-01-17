@@ -36,6 +36,7 @@ const STORAGE_KEYS = {
   includeAccentColorsInExport: 'modelizer.includeAccentColorsInExport',
   viewSpecificSettingsOnly: 'modelizer.viewSpecificSettingsOnly',
   showAntiCheat: 'modelizer.showAntiCheat',
+  showFullscreen: 'modelizer.showFullscreen',
 }
 
 const readStoredBool = (key, fallback) => {
@@ -119,6 +120,9 @@ function App() {
   const [showAntiCheat, setShowAntiCheat] = useState(() =>
     readStoredBool(STORAGE_KEYS.showAntiCheat, false),
   )
+  const [showFullscreen, setShowFullscreen] = useState(() =>
+    readStoredBool(STORAGE_KEYS.showFullscreen, false),
+  )
   const [activeView, setActiveView] = useState(DEFAULT_VIEW)
   const [duplicateDialog, setDuplicateDialog] = useState({
     open: false,
@@ -198,6 +202,9 @@ function App() {
   useEffect(() => {
     writeStoredBool(STORAGE_KEYS.showAntiCheat, showAntiCheat)
   }, [showAntiCheat])
+  useEffect(() => {
+    writeStoredBool(STORAGE_KEYS.showFullscreen, showFullscreen)
+  }, [showFullscreen])
 
   const onDuplicateDialogOpenChange = useCallback((open) => {
     if (!open) {
@@ -497,10 +504,12 @@ function App() {
           onLoadExample={onLoadExample}
           showBackground={showBackground}
           showAccentColors={showAccentColors}
+          showFullscreen={showFullscreen}
           onToggleBackground={() => setShowBackground((current) => !current)}
           onToggleAccentColors={() =>
             setShowAccentColors((current) => !current)
           }
+          onToggleFullscreen={() => setShowFullscreen((current) => !current)}
           viewSpecificSettingsOnly={viewSpecificSettingsOnly}
           onToggleViewSpecificSettingsOnly={() =>
             setViewSpecificSettingsOnly((current) => !current)
@@ -516,39 +525,43 @@ function App() {
           isDirty={isDirty}
         />
         <div className="flex flex-1 min-h-0">
-          <Sidebar
-            activeItem={activeSidebarItem}
-            onSelect={onSidebarSelect}
-            activeView={activeView}
-            onViewChange={setActiveView}
-            onSyncViewPositions={onSyncViewPositions}
-          />
-          <InfoPanel
-            width={infoWidth}
-            onResizeStart={onResizeStart}
-            activeItem={activeSidebarItem}
-            nodes={panelNodes}
-            edges={panelEdges}
-            activeView={activeView}
-            viewSpecificSettingsOnly={viewSpecificSettingsOnly}
-            onAddClass={onAddClass}
-            onRenameClass={onRenameClass}
-            onReorderClasses={onReorderClasses}
-            onReorderAttributes={onReorderAttributes}
-            onUpdateAttribute={onUpdateAttribute}
-            onAddAttribute={onAddAttribute}
-            onDeleteAttribute={onDeleteAttribute}
-            onUpdateClassColor={onUpdateClassColor}
-            onUpdateClassVisibility={onUpdateClassVisibility}
-            onDeleteClass={onDeleteClass}
-            onHighlightClass={onHighlightClass}
-            showAccentColors={showAccentColors}
-            onRenameAssociation={onRenameAssociation}
-            onDeleteAssociation={onDeleteAssociation}
-            onUpdateAssociationMultiplicity={onUpdateAssociationMultiplicity}
-            onUpdateAssociationRole={onUpdateAssociationRole}
-            onHighlightAssociation={onHighlightAssociation}
-          />
+          {!showFullscreen ? (
+            <Sidebar
+              activeItem={activeSidebarItem}
+              onSelect={onSidebarSelect}
+              activeView={activeView}
+              onViewChange={setActiveView}
+              onSyncViewPositions={onSyncViewPositions}
+            />
+          ) : null}
+          {!showFullscreen ? (
+            <InfoPanel
+              width={infoWidth}
+              onResizeStart={onResizeStart}
+              activeItem={activeSidebarItem}
+              nodes={panelNodes}
+              edges={panelEdges}
+              activeView={activeView}
+              viewSpecificSettingsOnly={viewSpecificSettingsOnly}
+              onAddClass={onAddClass}
+              onRenameClass={onRenameClass}
+              onReorderClasses={onReorderClasses}
+              onReorderAttributes={onReorderAttributes}
+              onUpdateAttribute={onUpdateAttribute}
+              onAddAttribute={onAddAttribute}
+              onDeleteAttribute={onDeleteAttribute}
+              onUpdateClassColor={onUpdateClassColor}
+              onUpdateClassVisibility={onUpdateClassVisibility}
+              onDeleteClass={onDeleteClass}
+              onHighlightClass={onHighlightClass}
+              showAccentColors={showAccentColors}
+              onRenameAssociation={onRenameAssociation}
+              onDeleteAssociation={onDeleteAssociation}
+              onUpdateAssociationMultiplicity={onUpdateAssociationMultiplicity}
+              onUpdateAssociationRole={onUpdateAssociationRole}
+              onHighlightAssociation={onHighlightAssociation}
+            />
+          ) : null}
           <main className="flex-1 min-w-0 bg-base-100">
             <div
               className={`group/flow relative h-full w-full ${isConnecting ? 'is-connecting' : ''}`}

@@ -18,6 +18,8 @@ export default function Navbar({
   onToggleBackground,
   showAccentColors,
   onToggleAccentColors,
+  showFullscreen,
+  onToggleFullscreen,
   viewSpecificSettingsOnly,
   onToggleViewSpecificSettingsOnly,
   showAntiCheat,
@@ -247,6 +249,14 @@ export default function Navbar({
                       {showAccentColors
                         ? 'Hide accent colors'
                         : 'Show accent colors'}
+                    </span>
+                  </Menubar.Item>
+                  <Menubar.Item
+                    className={viewPlainItemClass}
+                    onSelect={() => onToggleFullscreen?.()}
+                  >
+                    <span>
+                      {showFullscreen ? 'Hide fullscreen' : 'Show fullscreen'}
                     </span>
                   </Menubar.Item>
                   <Menubar.Item
