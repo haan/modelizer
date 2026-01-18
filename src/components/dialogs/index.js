@@ -1,3 +1,4 @@
 export { ConfirmDiscardDialog } from './ConfirmDiscardDialog.jsx'
 export { DeleteDialog } from './DeleteDialog.jsx'
 export { DuplicateDialog } from './DuplicateDialog.jsx'
+export { HelpDialog } from './HelpDialog.jsx'

@@ -2,6 +2,7 @@ import { useRef, useState } from 'react'
 import * as Menubar from '@radix-ui/react-menubar'
 import { CheckIcon } from '@radix-ui/react-icons'
 import Input from '../ui/Input.jsx'
+import { HelpDialog } from '../dialogs/HelpDialog.jsx'
 
 export default function Navbar({
   modelName,
@@ -36,6 +37,7 @@ export default function Navbar({
 }) {
   const [isEditing, setIsEditing] = useState(false)
   const [draft, setDraft] = useState('')
+  const [isHelpOpen, setIsHelpOpen] = useState(false)
   const inputRef = useRef(null)
   const originalNameRef = useRef(modelName ?? '')
   const isMac =
@@ -360,6 +362,14 @@ export default function Navbar({
                 </Menubar.Content>
               </Menubar.Portal>
             </Menubar.Menu>
+            <Menubar.Menu>
+              <Menubar.Trigger
+                className="rounded-sm px-3 py-1 text-sm font-medium text-base-content/80 transition-colors hover:bg-base-200 focus:outline-none"
+                onClick={() => setIsHelpOpen(true)}
+              >
+                Help
+              </Menubar.Trigger>
+            </Menubar.Menu>
           </Menubar.Root>
         </div>
         <div className="group flex items-center justify-center gap-2">
@@ -421,6 +431,7 @@ export default function Navbar({
         </div>
         <div className="flex items-center justify-end gap-2" />
       </div>
+      <HelpDialog open={isHelpOpen} onOpenChange={setIsHelpOpen} />
     </nav>
   )
 }

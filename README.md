@@ -26,11 +26,13 @@ Modelizer supports:
 - associations
 - associative associations
 - reflexive associations
+- composite aggregations (enable in menu first)
 - multiplicities
 - attributes
 - attribute types
 - default values
 - constraints: Null, Unique, Auto Increment
+- import from Java Modelizer files
 
 ## What Modelizer does (and does not do)
 
