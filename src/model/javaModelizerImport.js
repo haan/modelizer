@@ -16,6 +16,7 @@ import {
 } from './constants.js'
 
 const POSITION_PADDING = 40
+const POSITION_SCALE = 1.5
 const ID_FALLBACK_SUFFIX = () => `${Date.now()}-${Math.floor(Math.random() * 1000)}`
 
 const normalizeText = (value) =>
@@ -130,6 +131,11 @@ const shiftPositions = (nodes) => {
   const views = [VIEW_CONCEPTUAL, VIEW_LOGICAL, VIEW_PHYSICAL]
   const offsets = {}
 
+  const scalePosition = (position) => ({
+    x: position.x * POSITION_SCALE,
+    y: position.y * POSITION_SCALE,
+  })
+
   views.forEach((view) => {
     let minX = Infinity
     let minY = Infinity
@@ -138,8 +144,9 @@ const shiftPositions = (nodes) => {
       if (!position) {
         return
       }
-      minX = Math.min(minX, position.x)
-      minY = Math.min(minY, position.y)
+      const scaled = scalePosition(position)
+      minX = Math.min(minX, scaled.x)
+      minY = Math.min(minY, scaled.y)
     })
 
     if (minX === Infinity || minY === Infinity) {
@@ -160,9 +167,10 @@ const shiftPositions = (nodes) => {
       if (!position) {
         return
       }
+      const scaled = scalePosition(position)
       viewPositions[view] = {
-        x: position.x + offsets[view].x,
-        y: position.y + offsets[view].y,
+        x: scaled.x + offsets[view].x,
+        y: scaled.y + offsets[view].y,
       }
     })
     return {
@@ -288,6 +296,27 @@ export function importJavaModelizer(text, fileName) {
   const edges = []
   const associationIdByKey = new Map()
   const relationshipKeySet = new Set()
+  const nodeById = new Map(nodes.map((node) => [node.id, node]))
+
+  const getNodePosition = (nodeId) => {
+    const node = nodeById.get(nodeId)
+    const viewPositions = node?.data?.viewPositions
+    return (
+      viewPositions?.[VIEW_LOGICAL] ??
+      viewPositions?.[VIEW_CONCEPTUAL] ??
+      node?.position ?? { x: 0, y: 0 }
+    )
+  }
+
+  const getRelationshipHandles = (sourceId, targetId, sourceAttrId, targetAttrId) => {
+    const sourcePos = getNodePosition(sourceId)
+    const targetPos = getNodePosition(targetId)
+    const isTargetToRight = targetPos.x >= sourcePos.x
+    return {
+      sourceHandle: `${isTargetToRight ? 'right' : 'left'}-${sourceAttrId}-source`,
+      targetHandle: `${isTargetToRight ? 'left' : 'right'}-${targetAttrId}-target`,
+    }
+  }
 
   const addAssociationEdge = (edge) => {
     edges.push(edge)
@@ -398,8 +427,12 @@ export function importJavaModelizer(text, fileName) {
           id: createId('edge-rel', linkIndex),
           source: sourceId,
           target: targetId,
-          sourceHandle: `right-${sourceAttrId}-source`,
-          targetHandle: `left-${targetAttrId}-target`,
+          ...getRelationshipHandles(
+            sourceId,
+            targetId,
+            sourceAttrId,
+            targetAttrId,
+          ),
           type: RELATIONSHIP_EDGE_TYPE,
           data: { type: 'relationship' },
         })
