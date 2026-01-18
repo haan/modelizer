@@ -64,7 +64,7 @@ const normalizeParams = (params) => {
 const mapDatatype = (raw) => {
   const value = normalizeText(raw).toLowerCase()
   if (!value) {
-    return { type: ATTRIBUTE_TYPE_UNDEFINED, typeParams: { ...ATTRIBUTE_TYPE_PARAMS_DEFAULT } }
+    return { type: '', typeParams: { ...ATTRIBUTE_TYPE_PARAMS_DEFAULT } }
   }
 
   const match = value.match(/^([a-z0-9_]+)\s*(?:\(([^)]*)\))?$/i)

@@ -103,7 +103,11 @@ export function getTypeParamKind(type) {
 }
 
 export function formatAttributeType(type, typeParams) {
-  if (typeof type !== 'string' || !type) {
+  if (
+    typeof type !== 'string' ||
+    !type ||
+    type === ATTRIBUTE_TYPE_UNDEFINED
+  ) {
     return ''
   }
 
