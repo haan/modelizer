@@ -323,6 +323,33 @@ export function useModelState({
                   },
                 }
               : viewSizes
+            if (
+              updatedAreaSizeIds.has(node.id) &&
+              normalizedActiveView === VIEW_CONCEPTUAL
+            ) {
+              if (!viewPositionsMeta.logical) {
+                nextViewSizes[VIEW_LOGICAL] = {
+                  width: node.width ?? fallbackSize.width,
+                  height: node.height ?? fallbackSize.height,
+                }
+              }
+              if (!viewPositionsMeta.physical) {
+                nextViewSizes[VIEW_PHYSICAL] = {
+                  width: node.width ?? fallbackSize.width,
+                  height: node.height ?? fallbackSize.height,
+                }
+              }
+            }
+            if (
+              updatedAreaSizeIds.has(node.id) &&
+              normalizedActiveView === VIEW_LOGICAL &&
+              !viewPositionsMeta.physical
+            ) {
+              nextViewSizes[VIEW_PHYSICAL] = {
+                width: node.width ?? fallbackSize.width,
+                height: node.height ?? fallbackSize.height,
+              }
+            }
 
             return {
               ...node,
@@ -350,9 +377,31 @@ export function useModelState({
               node.data?.viewPositions,
               node.position,
             )
+            const viewPositionsMeta = deriveViewPositionsMeta(node, viewPositions)
             const nextViewPositions = {
               ...viewPositions,
               [normalizedActiveView]: { ...node.position },
+            }
+
+            if (
+              normalizedActiveView === VIEW_CONCEPTUAL &&
+              !viewPositionsMeta.logical
+            ) {
+              nextViewPositions[VIEW_LOGICAL] = { ...node.position }
+            }
+
+            if (
+              normalizedActiveView === VIEW_CONCEPTUAL &&
+              !viewPositionsMeta.physical
+            ) {
+              nextViewPositions[VIEW_PHYSICAL] = { ...node.position }
+            }
+
+            if (
+              normalizedActiveView === VIEW_LOGICAL &&
+              !viewPositionsMeta.physical
+            ) {
+              nextViewPositions[VIEW_PHYSICAL] = { ...node.position }
             }
 
             return {
@@ -360,6 +409,10 @@ export function useModelState({
               data: {
                 ...node.data,
                 viewPositions: nextViewPositions,
+                viewPositionsMeta: {
+                  ...viewPositionsMeta,
+                  [normalizedActiveView]: true,
+                },
               },
             }
           }
@@ -921,6 +974,11 @@ export function useModelState({
           text: '',
           visibility: defaultVisibility,
           viewPositions: normalizeViewPositions(null, position),
+          viewPositionsMeta: {
+            conceptual: normalizedActiveView === VIEW_CONCEPTUAL,
+            logical: normalizedActiveView === VIEW_LOGICAL,
+            physical: normalizedActiveView === VIEW_PHYSICAL,
+          },
         },
       }
       return [...current, nextNote]
