@@ -66,6 +66,7 @@ import {
   DEFAULT_VIEW_VISIBILITY,
   normalizeVisibility,
   normalizeViewPositions,
+  normalizeViewSizes,
 } from '../model/viewUtils.js'
 
 const initialNodes = []
@@ -197,66 +198,173 @@ export function useModelState({
     (changes) => {
       setNodes((current) => {
         const nextNodes = applyNodeChanges(changes, current)
-        const updatedClassIds = new Set(
-          changes
-            .filter(
-              (change) =>
-                change.type === 'position' && change.dragging === false,
-            )
-            .map((change) => change.id),
-        )
+        const updatedClassIds = new Set()
+        const updatedAreaIds = new Set()
+        const updatedAreaSizeIds = new Set()
+        const updatedNoteIds = new Set()
 
-        if (updatedClassIds.size === 0) {
+        changes.forEach((change) => {
+          if (change.type === 'position' && change.dragging === false) {
+            updatedClassIds.add(change.id)
+            updatedAreaIds.add(change.id)
+            updatedNoteIds.add(change.id)
+          }
+          if (change.type === 'dimensions') {
+            updatedAreaSizeIds.add(change.id)
+          }
+        })
+
+        if (
+          updatedClassIds.size === 0 &&
+          updatedAreaIds.size === 0 &&
+          updatedAreaSizeIds.size === 0 &&
+          updatedNoteIds.size === 0
+        ) {
           return nextNodes
         }
 
         return nextNodes.map((node) => {
-          if (node.type !== CLASS_NODE_TYPE || !updatedClassIds.has(node.id)) {
-            return node
-          }
+          if (node.type === CLASS_NODE_TYPE && updatedClassIds.has(node.id)) {
+            const viewPositions = normalizeViewPositions(
+              node.data?.viewPositions,
+              node.position,
+            )
+            const viewPositionsMeta = deriveViewPositionsMeta(node, viewPositions)
+            const nextViewPositions = {
+              ...viewPositions,
+              [normalizedActiveView]: { ...node.position },
+            }
 
-          const viewPositions = normalizeViewPositions(
-            node.data?.viewPositions,
-            node.position,
-          )
-          const viewPositionsMeta = deriveViewPositionsMeta(node, viewPositions)
-          const nextViewPositions = {
-            ...viewPositions,
-            [normalizedActiveView]: { ...node.position },
-          }
+            if (
+              normalizedActiveView === VIEW_CONCEPTUAL &&
+              !viewPositionsMeta.logical
+            ) {
+              nextViewPositions[VIEW_LOGICAL] = { ...node.position }
+            }
 
-          if (
-            normalizedActiveView === VIEW_CONCEPTUAL &&
-            !viewPositionsMeta.logical
-          ) {
-            nextViewPositions[VIEW_LOGICAL] = { ...node.position }
-          }
+            if (
+              normalizedActiveView === VIEW_CONCEPTUAL &&
+              !viewPositionsMeta.physical
+            ) {
+              nextViewPositions[VIEW_PHYSICAL] = { ...node.position }
+            }
 
-          if (
-            normalizedActiveView === VIEW_CONCEPTUAL &&
-            !viewPositionsMeta.physical
-          ) {
-            nextViewPositions[VIEW_PHYSICAL] = { ...node.position }
-          }
+            if (
+              normalizedActiveView === VIEW_LOGICAL &&
+              !viewPositionsMeta.physical
+            ) {
+              nextViewPositions[VIEW_PHYSICAL] = { ...node.position }
+            }
 
-          if (
-            normalizedActiveView === VIEW_LOGICAL &&
-            !viewPositionsMeta.physical
-          ) {
-            nextViewPositions[VIEW_PHYSICAL] = { ...node.position }
-          }
-
-          return {
-            ...node,
-            data: {
-              ...node.data,
-              viewPositions: nextViewPositions,
-              viewPositionsMeta: {
-                ...viewPositionsMeta,
-                [normalizedActiveView]: true,
+            return {
+              ...node,
+              data: {
+                ...node.data,
+                viewPositions: nextViewPositions,
+                viewPositionsMeta: {
+                  ...viewPositionsMeta,
+                  [normalizedActiveView]: true,
+                },
               },
-            },
+            }
           }
+
+          if (
+            node.type === AREA_NODE_TYPE &&
+            (updatedAreaIds.has(node.id) || updatedAreaSizeIds.has(node.id))
+          ) {
+            const viewPositions = normalizeViewPositions(
+              node.data?.viewPositions,
+              node.position,
+            )
+            const viewPositionsMeta = deriveViewPositionsMeta(node, viewPositions)
+            const fallbackSize = {
+              width: node.width ?? node.style?.width ?? 280,
+              height: node.height ?? node.style?.height ?? 180,
+            }
+            const viewSizes = normalizeViewSizes(
+              node.data?.viewSizes,
+              fallbackSize,
+            )
+            let nextViewPositions = viewPositions
+            if (updatedAreaIds.has(node.id)) {
+              nextViewPositions = {
+                ...viewPositions,
+                [normalizedActiveView]: { ...node.position },
+              }
+
+              if (
+                normalizedActiveView === VIEW_CONCEPTUAL &&
+                !viewPositionsMeta.logical
+              ) {
+                nextViewPositions[VIEW_LOGICAL] = { ...node.position }
+              }
+
+              if (
+                normalizedActiveView === VIEW_CONCEPTUAL &&
+                !viewPositionsMeta.physical
+              ) {
+                nextViewPositions[VIEW_PHYSICAL] = { ...node.position }
+              }
+
+              if (
+                normalizedActiveView === VIEW_LOGICAL &&
+                !viewPositionsMeta.physical
+              ) {
+                nextViewPositions[VIEW_PHYSICAL] = { ...node.position }
+              }
+            }
+            const nextViewSizes = updatedAreaSizeIds.has(node.id)
+              ? {
+                  ...viewSizes,
+                  [normalizedActiveView]: {
+                    width: node.width ?? fallbackSize.width,
+                    height: node.height ?? fallbackSize.height,
+                  },
+                }
+              : viewSizes
+
+            return {
+              ...node,
+              data: {
+                ...node.data,
+                viewPositions: nextViewPositions,
+                viewSizes: nextViewSizes,
+                viewPositionsMeta: updatedAreaIds.has(node.id)
+                  ? {
+                      ...viewPositionsMeta,
+                      [normalizedActiveView]: true,
+                    }
+                  : viewPositionsMeta,
+              },
+              style: {
+                ...node.style,
+                width: node.width ?? fallbackSize.width,
+                height: node.height ?? fallbackSize.height,
+              },
+            }
+          }
+
+          if (node.type === NOTE_NODE_TYPE && updatedNoteIds.has(node.id)) {
+            const viewPositions = normalizeViewPositions(
+              node.data?.viewPositions,
+              node.position,
+            )
+            const nextViewPositions = {
+              ...viewPositions,
+              [normalizedActiveView]: { ...node.position },
+            }
+
+            return {
+              ...node,
+              data: {
+                ...node.data,
+                viewPositions: nextViewPositions,
+              },
+            }
+          }
+
+          return node
         })
       })
     },
@@ -266,23 +374,72 @@ export function useModelState({
   useEffect(() => {
     setNodes((current) =>
       current.map((node) => {
-        if (node.type !== CLASS_NODE_TYPE) {
-          return node
+        if (node.type === CLASS_NODE_TYPE) {
+          const viewPositions = normalizeViewPositions(
+            node.data?.viewPositions,
+            node.position,
+          )
+          const nextPosition = viewPositions[normalizedActiveView]
+          return {
+            ...node,
+            position: nextPosition,
+            data: {
+              ...node.data,
+              viewPositions,
+            },
+          }
         }
 
-        const viewPositions = normalizeViewPositions(
-          node.data?.viewPositions,
-          node.position,
-        )
-        const nextPosition = viewPositions[normalizedActiveView]
-        return {
-          ...node,
-          position: nextPosition,
-          data: {
-            ...node.data,
-            viewPositions,
-          },
+        if (node.type === NOTE_NODE_TYPE) {
+          const viewPositions = normalizeViewPositions(
+            node.data?.viewPositions,
+            node.position,
+          )
+          const nextPosition = viewPositions[normalizedActiveView]
+          return {
+            ...node,
+            position: nextPosition,
+            data: {
+              ...node.data,
+              viewPositions,
+            },
+          }
         }
+
+        if (node.type === AREA_NODE_TYPE) {
+          const fallbackSize = {
+            width: node.width ?? node.style?.width ?? 280,
+            height: node.height ?? node.style?.height ?? 180,
+          }
+          const viewPositions = normalizeViewPositions(
+            node.data?.viewPositions,
+            node.position,
+          )
+          const viewSizes = normalizeViewSizes(
+            node.data?.viewSizes,
+            fallbackSize,
+          )
+          const nextPosition = viewPositions[normalizedActiveView]
+          const nextSize = viewSizes[normalizedActiveView]
+          return {
+            ...node,
+            position: nextPosition,
+            width: nextSize.width,
+            height: nextSize.height,
+            style: {
+              ...node.style,
+              width: nextSize.width,
+              height: nextSize.height,
+            },
+            data: {
+              ...node.data,
+              viewPositions,
+              viewSizes,
+            },
+          }
+        }
+
+        return node
       }),
     )
   }, [normalizedActiveView, setNodes])
@@ -751,6 +908,10 @@ export function useModelState({
       const position = centerPosition
         ? { x: centerPosition.x + offset, y: centerPosition.y + offset }
         : { x: 120 + offset, y: 80 + offset }
+      const defaultVisibility = {
+        ...DEFAULT_VIEW_VISIBILITY,
+        conceptual: normalizedActiveView === VIEW_CONCEPTUAL,
+      }
       const nextNote = {
         id: `note-${idSuffix}`,
         type: NOTE_NODE_TYPE,
@@ -758,11 +919,18 @@ export function useModelState({
         data: {
           label: `Note ${noteCount + 1}`,
           text: '',
+          visibility: defaultVisibility,
+          viewPositions: normalizeViewPositions(null, position),
         },
       }
       return [...current, nextNote]
     })
-  }, [reactFlowInstance, reactFlowWrapper, updateNodesAndPanel])
+  }, [
+    normalizedActiveView,
+    reactFlowInstance,
+    reactFlowWrapper,
+    updateNodesAndPanel,
+  ])
 
   const onAddArea = useCallback(() => {
     const wrapperBounds = reactFlowWrapper.current?.getBoundingClientRect()
@@ -796,6 +964,10 @@ export function useModelState({
       const position = centerPosition
         ? { x: centerPosition.x + offset, y: centerPosition.y + offset }
         : { x: 160 + offset, y: 120 + offset }
+      const defaultVisibility = {
+        ...DEFAULT_VIEW_VISIBILITY,
+        conceptual: normalizedActiveView === VIEW_CONCEPTUAL,
+      }
       const nextArea = {
         id: `area-${idSuffix}`,
         type: AREA_NODE_TYPE,
@@ -805,12 +977,25 @@ export function useModelState({
         data: {
           label: `Area ${areaCount + 1}`,
           color: getRandomPaletteColor(),
+          visibility: defaultVisibility,
+          viewPositions: normalizeViewPositions(null, position),
+          viewSizes: normalizeViewSizes(null, { width: 280, height: 180 }),
+          viewPositionsMeta: {
+            conceptual: normalizedActiveView === VIEW_CONCEPTUAL,
+            logical: normalizedActiveView === VIEW_LOGICAL,
+            physical: normalizedActiveView === VIEW_PHYSICAL,
+          },
         },
         style: { zIndex: -1, width: 280, height: 180 },
       }
       return [...current, nextArea]
     })
-  }, [reactFlowInstance, reactFlowWrapper, updateNodesAndPanel])
+  }, [
+    normalizedActiveView,
+    reactFlowInstance,
+    reactFlowWrapper,
+    updateNodesAndPanel,
+  ])
 
   const onSyncViewPositions = useCallback(() => {
     if (normalizedActiveView === VIEW_CONCEPTUAL) {
@@ -925,6 +1110,28 @@ export function useModelState({
     [updateNodesAndPanel],
   )
 
+  const onUpdateNoteVisibility = useCallback(
+    (noteId, nextVisibility) => {
+      updateNodesAndPanel((current) =>
+        current.map((node) => {
+          if (node.id !== noteId) {
+            return node
+          }
+
+          const currentVisibility = normalizeVisibility(node.data?.visibility)
+          return {
+            ...node,
+            data: {
+              ...node.data,
+              visibility: { ...currentVisibility, ...nextVisibility },
+            },
+          }
+        }),
+      )
+    },
+    [updateNodesAndPanel],
+  )
+
   const onUpdateAreaColor = useCallback(
     (areaId, nextColor) => {
       updateNodesAndPanel((current) =>
@@ -933,6 +1140,28 @@ export function useModelState({
             ? { ...node, data: { ...node.data, color: nextColor } }
             : node,
         ),
+      )
+    },
+    [updateNodesAndPanel],
+  )
+
+  const onUpdateAreaVisibility = useCallback(
+    (areaId, nextVisibility) => {
+      updateNodesAndPanel((current) =>
+        current.map((node) => {
+          if (node.id !== areaId) {
+            return node
+          }
+
+          const currentVisibility = normalizeVisibility(node.data?.visibility)
+          return {
+            ...node,
+            data: {
+              ...node.data,
+              visibility: { ...currentVisibility, ...nextVisibility },
+            },
+          }
+        }),
       )
     },
     [updateNodesAndPanel],
@@ -1691,11 +1920,16 @@ export function useModelState({
 
   const flowNodes = useMemo(() => {
     const decoratedNodes = nodes
-      .filter((node) =>
-        node.type === CLASS_NODE_TYPE
-          ? isVisibleInView(node.data?.visibility)
-          : true,
-      )
+      .filter((node) => {
+        if (
+          node.type === CLASS_NODE_TYPE ||
+          node.type === AREA_NODE_TYPE ||
+          node.type === NOTE_NODE_TYPE
+        ) {
+          return isVisibleInView(node.data?.visibility)
+        }
+        return true
+      })
       .map((node) => {
         if (node.type === CLASS_NODE_TYPE) {
           return {
@@ -1768,7 +2002,9 @@ export function useModelState({
     onRenameAssociation,
     onDeleteAssociation,
     onDeleteNote,
+    onUpdateNoteVisibility,
     onDeleteArea,
+    onUpdateAreaVisibility,
     onUpdateAssociationMultiplicity,
     onUpdateAssociationRole,
     onHighlightAssociation,

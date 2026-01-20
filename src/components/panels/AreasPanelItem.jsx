@@ -3,6 +3,7 @@ import * as Accordion from '@radix-ui/react-accordion'
 import { CirclePicker } from 'react-color'
 import { CLASS_COLOR_PALETTE } from '../../classPalette.js'
 import Input from '../ui/Input.jsx'
+import CheckboxInput from '../ui/Checkbox.jsx'
 
 export default function AreasPanelItem({
   area,
@@ -10,11 +11,19 @@ export default function AreasPanelItem({
   onToggleOpen,
   onRename,
   onUpdateColor,
+  onUpdateVisibility,
   onDelete,
   onHighlight,
 }) {
   const label = area.data?.label ?? ''
   const color = area.data?.color ?? CLASS_COLOR_PALETTE[0]
+  const areaVisibility = area.data?.visibility ?? {}
+  const isConceptual =
+    typeof areaVisibility.conceptual === 'boolean'
+      ? areaVisibility.conceptual
+      : true
+  const isLogical =
+    typeof areaVisibility.logical === 'boolean' ? areaVisibility.logical : true
   const accentBorderColor = color || 'transparent'
   const [isEditing, setIsEditing] = useState(false)
   const [draft, setDraft] = useState(label)
@@ -181,7 +190,37 @@ export default function AreasPanelItem({
             className="border-l-[6px] px-2 py-3 text-xs rounded-bl-md"
             style={{ borderColor: accentBorderColor }}
           >
-            <div className="flex items-center justify-between">
+            <div className="mt-2">
+              <div className="text-[11px] font-semibold uppercase tracking-wide opacity-70">
+                Visibility
+              </div>
+              <div className="mt-2 flex flex-wrap items-center gap-3 text-[11px]">
+                <label className="flex items-center gap-2">
+                  <CheckboxInput
+                    checked={isConceptual}
+                    onCheckedChange={(value) =>
+                      onUpdateVisibility?.(area.id, {
+                        conceptual: Boolean(value),
+                      })
+                    }
+                  />
+                  <span>Conceptual</span>
+                </label>
+                <label className="flex items-center gap-2">
+                  <CheckboxInput
+                    checked={isLogical}
+                    onCheckedChange={(value) =>
+                      onUpdateVisibility?.(area.id, {
+                        logical: Boolean(value),
+                        physical: Boolean(value),
+                      })
+                    }
+                  />
+                  <span>Logical/Physical</span>
+                </label>
+              </div>
+            </div>
+            <div className="mt-3 flex items-center justify-between">
               <span className="text-xs font-semibold uppercase tracking-wide opacity-70">
                 Options
               </span>

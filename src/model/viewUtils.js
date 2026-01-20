@@ -21,6 +21,17 @@ const normalizePosition = (position, fallback) => {
   return { x: fallback.x, y: fallback.y }
 }
 
+const normalizeSize = (size, fallback) => {
+  if (
+    size &&
+    typeof size.width === 'number' &&
+    typeof size.height === 'number'
+  ) {
+    return { width: size.width, height: size.height }
+  }
+  return { width: fallback.width, height: fallback.height }
+}
+
 export const normalizeVisibility = (visibility) => ({
   conceptual:
     typeof visibility?.conceptual === 'boolean'
@@ -45,5 +56,17 @@ export const normalizeViewPositions = (viewPositions, fallbackPosition) => {
     [VIEW_CONCEPTUAL]: normalizePosition(viewPositions?.[VIEW_CONCEPTUAL], fallback),
     [VIEW_LOGICAL]: normalizePosition(viewPositions?.[VIEW_LOGICAL], fallback),
     [VIEW_PHYSICAL]: normalizePosition(viewPositions?.[VIEW_PHYSICAL], fallback),
+  }
+}
+
+export const normalizeViewSizes = (viewSizes, fallbackSize) => {
+  const fallback = normalizeSize(
+    fallbackSize ?? { width: 0, height: 0 },
+    { width: 0, height: 0 },
+  )
+  return {
+    [VIEW_CONCEPTUAL]: normalizeSize(viewSizes?.[VIEW_CONCEPTUAL], fallback),
+    [VIEW_LOGICAL]: normalizeSize(viewSizes?.[VIEW_LOGICAL], fallback),
+    [VIEW_PHYSICAL]: normalizeSize(viewSizes?.[VIEW_PHYSICAL], fallback),
   }
 }

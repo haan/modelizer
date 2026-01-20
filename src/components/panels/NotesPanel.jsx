@@ -7,6 +7,7 @@ export default function NotesPanel({
   onAddNote,
   onRenameNote,
   onUpdateNoteText,
+  onUpdateNoteVisibility,
   onDeleteNote,
   onHighlightNote,
 }) {
@@ -88,6 +89,7 @@ export default function NotesPanel({
             onToggleOpen={(nextOpen) => setOpenNoteId(nextOpen)}
             onRename={onRenameNote}
             onUpdateText={onUpdateNoteText}
+            onUpdateVisibility={onUpdateNoteVisibility}
             onDelete={onDeleteNote}
             onHighlight={onHighlightNote}
           />

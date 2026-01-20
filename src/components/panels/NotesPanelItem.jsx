@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from 'react'
 import * as Accordion from '@radix-ui/react-accordion'
 import Input from '../ui/Input.jsx'
+import CheckboxInput from '../ui/Checkbox.jsx'
 
 export default function NotesPanelItem({
   note,
@@ -8,11 +9,21 @@ export default function NotesPanelItem({
   onToggleOpen,
   onRename,
   onUpdateText,
+  onUpdateVisibility,
   onDelete,
   onHighlight,
 }) {
   const label = note.data?.label ?? ''
   const text = note.data?.text ?? ''
+  const noteVisibility = note.data?.visibility ?? {}
+  const isConceptual =
+    typeof noteVisibility.conceptual === 'boolean'
+      ? noteVisibility.conceptual
+      : true
+  const isLogical =
+    typeof noteVisibility.logical === 'boolean'
+      ? noteVisibility.logical
+      : true
   const [isEditing, setIsEditing] = useState(false)
   const [draft, setDraft] = useState(label)
   const inputRef = useRef(null)
@@ -170,8 +181,36 @@ export default function NotesPanelItem({
       </Accordion.Header>
       <Accordion.Content className="overflow-hidden">
         <div className="rounded-b-md border-b border-base-content/20 px-3 py-3 text-xs">
+          <div className="text-[11px] font-semibold uppercase tracking-wide opacity-70">
+            Visibility
+          </div>
+          <div className="mt-2 flex flex-wrap items-center gap-3 text-[11px]">
+            <label className="flex items-center gap-2">
+              <CheckboxInput
+                checked={isConceptual}
+                onCheckedChange={(value) =>
+                  onUpdateVisibility?.(note.id, {
+                    conceptual: Boolean(value),
+                  })
+                }
+              />
+              <span>Conceptual</span>
+            </label>
+            <label className="flex items-center gap-2">
+              <CheckboxInput
+                checked={isLogical}
+                onCheckedChange={(value) =>
+                  onUpdateVisibility?.(note.id, {
+                    logical: Boolean(value),
+                    physical: Boolean(value),
+                  })
+                }
+              />
+              <span>Logical/Physical</span>
+            </label>
+          </div>
           <textarea
-            className="min-h-[120px] w-full rounded-md border border-base-content/20 bg-transparent px-2 py-1 text-xs focus:outline-none focus:ring-1 focus:ring-ring"
+            className="mt-3 min-h-[120px] w-full rounded-md border border-base-content/20 bg-transparent px-2 py-1 text-xs focus:outline-none focus:ring-1 focus:ring-ring"
             placeholder="Write your note..."
             value={text}
             onChange={(event) => onUpdateText?.(note.id, event.target.value)}

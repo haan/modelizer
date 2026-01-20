@@ -39,11 +39,13 @@ function InfoPanel({
   onAddNote,
   onRenameNote,
   onUpdateNoteText,
+  onUpdateNoteVisibility,
   onDeleteNote,
   onHighlightNote,
   onAddArea,
   onRenameArea,
   onUpdateAreaColor,
+  onUpdateAreaVisibility,
   onDeleteArea,
   onHighlightArea,
   showNotes = true,
@@ -94,6 +96,7 @@ function InfoPanel({
                 onAddNote={onAddNote}
                 onRenameNote={onRenameNote}
                 onUpdateNoteText={onUpdateNoteText}
+                onUpdateNoteVisibility={onUpdateNoteVisibility}
                 onDeleteNote={onDeleteNote}
                 onHighlightNote={onHighlightNote}
               />
@@ -109,6 +112,7 @@ function InfoPanel({
                 onAddArea={onAddArea}
                 onRenameArea={onRenameArea}
                 onUpdateAreaColor={onUpdateAreaColor}
+                onUpdateAreaVisibility={onUpdateAreaVisibility}
                 onDeleteArea={onDeleteArea}
                 onHighlightArea={onHighlightArea}
               />

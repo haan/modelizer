@@ -10,17 +10,14 @@ export default function RefsPanel({
   edges,
   nodes,
   activeView,
-  viewSpecificSettingsOnly,
   onRenameAssociation,
   onDeleteAssociation,
   onUpdateAssociationMultiplicity,
   onUpdateAssociationRole,
   onHighlightAssociation,
 }) {
-  const hideAssociations =
-    viewSpecificSettingsOnly && activeView !== VIEW_CONCEPTUAL
-  const hideRelationships =
-    viewSpecificSettingsOnly && activeView === VIEW_CONCEPTUAL
+  const hideAssociations = activeView !== VIEW_CONCEPTUAL
+  const hideRelationships = activeView === VIEW_CONCEPTUAL
 
   return (
     <div className="flex flex-col gap-2 text-sm">

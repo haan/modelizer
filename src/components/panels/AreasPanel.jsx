@@ -7,6 +7,7 @@ export default function AreasPanel({
   onAddArea,
   onRenameArea,
   onUpdateAreaColor,
+  onUpdateAreaVisibility,
   onDeleteArea,
   onHighlightArea,
 }) {
@@ -88,6 +89,7 @@ export default function AreasPanel({
             onToggleOpen={(nextOpen) => setOpenAreaId(nextOpen)}
             onRename={onRenameArea}
             onUpdateColor={onUpdateAreaColor}
+            onUpdateVisibility={onUpdateAreaVisibility}
             onDelete={onDeleteArea}
             onHighlight={onHighlightArea}
           />

@@ -291,7 +291,9 @@ function App() {
     onReorderAttributes,
     onUpdateAttribute,
     onUpdateNoteText,
+    onUpdateNoteVisibility,
     onUpdateAreaColor,
+    onUpdateAreaVisibility,
     onAddAttribute,
     onDeleteAttribute: deleteAttribute,
     onUpdateClassColor,
@@ -715,11 +717,13 @@ function App() {
               onAddNote={onAddNote}
               onRenameNote={onRenameNote}
               onUpdateNoteText={onUpdateNoteText}
+              onUpdateNoteVisibility={onUpdateNoteVisibility}
               onDeleteNote={onDeleteNote}
               onHighlightNote={onHighlightNote}
               onAddArea={onAddArea}
               onRenameArea={onRenameArea}
               onUpdateAreaColor={onUpdateAreaColor}
+              onUpdateAreaVisibility={onUpdateAreaVisibility}
               onDeleteArea={onDeleteArea}
               onHighlightArea={onHighlightArea}
               showNotes={showNotes}

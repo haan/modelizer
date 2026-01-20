@@ -18,6 +18,7 @@ import { importJavaModelizer } from '../model/javaModelizerImport.js'
 import {
   normalizeVisibility,
   normalizeViewPositions,
+  normalizeViewSizes,
 } from '../model/viewUtils.js'
 
 const buildHashPayload = (payload) => ({
@@ -132,41 +133,64 @@ export function useFileActions({
         }
 
         if (nodeType === NOTE_NODE_TYPE) {
+          const visibility = normalizeVisibility(data.visibility)
+          const viewPositions = normalizeViewPositions(
+            data.viewPositions,
+            node?.position,
+          )
+          const nextPosition = viewPositions[normalizedActiveView] ?? node?.position
           return {
             ...node,
             id: nodeId,
             type: nodeType,
             selected: false,
+            position: nextPosition,
             data: {
               ...data,
               label: typeof data.label === 'string' ? data.label : '',
               text: typeof data.text === 'string' ? data.text : '',
+              visibility,
+              viewPositions,
             },
           }
         }
 
         if (nodeType === AREA_NODE_TYPE) {
-          const width =
-            typeof node?.width === 'number' ? node.width : 280
-          const height =
-            typeof node?.height === 'number' ? node.height : 180
+          const width = typeof node?.width === 'number' ? node.width : 280
+          const height = typeof node?.height === 'number' ? node.height : 180
+          const visibility = normalizeVisibility(data.visibility)
+          const viewPositions = normalizeViewPositions(
+            data.viewPositions,
+            node?.position,
+          )
+          const viewSizes = normalizeViewSizes(data.viewSizes, {
+            width,
+            height,
+          })
+          const nextPosition = viewPositions[normalizedActiveView] ?? node?.position
 
           return {
             ...node,
             id: nodeId,
             type: nodeType,
             selected: false,
-            width,
-            height,
+            position: nextPosition,
+            width: viewSizes[normalizedActiveView].width,
+            height: viewSizes[normalizedActiveView].height,
             style: {
               ...node?.style,
-              width: node?.style?.width ?? width,
-              height: node?.style?.height ?? height,
+              width:
+                node?.style?.width ?? viewSizes[normalizedActiveView].width,
+              height:
+                node?.style?.height ?? viewSizes[normalizedActiveView].height,
             },
             data: {
               ...data,
               label: typeof data.label === 'string' ? data.label : '',
               color: typeof data.color === 'string' ? data.color : '',
+              visibility,
+              viewPositions,
+              viewSizes,
             },
           }
         }
