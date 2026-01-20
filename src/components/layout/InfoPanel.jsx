@@ -1,5 +1,15 @@
-import { memo } from 'react'
-import { ClassesPanel, RefsPanel } from '../panels/index.js'
+import { memo, useMemo } from 'react'
+import {
+  ClassesPanel,
+  AreasPanel,
+  NotesPanel,
+  RefsPanel,
+} from '../panels/index.js'
+import {
+  AREA_NODE_TYPE,
+  CLASS_NODE_TYPE,
+  NOTE_NODE_TYPE,
+} from '../../model/constants.js'
 
 function InfoPanel({
   width,
@@ -26,7 +36,32 @@ function InfoPanel({
   onUpdateAssociationMultiplicity,
   onUpdateAssociationRole,
   onHighlightAssociation,
+  onAddNote,
+  onRenameNote,
+  onUpdateNoteText,
+  onDeleteNote,
+  onHighlightNote,
+  onAddArea,
+  onRenameArea,
+  onUpdateAreaColor,
+  onDeleteArea,
+  onHighlightArea,
+  showNotes = true,
+  showAreas = true,
 }) {
+  const classNodes = useMemo(
+    () => nodes.filter((node) => node.type === CLASS_NODE_TYPE),
+    [nodes],
+  )
+  const noteNodes = useMemo(
+    () => nodes.filter((node) => node.type === NOTE_NODE_TYPE),
+    [nodes],
+  )
+  const areaNodes = useMemo(
+    () => nodes.filter((node) => node.type === AREA_NODE_TYPE),
+    [nodes],
+  )
+
   return (
     <aside
       className="relative flex min-w-[350px] flex-col border-r border-base-content/10 bg-base-100"
@@ -36,7 +71,7 @@ function InfoPanel({
         <div className="flex flex-col gap-4 p-6">
           {activeItem === 'tables' ? (
             <ClassesPanel
-              nodes={nodes}
+              nodes={classNodes}
               onAddClass={onAddClass}
               onRenameClass={onRenameClass}
               onReorderClasses={onReorderClasses}
@@ -52,6 +87,36 @@ function InfoPanel({
               activeView={activeView}
               viewSpecificSettingsOnly={viewSpecificSettingsOnly}
             />
+          ) : activeItem === 'notes' ? (
+            showNotes ? (
+              <NotesPanel
+                nodes={noteNodes}
+                onAddNote={onAddNote}
+                onRenameNote={onRenameNote}
+                onUpdateNoteText={onUpdateNoteText}
+                onDeleteNote={onDeleteNote}
+                onHighlightNote={onHighlightNote}
+              />
+            ) : (
+              <p className="text-sm opacity-70">
+                Notes are disabled in Settings.
+              </p>
+            )
+          ) : activeItem === 'areas' ? (
+            showAreas ? (
+              <AreasPanel
+                nodes={areaNodes}
+                onAddArea={onAddArea}
+                onRenameArea={onRenameArea}
+                onUpdateAreaColor={onUpdateAreaColor}
+                onDeleteArea={onDeleteArea}
+                onHighlightArea={onHighlightArea}
+              />
+            ) : (
+              <p className="text-sm opacity-70">
+                Areas are disabled in Settings.
+              </p>
+            )
           ) : activeItem === 'refs' ? (
             <RefsPanel
               edges={edges}
@@ -66,7 +131,7 @@ function InfoPanel({
             />
           ) : (
             <p className="text-sm opacity-70">
-              Select Classes to browse classes in this model.
+              Select a panel to browse this model.
             </p>
           )}
         </div>

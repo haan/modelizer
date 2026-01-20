@@ -6,6 +6,8 @@ import {
   Relationship,
   Class,
   Composition,
+  Note,
+  Area,
 } from './components/flow/index.js'
 
 export const nodeTypes = {
@@ -13,6 +15,8 @@ export const nodeTypes = {
   umlClass: Class,
   associationHelper: AssociationHelperNode,
   associationFloatingEdgeNode: AssociationHelperNode,
+  note: Note,
+  area: Area,
 }
 
 export const edgeTypes = {

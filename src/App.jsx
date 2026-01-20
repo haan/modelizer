@@ -22,6 +22,8 @@ import { sanitizeFileName } from './model/fileUtils.js'
 import {
   DEFAULT_VIEW,
   CLASS_NODE_TYPE,
+  NOTE_NODE_TYPE,
+  AREA_NODE_TYPE,
   RELATIONSHIP_EDGE_TYPE,
   VIEW_PHYSICAL,
 } from './model/constants.js'
@@ -37,6 +39,8 @@ const STORAGE_KEYS = {
   showAntiCheat: 'modelizer.showAntiCheat',
   showFullscreen: 'modelizer.showFullscreen',
   showCompositionAggregation: 'modelizer.showCompositionAggregation',
+  showNotes: 'modelizer.showNotes',
+  showAreas: 'modelizer.showAreas',
 }
 
 const readStoredBool = (key, fallback) => {
@@ -126,6 +130,12 @@ function App() {
   const [showCompositionAggregation, setShowCompositionAggregation] = useState(() =>
     readStoredBool(STORAGE_KEYS.showCompositionAggregation, false),
   )
+  const [showNotes, setShowNotes] = useState(() =>
+    readStoredBool(STORAGE_KEYS.showNotes, false),
+  )
+  const [showAreas, setShowAreas] = useState(() =>
+    readStoredBool(STORAGE_KEYS.showAreas, false),
+  )
   const [activeView, setActiveView] = useState(DEFAULT_VIEW)
   const [duplicateDialog, setDuplicateDialog] = useState({
     open: false,
@@ -214,6 +224,12 @@ function App() {
       showCompositionAggregation,
     )
   }, [showCompositionAggregation])
+  useEffect(() => {
+    writeStoredBool(STORAGE_KEYS.showNotes, showNotes)
+  }, [showNotes])
+  useEffect(() => {
+    writeStoredBool(STORAGE_KEYS.showAreas, showAreas)
+  }, [showAreas])
 
   const onDuplicateDialogOpenChange = useCallback((open) => {
     if (!open) {
@@ -241,16 +257,26 @@ function App() {
     onConnectEnd,
     isValidConnection,
     onAddClass,
+    onAddNote,
+    onAddArea,
     onSyncViewPositions,
     onRenameClass,
+    onRenameNote,
+    onRenameArea,
     onRenameAssociation,
     onDeleteAssociation: deleteAssociation,
+    onDeleteNote: deleteNote,
+    onDeleteArea: deleteArea,
     onUpdateAssociationMultiplicity,
     onUpdateAssociationRole,
     onHighlightAssociation,
+    onHighlightNote,
+    onHighlightArea,
     onReorderClasses,
     onReorderAttributes,
     onUpdateAttribute,
+    onUpdateNoteText,
+    onUpdateAreaColor,
     onAddAttribute,
     onDeleteAttribute: deleteAttribute,
     onUpdateClassColor,
@@ -269,6 +295,26 @@ function App() {
     onDuplicateEdge,
     activeView,
   })
+
+  const onToggleNotes = useCallback(() => {
+    setShowNotes((current) => {
+      const next = !current
+      if (!next && activeSidebarItem === 'notes') {
+        setActiveSidebarItem('tables')
+      }
+      return next
+    })
+  }, [activeSidebarItem, setActiveSidebarItem])
+
+  const onToggleAreas = useCallback(() => {
+    setShowAreas((current) => {
+      const next = !current
+      if (!next && activeSidebarItem === 'areas') {
+        setActiveSidebarItem('tables')
+      }
+      return next
+    })
+  }, [activeSidebarItem, setActiveSidebarItem])
 
   const requestDelete = useCallback(
     ({ kind, action }) => {
@@ -327,6 +373,24 @@ function App() {
     [deleteAttribute, requestDelete],
   )
 
+  const onDeleteNote = useCallback(
+    (noteId) =>
+      requestDelete({
+        kind: 'note',
+        action: () => deleteNote(noteId),
+      }),
+    [deleteNote, requestDelete],
+  )
+
+  const onDeleteArea = useCallback(
+    (areaId) =>
+      requestDelete({
+        kind: 'area',
+        action: () => deleteArea(areaId),
+      }),
+    [deleteArea, requestDelete],
+  )
+
   const onDeleteSelection = useCallback(
     ({ nodeIds, edgeIds }) => {
       if (!nodeIds.length && !edgeIds.length) {
@@ -336,12 +400,24 @@ function App() {
       requestDelete({
         kind: 'selection',
         action: () => {
-          nodeIds.forEach((nodeId) => deleteClass(nodeId))
+          nodeIds.forEach((nodeId) => {
+            const node = nodes.find((entry) => entry.id === nodeId)
+            if (node?.type === NOTE_NODE_TYPE) {
+              deleteNote(nodeId)
+              return
+            } else {
+              if (node?.type === AREA_NODE_TYPE) {
+                deleteArea(nodeId)
+                return
+              }
+            }
+            deleteClass(nodeId)
+          })
           edgeIds.forEach((edgeId) => deleteAssociation(edgeId))
         },
       })
     },
-    [deleteAssociation, deleteClass, requestDelete],
+    [deleteAssociation, deleteArea, deleteClass, deleteNote, nodes, requestDelete],
   )
 
   const {
@@ -456,9 +532,23 @@ function App() {
         onExportPng()
         return
       }
+      if (item === 'notes' && !showNotes) {
+        return
+      }
+      if (item === 'areas' && !showAreas) {
+        return
+      }
       setActiveSidebarItem(item)
     },
-    [onExportPng, onOpenModel, onRequestNewModel, onSaveModel, setActiveSidebarItem],
+    [
+      onExportPng,
+      onOpenModel,
+      onRequestNewModel,
+      onSaveModel,
+      setActiveSidebarItem,
+      showAreas,
+      showNotes,
+    ],
   )
 
   const defaultValueEntries = useMemo(() => {
@@ -500,6 +590,20 @@ function App() {
       })
     })
   }, [activeView, nodes])
+
+  const visibleFlowNodes = useMemo(
+    () =>
+      flowNodes.filter((node) => {
+        if (node.type === NOTE_NODE_TYPE) {
+          return showNotes
+        }
+        if (node.type === AREA_NODE_TYPE) {
+          return showAreas
+        }
+        return true
+      }),
+    [flowNodes, showAreas, showNotes],
+  )
   const classIdEntries = useMemo(() => {
     return nodes
       .filter((node) => node.type === CLASS_NODE_TYPE)
@@ -528,6 +632,8 @@ function App() {
           showAccentColors={showAccentColors}
           showFullscreen={showFullscreen}
           showCompositionAggregation={showCompositionAggregation}
+          showNotes={showNotes}
+          showAreas={showAreas}
           onToggleBackground={() => setShowBackground((current) => !current)}
           onToggleAccentColors={() =>
             setShowAccentColors((current) => !current)
@@ -536,6 +642,8 @@ function App() {
           onToggleCompositionAggregation={() =>
             setShowCompositionAggregation((current) => !current)
           }
+          onToggleNotes={onToggleNotes}
+          onToggleAreas={onToggleAreas}
           viewSpecificSettingsOnly={viewSpecificSettingsOnly}
           onToggleViewSpecificSettingsOnly={() =>
             setViewSpecificSettingsOnly((current) => !current)
@@ -558,6 +666,8 @@ function App() {
               activeView={activeView}
               onViewChange={setActiveView}
               onSyncViewPositions={onSyncViewPositions}
+              showNotes={showNotes}
+              showAreas={showAreas}
             />
           ) : null}
           {!showFullscreen ? (
@@ -586,6 +696,18 @@ function App() {
               onUpdateAssociationMultiplicity={onUpdateAssociationMultiplicity}
               onUpdateAssociationRole={onUpdateAssociationRole}
               onHighlightAssociation={onHighlightAssociation}
+              onAddNote={onAddNote}
+              onRenameNote={onRenameNote}
+              onUpdateNoteText={onUpdateNoteText}
+              onDeleteNote={onDeleteNote}
+              onHighlightNote={onHighlightNote}
+              onAddArea={onAddArea}
+              onRenameArea={onRenameArea}
+              onUpdateAreaColor={onUpdateAreaColor}
+              onDeleteArea={onDeleteArea}
+              onHighlightArea={onHighlightArea}
+              showNotes={showNotes}
+              showAreas={showAreas}
             />
           ) : null}
           <main className="flex-1 min-w-0 bg-base-100">
@@ -594,7 +716,7 @@ function App() {
               ref={reactFlowWrapper}
             >
               <ReactFlow
-                nodes={flowNodes}
+                nodes={visibleFlowNodes}
                 edges={flowEdges}
                 onNodesChange={onNodesChange}
                 onEdgesChange={onEdgesChange}

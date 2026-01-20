@@ -23,6 +23,14 @@ export const DIALOG_COPY = {
       description:
         'This removes the attribute from the class. This action cannot be undone.',
     },
+    note: {
+      title: 'Delete note?',
+      description: 'This removes the note. This action cannot be undone.',
+    },
+    area: {
+      title: 'Delete area?',
+      description: 'This removes the area. This action cannot be undone.',
+    },
     selection: {
       title: 'Delete selected items?',
       description:

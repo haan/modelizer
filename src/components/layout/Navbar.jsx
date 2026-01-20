@@ -21,6 +21,10 @@ export default function Navbar({
   onToggleFullscreen,
   showCompositionAggregation,
   onToggleCompositionAggregation,
+  showNotes,
+  onToggleNotes,
+  showAreas,
+  onToggleAreas,
   viewSpecificSettingsOnly,
   onToggleViewSpecificSettingsOnly,
   showAntiCheat,
@@ -193,6 +197,22 @@ export default function Navbar({
                       {includeAccentColorsInExport
                         ? 'Exclude accent colors in PNG export'
                         : 'Include accent colors in PNG export'}
+                    </span>
+                  </Menubar.Item>
+                  <Menubar.Item
+                    className={settingsItemClass}
+                    onSelect={() => onToggleNotes?.(!showNotes)}
+                  >
+                    <span>
+                      {showNotes ? 'Disable notes' : 'Enable notes'}
+                    </span>
+                  </Menubar.Item>
+                  <Menubar.Item
+                    className={settingsItemClass}
+                    onSelect={() => onToggleAreas?.(!showAreas)}
+                  >
+                    <span>
+                      {showAreas ? 'Disable areas' : 'Enable areas'}
                     </span>
                   </Menubar.Item>
                 </Menubar.Content>

@@ -28,6 +28,8 @@ export default function Sidebar({
   activeView,
   onViewChange,
   onSyncViewPositions,
+  showNotes = true,
+  showAreas = true,
 }) {
   const sidebarButtonClass =
     'peer/menu-button flex w-full flex-col items-center justify-center gap-1 rounded-md px-1 py-2 text-[10px] leading-tight text-center outline-none transition-[width,height,padding] focus-visible:ring-2 focus-visible:ring-base-content/20 hover:bg-base-300 data-[active=true]:bg-base-300 data-[active=true]:font-medium data-[active=true]:text-primary disabled:cursor-not-allowed disabled:opacity-50 disabled:hover:bg-transparent'
@@ -246,6 +248,68 @@ export default function Sidebar({
                     </button>
                   </SidebarTooltip>
                 </li>
+                {showNotes ? (
+                  <li data-sidebar="menu-item" className="group/menu-item relative">
+                    <SidebarTooltip label="Notes panel">
+                      <button
+                        data-sidebar="menu-button"
+                        data-size="default"
+                        data-active={activeItem === 'notes' ? 'true' : 'false'}
+                        className={sidebarButtonClass}
+                        onClick={() => onSelect('notes')}
+                        type="button"
+                      >
+                        <svg
+                          xmlns="http://www.w3.org/2000/svg"
+                          fill="none"
+                          viewBox="0 0 24 24"
+                          strokeWidth="1.5"
+                          stroke="currentColor"
+                          className="h-4 w-4 shrink-0"
+                          aria-hidden="true"
+                        >
+                          <path
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                            d="m16.862 4.487 1.687-1.688a1.875 1.875 0 1 1 2.652 2.652L10.582 16.07a4.5 4.5 0 0 1-1.897 1.13L6 18l.8-2.685a4.5 4.5 0 0 1 1.13-1.897l8.932-8.931Zm0 0L19.5 7.125M18 14v4.75A2.25 2.25 0 0 1 15.75 21H5.25A2.25 2.25 0 0 1 3 18.75V8.25A2.25 2.25 0 0 1 5.25 6H10"
+                          />
+                        </svg>
+                        <span>Notes</span>
+                      </button>
+                    </SidebarTooltip>
+                  </li>
+                ) : null}
+                {showAreas ? (
+                  <li data-sidebar="menu-item" className="group/menu-item relative">
+                    <SidebarTooltip label="Areas panel">
+                      <button
+                        data-sidebar="menu-button"
+                        data-size="default"
+                        data-active={activeItem === 'areas' ? 'true' : 'false'}
+                        className={sidebarButtonClass}
+                        onClick={() => onSelect('areas')}
+                        type="button"
+                      >
+                        <svg
+                          xmlns="http://www.w3.org/2000/svg"
+                          fill="none"
+                          viewBox="0 0 24 24"
+                          strokeWidth="1.5"
+                          stroke="currentColor"
+                          className="h-4 w-4 shrink-0"
+                          aria-hidden="true"
+                        >
+                          <path
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                            d="M16.5 8.25V6a2.25 2.25 0 0 0-2.25-2.25H6A2.25 2.25 0 0 0 3.75 6v8.25A2.25 2.25 0 0 0 6 16.5h2.25m8.25-8.25H18a2.25 2.25 0 0 1 2.25 2.25V18A2.25 2.25 0 0 1 18 20.25h-7.5A2.25 2.25 0 0 1 8.25 18v-1.5m8.25-8.25h-6a2.25 2.25 0 0 0-2.25 2.25v6"
+                          />
+                        </svg>
+                        <span>Areas</span>
+                      </button>
+                    </SidebarTooltip>
+                  </li>
+                ) : null}
               </ul>
             </div>
           </div>
@@ -352,9 +416,24 @@ export default function Sidebar({
                     </button>
                   </SidebarTooltip>
                 </li>
-                <li aria-hidden="true" className="my-1">
-                  <div className="mx-1 h-px w-auto bg-base-content/10" />
-                </li>
+              </ul>
+            </div>
+          </div>
+          <div
+            data-sidebar="separator"
+            className="mx-2 h-px w-auto bg-base-content/10"
+            data-orientation="horizontal"
+            role="none"
+          />
+          <div
+            data-sidebar="group"
+            className="relative flex w-full min-w-0 flex-col p-2"
+          >
+            <div data-sidebar="group-content" className="w-full text-sm">
+              <ul
+                data-sidebar="menu"
+                className="flex w-full min-w-0 flex-col gap-1"
+              >
                 <li data-sidebar="menu-item" className="group/menu-item relative">
                   <SidebarTooltip label="Sync positions from previous modeling phase">
                     <button

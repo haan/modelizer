@@ -15,10 +15,12 @@ import {
   ASSOCIATION_HELPER_NODE_TYPE,
   ASSOCIATION_NODE_SIZE,
   ASSOCIATIVE_EDGE_TYPE,
+  AREA_NODE_TYPE,
   COMPOSITION_EDGE_TYPE,
   CLASS_NODE_TYPE,
   DEFAULT_VIEW,
   HIGHLIGHT_ZOOM,
+  NOTE_NODE_TYPE,
   REFLEXIVE_EDGE_TYPE,
   RELATIONSHIP_EDGE_TYPE,
   VIEW_CONCEPTUAL,
@@ -717,6 +719,99 @@ export function useModelState({
     })
   }, [normalizedActiveView, reactFlowInstance, reactFlowWrapper, updateNodesAndPanel])
 
+  const onAddNote = useCallback(() => {
+    const wrapperBounds = reactFlowWrapper.current?.getBoundingClientRect()
+    const toFlowPosition =
+      reactFlowInstance?.screenToFlowPosition && wrapperBounds
+        ? (point) => reactFlowInstance.screenToFlowPosition(point)
+        : reactFlowInstance?.project && wrapperBounds
+          ? (point) =>
+              reactFlowInstance.project({
+                x: point.x - wrapperBounds.left,
+                y: point.y - wrapperBounds.top,
+              })
+          : null
+    const centerPosition =
+      wrapperBounds && toFlowPosition
+        ? toFlowPosition({
+            x: wrapperBounds.left + wrapperBounds.width / 2,
+            y: wrapperBounds.top + wrapperBounds.height / 2,
+          })
+        : null
+
+    updateNodesAndPanel((current) => {
+      const noteCount = current.filter(
+        (node) => node.type === NOTE_NODE_TYPE,
+      ).length
+      const idSuffix =
+        typeof crypto !== 'undefined' && crypto.randomUUID
+          ? crypto.randomUUID()
+          : `${Date.now()}-${current.length + 1}`
+      const offset = 36 * noteCount
+      const position = centerPosition
+        ? { x: centerPosition.x + offset, y: centerPosition.y + offset }
+        : { x: 120 + offset, y: 80 + offset }
+      const nextNote = {
+        id: `note-${idSuffix}`,
+        type: NOTE_NODE_TYPE,
+        position,
+        data: {
+          label: `Note ${noteCount + 1}`,
+          text: '',
+        },
+      }
+      return [...current, nextNote]
+    })
+  }, [reactFlowInstance, reactFlowWrapper, updateNodesAndPanel])
+
+  const onAddArea = useCallback(() => {
+    const wrapperBounds = reactFlowWrapper.current?.getBoundingClientRect()
+    const toFlowPosition =
+      reactFlowInstance?.screenToFlowPosition && wrapperBounds
+        ? (point) => reactFlowInstance.screenToFlowPosition(point)
+        : reactFlowInstance?.project && wrapperBounds
+          ? (point) =>
+              reactFlowInstance.project({
+                x: point.x - wrapperBounds.left,
+                y: point.y - wrapperBounds.top,
+              })
+          : null
+    const centerPosition =
+      wrapperBounds && toFlowPosition
+        ? toFlowPosition({
+            x: wrapperBounds.left + wrapperBounds.width / 2,
+            y: wrapperBounds.top + wrapperBounds.height / 2,
+          })
+        : null
+
+    updateNodesAndPanel((current) => {
+      const areaCount = current.filter(
+        (node) => node.type === AREA_NODE_TYPE,
+      ).length
+      const idSuffix =
+        typeof crypto !== 'undefined' && crypto.randomUUID
+          ? crypto.randomUUID()
+          : `${Date.now()}-${current.length + 1}`
+      const offset = 48 * areaCount
+      const position = centerPosition
+        ? { x: centerPosition.x + offset, y: centerPosition.y + offset }
+        : { x: 160 + offset, y: 120 + offset }
+      const nextArea = {
+        id: `area-${idSuffix}`,
+        type: AREA_NODE_TYPE,
+        position,
+        width: 280,
+        height: 180,
+        data: {
+          label: `Area ${areaCount + 1}`,
+          color: getRandomPaletteColor(),
+        },
+        style: { zIndex: -1, width: 280, height: 180 },
+      }
+      return [...current, nextArea]
+    })
+  }, [reactFlowInstance, reactFlowWrapper, updateNodesAndPanel])
+
   const onSyncViewPositions = useCallback(() => {
     if (normalizedActiveView === VIEW_CONCEPTUAL) {
       return
@@ -789,6 +884,76 @@ export function useModelState({
       )
     },
     [updateEdgesAndPanel, updateNodesAndPanel],
+  )
+
+  const onRenameNote = useCallback(
+    (noteId, nextLabel) => {
+      updateNodesAndPanel((current) =>
+        current.map((node) =>
+          node.id === noteId
+            ? { ...node, data: { ...node.data, label: nextLabel } }
+            : node,
+        ),
+      )
+    },
+    [updateNodesAndPanel],
+  )
+
+  const onRenameArea = useCallback(
+    (areaId, nextLabel) => {
+      updateNodesAndPanel((current) =>
+        current.map((node) =>
+          node.id === areaId
+            ? { ...node, data: { ...node.data, label: nextLabel } }
+            : node,
+        ),
+      )
+    },
+    [updateNodesAndPanel],
+  )
+
+  const onUpdateNoteText = useCallback(
+    (noteId, nextText) => {
+      updateNodesAndPanel((current) =>
+        current.map((node) =>
+          node.id === noteId
+            ? { ...node, data: { ...node.data, text: nextText } }
+            : node,
+        ),
+      )
+    },
+    [updateNodesAndPanel],
+  )
+
+  const onUpdateAreaColor = useCallback(
+    (areaId, nextColor) => {
+      updateNodesAndPanel((current) =>
+        current.map((node) =>
+          node.id === areaId
+            ? { ...node, data: { ...node.data, color: nextColor } }
+            : node,
+        ),
+      )
+    },
+    [updateNodesAndPanel],
+  )
+
+  const onDeleteNote = useCallback(
+    (noteId) => {
+      updateNodesAndPanel((current) =>
+        current.filter((node) => node.id !== noteId),
+      )
+    },
+    [updateNodesAndPanel],
+  )
+
+  const onDeleteArea = useCallback(
+    (areaId) => {
+      updateNodesAndPanel((current) =>
+        current.filter((node) => node.id !== areaId),
+      )
+    },
+    [updateNodesAndPanel],
   )
 
   const onRenameAssociation = useCallback(
@@ -1207,6 +1372,80 @@ export function useModelState({
     [reactFlowInstance, setNodes],
   )
 
+  const onHighlightNote = useCallback(
+    (noteId) => {
+      setNodes((current) =>
+        current.map((node) => ({
+          ...node,
+          selected: node.id === noteId,
+        })),
+      )
+
+      const node =
+        reactFlowInstance?.getNode(noteId) ??
+        nodesRef.current.find((entry) => entry.id === noteId)
+      if (!node || !reactFlowInstance?.setCenter) {
+        return
+      }
+
+      const position =
+        node.positionAbsolute ??
+        node.internals?.positionAbsolute ??
+        node.position
+      if (!position) {
+        return
+      }
+
+      const width = node.measured?.width ?? node.width ?? 0
+      const height = node.measured?.height ?? node.height ?? 0
+      const centerX = position.x + width / 2
+      const centerY = position.y + height / 2
+
+      reactFlowInstance.setCenter(centerX, centerY, {
+        zoom: HIGHLIGHT_ZOOM,
+        duration: 300,
+      })
+    },
+    [reactFlowInstance, setNodes],
+  )
+
+  const onHighlightArea = useCallback(
+    (areaId) => {
+      setNodes((current) =>
+        current.map((node) => ({
+          ...node,
+          selected: node.id === areaId,
+        })),
+      )
+
+      const node =
+        reactFlowInstance?.getNode(areaId) ??
+        nodesRef.current.find((entry) => entry.id === areaId)
+      if (!node || !reactFlowInstance?.setCenter) {
+        return
+      }
+
+      const position =
+        node.positionAbsolute ??
+        node.internals?.positionAbsolute ??
+        node.position
+      if (!position) {
+        return
+      }
+
+      const width = node.measured?.width ?? node.width ?? 0
+      const height = node.measured?.height ?? node.height ?? 0
+      const centerX = position.x + width / 2
+      const centerY = position.y + height / 2
+
+      reactFlowInstance.setCenter(centerX, centerY, {
+        zoom: HIGHLIGHT_ZOOM,
+        duration: 300,
+      })
+    },
+    [reactFlowInstance, setNodes],
+  )
+
   const clearAssociationHighlight = useCallback(() => {
     setEdges((current) =>
       current.map((edge) => {
@@ -1457,20 +1696,41 @@ export function useModelState({
           ? isVisibleInView(node.data?.visibility)
           : true,
       )
-      .map((node) =>
-        node.type === CLASS_NODE_TYPE
-          ? {
-              ...node,
-              data: {
-                ...node.data,
-                showAccentColors,
-                showCompositionAggregation,
-                nullDisplayMode,
-                activeView: normalizedActiveView,
-              },
-            }
-          : node,
-      )
+      .map((node) => {
+        if (node.type === CLASS_NODE_TYPE) {
+          return {
+            ...node,
+            data: {
+              ...node.data,
+              showAccentColors,
+              showCompositionAggregation,
+              nullDisplayMode,
+              activeView: normalizedActiveView,
+            },
+          }
+        }
+
+        if (node.type === AREA_NODE_TYPE) {
+          const width =
+            node.style?.width ?? node.width ?? node.measured?.width ?? undefined
+          const height =
+            node.style?.height ??
+            node.height ??
+            node.measured?.height ??
+            undefined
+          return {
+            ...node,
+            style: {
+              ...node.style,
+              zIndex: -1,
+              ...(width ? { width } : {}),
+              ...(height ? { height } : {}),
+            },
+          }
+        }
+
+        return node
+      })
     return [...decoratedNodes, ...associationEdgeNodes]
   }, [
     nullDisplayMode,
@@ -1499,16 +1759,26 @@ export function useModelState({
     onConnectEnd,
     isValidConnection,
     onAddClass,
+    onAddNote,
+    onAddArea,
     onSyncViewPositions,
     onRenameClass,
+    onRenameNote,
+    onRenameArea,
     onRenameAssociation,
     onDeleteAssociation,
+    onDeleteNote,
+    onDeleteArea,
     onUpdateAssociationMultiplicity,
     onUpdateAssociationRole,
     onHighlightAssociation,
+    onHighlightNote,
+    onHighlightArea,
     onReorderClasses,
     onReorderAttributes,
     onUpdateAttribute,
+    onUpdateNoteText,
+    onUpdateAreaColor,
     onAddAttribute,
     onDeleteAttribute,
     onUpdateClassColor,

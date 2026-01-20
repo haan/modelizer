@@ -5,6 +5,8 @@ import {
   DEFAULT_VIEW,
   MODEL_FILE_EXTENSION,
   MODEL_VERSION,
+  AREA_NODE_TYPE,
+  NOTE_NODE_TYPE,
   VIEW_CONCEPTUAL,
   VIEW_LOGICAL,
   VIEW_PHYSICAL,
@@ -102,26 +104,78 @@ export function useFileActions({
       const nextNodes = (payload?.nodes ?? []).map((node, index) => {
         const nodeId = node?.id ?? `class-${Date.now()}-${index}`
         const data = node?.data ?? {}
-        const viewPositions = normalizeViewPositions(
-          data.viewPositions,
-          node?.position,
-        )
-        const visibility = normalizeVisibility(data.visibility)
-        const attributes = normalizeAttributes(nodeId, data.attributes)
+        const nodeType = node?.type ?? CLASS_NODE_TYPE
+
+        if (nodeType === CLASS_NODE_TYPE) {
+          const viewPositions = normalizeViewPositions(
+            data.viewPositions,
+            node?.position,
+          )
+          const visibility = normalizeVisibility(data.visibility)
+          const attributes = normalizeAttributes(nodeId, data.attributes)
+
+          return {
+            ...node,
+            id: nodeId,
+            type: nodeType,
+            selected: false,
+            position: viewPositions[normalizedActiveView] ?? node?.position,
+            data: {
+              ...data,
+              label: typeof data.label === 'string' ? data.label : '',
+              attributes,
+              visibility,
+              viewPositions,
+            },
+          }
+        }
+
+        if (nodeType === NOTE_NODE_TYPE) {
+          return {
+            ...node,
+            id: nodeId,
+            type: nodeType,
+            selected: false,
+            data: {
+              ...data,
+              label: typeof data.label === 'string' ? data.label : '',
+              text: typeof data.text === 'string' ? data.text : '',
+            },
+          }
+        }
+
+        if (nodeType === AREA_NODE_TYPE) {
+          const width =
+            typeof node?.width === 'number' ? node.width : 280
+          const height =
+            typeof node?.height === 'number' ? node.height : 180
+
+          return {
+            ...node,
+            id: nodeId,
+            type: nodeType,
+            selected: false,
+            width,
+            height,
+            style: {
+              ...node?.style,
+              width: node?.style?.width ?? width,
+              height: node?.style?.height ?? height,
+            },
+            data: {
+              ...data,
+              label: typeof data.label === 'string' ? data.label : '',
+              color: typeof data.color === 'string' ? data.color : '',
+            },
+          }
+        }
 
         return {
           ...node,
           id: nodeId,
-          type: node?.type ?? CLASS_NODE_TYPE,
+          type: nodeType,
           selected: false,
-          position: viewPositions[normalizedActiveView] ?? node?.position,
-          data: {
-            ...data,
-            label: typeof data.label === 'string' ? data.label : '',
-            attributes,
-            visibility,
-            viewPositions,
-          },
+          data,
         }
       })
       const nextEdges = normalizeEdges(
