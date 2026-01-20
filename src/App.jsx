@@ -11,6 +11,7 @@ import {
   ConfirmDiscardDialog,
   DeleteDialog,
   DuplicateDialog,
+  ImportWarningDialog,
 } from './components/dialogs/index.js'
 import { InfoPanel, Navbar, Sidebar } from './components/layout/index.js'
 import { useFileActions } from './hooks/useFileActions.js'
@@ -145,6 +146,10 @@ function App() {
     open: false,
     kind: 'selection',
   })
+  const [importWarningDialog, setImportWarningDialog] = useState({
+    open: false,
+    count: 0,
+  })
   const resizeState = useRef(null)
   const deleteActionRef = useRef(null)
 
@@ -182,6 +187,10 @@ function App() {
 
   const onDuplicateEdge = useCallback(({ kind }) => {
     setDuplicateDialog({ open: true, kind: kind ?? 'association' })
+  }, [])
+
+  const onImportWarning = useCallback((count) => {
+    setImportWarningDialog({ open: true, count })
   }, [])
 
   useEffect(() => {
@@ -234,6 +243,12 @@ function App() {
   const onDuplicateDialogOpenChange = useCallback((open) => {
     if (!open) {
       setDuplicateDialog((current) => ({ ...current, open: false }))
+    }
+  }, [])
+
+  const onImportWarningOpenChange = useCallback((open) => {
+    if (!open) {
+      setImportWarningDialog((current) => ({ ...current, open: false }))
     }
   }, [])
 
@@ -442,6 +457,7 @@ function App() {
     setModelName,
     setActiveSidebarItem,
     activeView,
+    onImportWarning,
   })
 
   useEffect(() => {
@@ -768,6 +784,11 @@ function App() {
         open={duplicateDialog.open}
         kind={duplicateDialog.kind}
         onOpenChange={onDuplicateDialogOpenChange}
+      />
+      <ImportWarningDialog
+        open={importWarningDialog.open}
+        count={importWarningDialog.count}
+        onOpenChange={onImportWarningOpenChange}
       />
     </div>
   )

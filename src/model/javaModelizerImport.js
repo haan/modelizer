@@ -64,7 +64,11 @@ const normalizeParams = (params) => {
 const mapDatatype = (raw) => {
   const value = normalizeText(raw).toLowerCase()
   if (!value) {
-    return { type: '', typeParams: { ...ATTRIBUTE_TYPE_PARAMS_DEFAULT } }
+    return {
+      type: '',
+      typeParams: { ...ATTRIBUTE_TYPE_PARAMS_DEFAULT },
+      isFallback: false,
+    }
   }
 
   const match = value.match(/^([a-z0-9_]+)\s*(?:\(([^)]*)\))?$/i)
@@ -78,14 +82,14 @@ const mapDatatype = (raw) => {
     base === 'smallint' ||
     base === 'bigint'
   ) {
-    return { type: 'int', typeParams }
+    return { type: 'int', typeParams, isFallback: false }
   }
 
   if (base.startsWith('varchar') || base === 'char' || base === 'character') {
     if (params[0]) {
       typeParams.maxLength = params[0]
     }
-    return { type: 'varchar(n)', typeParams }
+    return { type: 'varchar(n)', typeParams, isFallback: false }
   }
 
   if (base === 'decimal' || base === 'numeric' || base === 'number') {
@@ -95,36 +99,36 @@ const mapDatatype = (raw) => {
     if (params[1]) {
       typeParams.scale = params[1]
     }
-    return { type: 'decimal(p,s)', typeParams }
+    return { type: 'decimal(p,s)', typeParams, isFallback: false }
   }
 
   if (base === 'enum') {
     if (params.length) {
       typeParams.enumValues = params.join(',')
     }
-    return { type: 'enum(e)', typeParams }
+    return { type: 'enum(e)', typeParams, isFallback: false }
   }
 
   if (base === 'text') {
-    return { type: 'text', typeParams }
+    return { type: 'text', typeParams, isFallback: false }
   }
   if (base === 'boolean' || base === 'bool') {
-    return { type: 'boolean', typeParams }
+    return { type: 'boolean', typeParams, isFallback: false }
   }
   if (base === 'datetime') {
-    return { type: 'datetime', typeParams }
+    return { type: 'datetime', typeParams, isFallback: false }
   }
   if (base === 'timestamp') {
-    return { type: 'timestamp', typeParams }
+    return { type: 'timestamp', typeParams, isFallback: false }
   }
   if (base === 'date') {
-    return { type: 'date', typeParams }
+    return { type: 'date', typeParams, isFallback: false }
   }
   if (base === 'time') {
-    return { type: 'time', typeParams }
+    return { type: 'time', typeParams, isFallback: false }
   }
 
-  return { type: ATTRIBUTE_TYPE_UNDEFINED, typeParams }
+  return { type: ATTRIBUTE_TYPE_UNDEFINED, typeParams, isFallback: true }
 }
 
 const shiftPositions = (nodes) => {
@@ -209,6 +213,7 @@ export function importJavaModelizer(text, fileName) {
   const tables = parsed.tables
   const classIdByName = new Map()
   const attributeIdByKey = new Map()
+  let unmatchedTypeCount = 0
   const nodes = tables.map((table, index) => {
     const tableName = normalizeText(table?.name)
     const nodeId = createId('class', index)
@@ -237,7 +242,10 @@ export function importJavaModelizer(text, fileName) {
       ? table.fields.map((field, fieldIndex) => {
           const attrId = createId(`attr-${nodeId}`, fieldIndex)
           const attributeName = normalizeText(field?.name)
-          const { type, typeParams } = mapDatatype(field?.datatype)
+          const { type, typeParams, isFallback } = mapDatatype(field?.datatype)
+          if (isFallback) {
+            unmatchedTypeCount += 1
+          }
           const rawDefault = field?.defaultValue
           const defaultValue =
             typeof rawDefault === 'string'
@@ -447,5 +455,8 @@ export function importJavaModelizer(text, fileName) {
     modelName: deriveModelName(fileName),
     nodes: shiftedNodes,
     edges,
+    importWarnings: {
+      unmatchedAttributeTypes: unmatchedTypeCount,
+    },
   }
 }

@@ -11,12 +11,14 @@ function Attribute({
   typeParams,
   showType = true,
   showConstraints = true,
+  showDefaultMarker = false,
   nullDisplayMode,
   nullable,
   unique,
   autoIncrement,
   showHandles = false,
   columnTemplate,
+  defaultValue,
 }) {
   const showNullAsQuestion = nullDisplayMode === 'null-as-question'
   const showNull = nullDisplayMode === 'null'
@@ -27,6 +29,10 @@ function Attribute({
       : typeof name === 'string'
         ? name
         : ''
+  const hasDefaultValue =
+    typeof defaultValue === 'string' ? defaultValue.trim().length > 0 : false
+  const displayLabel =
+    showDefaultMarker && hasDefaultValue ? `${label}*` : label
   const rawTypeLabel = showType ? formatAttributeType(type, typeParams) : ''
   const typeLabel =
     showNullAsQuestion && nullable && rawTypeLabel
@@ -82,7 +88,7 @@ function Attribute({
         </>
       ) : null}
       <div className={rowClassName} style={rowStyle}>
-        <span className="min-w-0 truncate">{label}</span>
+        <span className="min-w-0 truncate">{displayLabel}</span>
         {showType ? (
           <span className="shrink-0 whitespace-nowrap text-xs text-base-content/60">
             {typeLabel}
@@ -109,12 +115,14 @@ const compareProps = (prev, next) => {
     prev.type !== next.type ||
     prev.showType !== next.showType ||
     prev.showConstraints !== next.showConstraints ||
+    prev.showDefaultMarker !== next.showDefaultMarker ||
     prev.nullDisplayMode !== next.nullDisplayMode ||
     prev.nullable !== next.nullable ||
     prev.unique !== next.unique ||
     prev.autoIncrement !== next.autoIncrement ||
     prev.showHandles !== next.showHandles ||
-    prev.columnTemplate !== next.columnTemplate
+    prev.columnTemplate !== next.columnTemplate ||
+    prev.defaultValue !== next.defaultValue
   ) {
     return false
   }

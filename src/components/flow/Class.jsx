@@ -28,6 +28,7 @@ export function Class({ data, id, selected }) {
   const handleVisibilityClass = showHandles ? '' : 'opacity-0 pointer-events-none'
   const showTypeDetails = activeView === VIEW_PHYSICAL
   const showConstraints = activeView === VIEW_PHYSICAL
+  const showDefaultMarker = activeView === VIEW_PHYSICAL
   const visibleAttributes = (() => {
     const attributes = Array.isArray(data?.attributes) ? data.attributes : []
     return attributes.filter((attribute) => {
@@ -146,12 +147,14 @@ export function Class({ data, id, selected }) {
                   typeParams={attr.typeParams}
                   showType={showTypeDetails}
                   showConstraints={showConstraints}
+                  showDefaultMarker={showDefaultMarker}
                   nullDisplayMode={nullDisplayMode}
                   nullable={attr.nullable}
                   unique={attr.unique}
                   autoIncrement={attr.autoIncrement}
                   showHandles={showAttributeHandles}
                   columnTemplate={columnTemplate}
+                  defaultValue={attr.defaultValue}
                 />
               )
             })}

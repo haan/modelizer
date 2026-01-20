@@ -43,6 +43,7 @@ export function useFileActions({
   setModelName,
   setActiveSidebarItem,
   activeView = DEFAULT_VIEW,
+  onImportWarning,
 }) {
   const [isDirty, setIsDirty] = useState(false)
   const [isConfirmDialogOpen, setIsConfirmDialogOpen] = useState(false)
@@ -409,12 +410,17 @@ export function useFileActions({
       }
 
       applyLoadedModel(payload, null)
+      const unmatchedCount =
+        payload?.importWarnings?.unmatchedAttributeTypes ?? 0
+      if (unmatchedCount > 0) {
+        onImportWarning?.(unmatchedCount)
+      }
     }
 
     requestDiscardChanges(() => {
       runImport()
     })
-  }, [applyLoadedModel, requestDiscardChanges])
+  }, [applyLoadedModel, onImportWarning, requestDiscardChanges])
 
 
   const onSaveModelAs = useCallback(async () => {
