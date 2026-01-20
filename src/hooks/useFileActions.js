@@ -362,18 +362,6 @@ export function useFileActions({
     })
   }, [applyLoadedModel, requestDiscardChanges])
 
-  const onLoadExample = useCallback(
-    (example) => {
-      if (!example?.model) {
-        return
-      }
-
-      requestDiscardChanges(() => {
-        applyLoadedModel(example.model, null)
-      })
-    },
-    [applyLoadedModel, requestDiscardChanges],
-  )
 
   const onSaveModelAs = useCallback(async () => {
     const basePayload = buildModelPayload()
@@ -468,7 +456,6 @@ export function useFileActions({
     onOpenModel,
     onSaveModel,
     onSaveModelAs,
-    onLoadExample,
     onImportJavaModelizer,
     antiCheatStatus,
   }

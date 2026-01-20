@@ -7,7 +7,6 @@ import ReactFlow, {
 } from 'reactflow'
 import { toPng } from 'html-to-image'
 import { edgeTypes, nodeTypes } from './flowTypes.js'
-import { MODEL_EXAMPLES } from './examples.js'
 import {
   ConfirmDiscardDialog,
   DeleteDialog,
@@ -355,7 +354,6 @@ function App() {
     onOpenModel,
     onSaveModel,
     onSaveModelAs,
-    onLoadExample,
     onImportJavaModelizer,
     antiCheatStatus,
   } = useFileActions({
@@ -526,8 +524,6 @@ function App() {
           onSaveModelAs={onSaveModelAs}
           onImportJavaModelizer={onImportJavaModelizer}
           onExportPng={onExportPng}
-          examples={MODEL_EXAMPLES}
-          onLoadExample={onLoadExample}
           showBackground={showBackground}
           showAccentColors={showAccentColors}
           showFullscreen={showFullscreen}

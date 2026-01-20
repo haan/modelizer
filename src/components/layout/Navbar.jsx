@@ -13,8 +13,6 @@ export default function Navbar({
   onSaveModelAs,
   onImportJavaModelizer,
   onExportPng,
-  examples = [],
-  onLoadExample,
   showBackground,
   onToggleBackground,
   showAccentColors,
@@ -131,47 +129,6 @@ export default function Navbar({
                   >
                     Save As…
                   </Menubar.Item>
-                  <Menubar.Separator className="my-1 h-px bg-base-content/20" />
-                  {examples.length ? (
-                    <Menubar.Sub>
-                      <Menubar.SubTrigger className="flex cursor-pointer items-center justify-between rounded-sm px-2 py-1 text-xs text-base-content transition-colors hover:bg-base-200 focus:outline-none">
-                        Examples
-                        <svg
-                          xmlns="http://www.w3.org/2000/svg"
-                          viewBox="0 0 24 24"
-                          fill="none"
-                          stroke="currentColor"
-                          strokeWidth="2"
-                          strokeLinecap="round"
-                          strokeLinejoin="round"
-                          className="h-3.5 w-3.5 opacity-60"
-                          aria-hidden="true"
-                        >
-                          <path d="M9 18l6-6-6-6" />
-                        </svg>
-                      </Menubar.SubTrigger>
-                      <Menubar.Portal>
-                        <Menubar.SubContent className="z-50 min-w-[160px] rounded-sm border border-base-content/20 bg-base-100 p-1 shadow-lg">
-                          {examples.map((example) => (
-                            <Menubar.Item
-                              key={example.id}
-                              className="cursor-pointer rounded-sm px-2 py-1 text-xs text-base-content transition-colors hover:bg-base-200 focus:outline-none"
-                              onSelect={() => onLoadExample?.(example)}
-                            >
-                              {example.label}
-                            </Menubar.Item>
-                          ))}
-                        </Menubar.SubContent>
-                      </Menubar.Portal>
-                    </Menubar.Sub>
-                  ) : (
-                    <Menubar.Item
-                      className="cursor-pointer rounded-sm px-2 py-1 text-xs text-base-content/60 transition-colors hover:bg-base-200 focus:outline-none"
-                      onSelect={(event) => event.preventDefault()}
-                    >
-                      Examples
-                    </Menubar.Item>
-                  )}
                   <Menubar.Separator className="my-1 h-px bg-base-content/20" />
                   <Menubar.Item
                     className="cursor-pointer rounded-sm px-2 py-1 text-xs text-base-content transition-colors hover:bg-base-200 focus:outline-none"
