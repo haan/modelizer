@@ -44,7 +44,12 @@ export function useFileActions({
   setModelName,
   setActiveSidebarItem,
   activeView = DEFAULT_VIEW,
+  showNotes = true,
+  showAreas = true,
+  onHiddenContent,
   onImportWarning,
+  onNewModelCreated,
+  onModelLoaded,
 }) {
   const [isDirty, setIsDirty] = useState(false)
   const [isConfirmDialogOpen, setIsConfirmDialogOpen] = useState(false)
@@ -232,6 +237,17 @@ export function useFileActions({
       fileHandleRef.current = handle ?? null
       lastSavedRef.current = JSON.stringify(nextBasePayload, null, 2)
       setIsDirty(false)
+      onModelLoaded?.({ nodes: nextNodes, edges: nextEdges })
+
+      if (onHiddenContent) {
+        const hasNotes = nextNodes.some((node) => node.type === NOTE_NODE_TYPE)
+        const hasAreas = nextNodes.some((node) => node.type === AREA_NODE_TYPE)
+        const hiddenNotes = hasNotes && !showNotes
+        const hiddenAreas = hasAreas && !showAreas
+        if (hiddenNotes || hiddenAreas) {
+          onHiddenContent({ hiddenNotes, hiddenAreas })
+        }
+      }
     },
     [
       normalizedActiveView,
@@ -240,6 +256,10 @@ export function useFileActions({
       setModel,
       setModelName,
       setNodes,
+      showAreas,
+      showNotes,
+      onHiddenContent,
+      onModelLoaded,
     ],
   )
 
@@ -297,7 +317,15 @@ export function useFileActions({
     )
     setIsDirty(false)
     setAntiCheatStatus('ok')
-  }, [setActiveSidebarItem, setEdges, setModel, setModelName, setNodes])
+    onNewModelCreated?.()
+  }, [
+    onNewModelCreated,
+    setActiveSidebarItem,
+    setEdges,
+    setModel,
+    setModelName,
+    setNodes,
+  ])
 
   const onRequestNewModel = useCallback(() => {
     requestDiscardChanges(onNewModel)

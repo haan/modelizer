@@ -5,6 +5,7 @@ import ReactFlow, {
   ConnectionLineType,
   Controls,
 } from 'reactflow'
+import * as Toast from '@radix-ui/react-toast'
 import { toPng } from 'html-to-image'
 import { edgeTypes, nodeTypes } from './flowTypes.js'
 import {
@@ -26,6 +27,7 @@ import {
   NOTE_NODE_TYPE,
   AREA_NODE_TYPE,
   RELATIONSHIP_EDGE_TYPE,
+  VIEW_CONCEPTUAL,
   VIEW_PHYSICAL,
 } from './model/constants.js'
 
@@ -150,6 +152,11 @@ function App() {
     open: false,
     count: 0,
   })
+  const [hiddenContentToast, setHiddenContentToast] = useState({
+    open: false,
+    title: '',
+    description: '',
+  })
   const resizeState = useRef(null)
   const deleteActionRef = useRef(null)
 
@@ -191,6 +198,27 @@ function App() {
 
   const onImportWarning = useCallback((count) => {
     setImportWarningDialog({ open: true, count })
+  }, [])
+
+  const onHiddenContent = useCallback(({ hiddenNotes, hiddenAreas }) => {
+    const parts = []
+    if (hiddenNotes) {
+      parts.push('Notes')
+    }
+    if (hiddenAreas) {
+      parts.push('Areas')
+    }
+    if (parts.length === 0) {
+      return
+    }
+    const subject = parts.join(' and ')
+    const verb = 'are'
+    const pronoun = 'them'
+    setHiddenContentToast({
+      open: true,
+      title: 'Hidden content',
+      description: `This file contains ${subject}, but ${subject} ${verb} disabled in Settings. Enable ${subject} to view ${pronoun}.`,
+    })
   }, [])
 
   useEffect(() => {
@@ -251,6 +279,19 @@ function App() {
       setImportWarningDialog((current) => ({ ...current, open: false }))
     }
   }, [])
+
+  const onHiddenContentToastOpenChange = useCallback((open) => {
+    if (!open) {
+      setHiddenContentToast((current) => ({ ...current, open: false }))
+    }
+  }, [])
+
+  const resetViewport = useCallback(() => {
+    if (!reactFlowInstance) {
+      return
+    }
+    reactFlowInstance.setViewport({ x: 0, y: 0, zoom: 1 }, { duration: 0 })
+  }, [reactFlowInstance])
 
   const {
     nodes,
@@ -459,7 +500,25 @@ function App() {
     setModelName,
     setActiveSidebarItem,
     activeView,
+    showNotes,
+    showAreas,
+    onHiddenContent,
     onImportWarning,
+    onNewModelCreated: () => {
+      setActiveView(VIEW_CONCEPTUAL)
+      resetViewport()
+    },
+    onModelLoaded: () => {
+      setActiveView(VIEW_CONCEPTUAL)
+      if (!reactFlowInstance) {
+        return
+      }
+      requestAnimationFrame(() => {
+        requestAnimationFrame(() => {
+          reactFlowInstance.fitView({ padding: 0.2, duration: 0 })
+        })
+      })
+    },
   })
 
   useEffect(() => {
@@ -635,166 +694,185 @@ function App() {
   }, [nodes])
 
   return (
-    <div className="h-screen overflow-hidden bg-base-200 text-base-content">
-      <div className="flex h-full flex-col">
-        <Navbar
-          modelName={modelName}
-          onRenameModel={setModelName}
-          onNewModel={onRequestNewModel}
-          onOpenModel={onOpenModel}
-          onSaveModel={onSaveModel}
-          onSaveModelAs={onSaveModelAs}
-          onImportJavaModelizer={onImportJavaModelizer}
-          onExportPng={onExportPng}
-          showBackground={showBackground}
-          showAccentColors={showAccentColors}
-          showFullscreen={showFullscreen}
-          showCompositionAggregation={showCompositionAggregation}
-          showNotes={showNotes}
-          showAreas={showAreas}
-          onToggleBackground={() => setShowBackground((current) => !current)}
-          onToggleAccentColors={() =>
-            setShowAccentColors((current) => !current)
-          }
-          onToggleFullscreen={() => setShowFullscreen((current) => !current)}
-          onToggleCompositionAggregation={() =>
-            setShowCompositionAggregation((current) => !current)
-          }
-          onToggleNotes={onToggleNotes}
-          onToggleAreas={onToggleAreas}
-          viewSpecificSettingsOnly={viewSpecificSettingsOnly}
-          onToggleViewSpecificSettingsOnly={() =>
-            setViewSpecificSettingsOnly((current) => !current)
-          }
-          showAntiCheat={showAntiCheat}
-          onToggleAntiCheat={() => setShowAntiCheat((current) => !current)}
-          nullDisplayMode={nullDisplayMode}
-          onNullDisplayModeChange={setNullDisplayMode}
-          confirmDelete={confirmDelete}
-          onToggleConfirmDelete={setConfirmDelete}
-          includeAccentColorsInExport={includeAccentColorsInExport}
-          onToggleIncludeAccentColorsInExport={setIncludeAccentColorsInExport}
-          isDirty={isDirty}
-        />
-        <div className="flex flex-1 min-h-0">
-          {!showFullscreen ? (
-            <Sidebar
-              activeItem={activeSidebarItem}
-              onSelect={onSidebarSelect}
-              activeView={activeView}
-              onViewChange={setActiveView}
-              onSyncViewPositions={onSyncViewPositions}
-              showNotes={showNotes}
-              showAreas={showAreas}
-            />
-          ) : null}
-          {!showFullscreen ? (
-            <InfoPanel
-              width={infoWidth}
-              onResizeStart={onResizeStart}
-              activeItem={activeSidebarItem}
-              nodes={panelNodes}
-              edges={panelEdges}
-              activeView={activeView}
-              viewSpecificSettingsOnly={viewSpecificSettingsOnly}
-              onAddClass={onAddClass}
-              onRenameClass={onRenameClass}
-              onReorderClasses={onReorderClasses}
-              onReorderAttributes={onReorderAttributes}
-              onUpdateAttribute={onUpdateAttribute}
-              onAddAttribute={onAddAttribute}
-              onDeleteAttribute={onDeleteAttribute}
-              onUpdateClassColor={onUpdateClassColor}
-              onUpdateClassVisibility={onUpdateClassVisibility}
-              onDeleteClass={onDeleteClass}
-              onHighlightClass={onHighlightClass}
-              showAccentColors={showAccentColors}
-              onRenameAssociation={onRenameAssociation}
-              onDeleteAssociation={onDeleteAssociation}
-              onUpdateAssociationMultiplicity={onUpdateAssociationMultiplicity}
-              onUpdateAssociationRole={onUpdateAssociationRole}
-              onHighlightAssociation={onHighlightAssociation}
-              onAddNote={onAddNote}
-              onRenameNote={onRenameNote}
-              onUpdateNoteText={onUpdateNoteText}
-              onUpdateNoteVisibility={onUpdateNoteVisibility}
-              onDeleteNote={onDeleteNote}
-              onHighlightNote={onHighlightNote}
-              onAddArea={onAddArea}
-              onRenameArea={onRenameArea}
-              onUpdateAreaColor={onUpdateAreaColor}
-              onUpdateAreaVisibility={onUpdateAreaVisibility}
-              onDeleteArea={onDeleteArea}
-              onHighlightArea={onHighlightArea}
-              showNotes={showNotes}
-              showAreas={showAreas}
-            />
-          ) : null}
-          <main className="flex-1 min-w-0 bg-base-100">
-            <div
-              className={`group/flow relative h-full w-full ${isConnecting ? 'is-connecting' : ''}`}
-              ref={reactFlowWrapper}
-            >
-              <ReactFlow
-                nodes={visibleFlowNodes}
-                edges={flowEdges}
-                onNodesChange={onNodesChange}
-                onEdgesChange={onEdgesChange}
-                onConnect={onConnect}
-                onConnectStart={onConnectStart}
-                onConnectEnd={onConnectEnd}
-                onPaneClick={onPaneClick}
-                onInit={setReactFlowInstance}
-                nodeTypes={nodeTypes}
-                edgeTypes={edgeTypes}
-                isValidConnection={isValidConnection}
-                connectionMode={ConnectionMode.Loose}
-                connectionLineType={ConnectionLineType.Straight}
-                connectionRadius={40}
-                defaultEdgeOptions={{ interactionWidth: 20 }}
+    <Toast.Provider duration={6500} swipeDirection="right">
+      <div className="h-screen overflow-hidden bg-base-200 text-base-content">
+        <div className="flex h-full flex-col">
+          <Navbar
+            modelName={modelName}
+            onRenameModel={setModelName}
+            onNewModel={onRequestNewModel}
+            onOpenModel={onOpenModel}
+            onSaveModel={onSaveModel}
+            onSaveModelAs={onSaveModelAs}
+            onImportJavaModelizer={onImportJavaModelizer}
+            onExportPng={onExportPng}
+            showBackground={showBackground}
+            showAccentColors={showAccentColors}
+            showFullscreen={showFullscreen}
+            showCompositionAggregation={showCompositionAggregation}
+            showNotes={showNotes}
+            showAreas={showAreas}
+            onToggleBackground={() => setShowBackground((current) => !current)}
+            onToggleAccentColors={() =>
+              setShowAccentColors((current) => !current)
+            }
+            onToggleFullscreen={() => setShowFullscreen((current) => !current)}
+            onToggleCompositionAggregation={() =>
+              setShowCompositionAggregation((current) => !current)
+            }
+            onToggleNotes={onToggleNotes}
+            onToggleAreas={onToggleAreas}
+            viewSpecificSettingsOnly={viewSpecificSettingsOnly}
+            onToggleViewSpecificSettingsOnly={() =>
+              setViewSpecificSettingsOnly((current) => !current)
+            }
+            showAntiCheat={showAntiCheat}
+            onToggleAntiCheat={() => setShowAntiCheat((current) => !current)}
+            nullDisplayMode={nullDisplayMode}
+            onNullDisplayModeChange={setNullDisplayMode}
+            confirmDelete={confirmDelete}
+            onToggleConfirmDelete={setConfirmDelete}
+            includeAccentColorsInExport={includeAccentColorsInExport}
+            onToggleIncludeAccentColorsInExport={setIncludeAccentColorsInExport}
+            isDirty={isDirty}
+          />
+          <div className="flex flex-1 min-h-0">
+            {!showFullscreen ? (
+              <Sidebar
+                activeItem={activeSidebarItem}
+                onSelect={onSidebarSelect}
+                activeView={activeView}
+                onViewChange={setActiveView}
+                onSyncViewPositions={onSyncViewPositions}
+                showNotes={showNotes}
+                showAreas={showAreas}
+              />
+            ) : null}
+            {!showFullscreen ? (
+              <InfoPanel
+                width={infoWidth}
+                onResizeStart={onResizeStart}
+                activeItem={activeSidebarItem}
+                nodes={panelNodes}
+                edges={panelEdges}
+                activeView={activeView}
+                viewSpecificSettingsOnly={viewSpecificSettingsOnly}
+                onAddClass={onAddClass}
+                onRenameClass={onRenameClass}
+                onReorderClasses={onReorderClasses}
+                onReorderAttributes={onReorderAttributes}
+                onUpdateAttribute={onUpdateAttribute}
+                onAddAttribute={onAddAttribute}
+                onDeleteAttribute={onDeleteAttribute}
+                onUpdateClassColor={onUpdateClassColor}
+                onUpdateClassVisibility={onUpdateClassVisibility}
+                onDeleteClass={onDeleteClass}
+                onHighlightClass={onHighlightClass}
+                showAccentColors={showAccentColors}
+                onRenameAssociation={onRenameAssociation}
+                onDeleteAssociation={onDeleteAssociation}
+                onUpdateAssociationMultiplicity={onUpdateAssociationMultiplicity}
+                onUpdateAssociationRole={onUpdateAssociationRole}
+                onHighlightAssociation={onHighlightAssociation}
+                onAddNote={onAddNote}
+                onRenameNote={onRenameNote}
+                onUpdateNoteText={onUpdateNoteText}
+                onUpdateNoteVisibility={onUpdateNoteVisibility}
+                onDeleteNote={onDeleteNote}
+                onHighlightNote={onHighlightNote}
+                onAddArea={onAddArea}
+                onRenameArea={onRenameArea}
+                onUpdateAreaColor={onUpdateAreaColor}
+                onUpdateAreaVisibility={onUpdateAreaVisibility}
+                onDeleteArea={onDeleteArea}
+                onHighlightArea={onHighlightArea}
+                showNotes={showNotes}
+                showAreas={showAreas}
+              />
+            ) : null}
+            <main className="flex-1 min-w-0 bg-base-100">
+              <div
+                className={`group/flow relative h-full w-full ${isConnecting ? 'is-connecting' : ''}`}
+                ref={reactFlowWrapper}
               >
-                <div data-no-export="true">
-                  <Controls position="bottom-right" />
-                </div>
-                {showBackground ? <Background gap={16} size={1} /> : null}
-              </ReactFlow>
-              {activeView === VIEW_PHYSICAL ? (
-                <DefaultValuesPanel entries={defaultValueEntries} />
-              ) : null}
-              {showAntiCheat ? (
-                <AntiCheatPanel
-                  entries={classIdEntries}
-                  status={antiCheatStatus}
-                />
-              ) : null}
-            </div>
-          </main>
+                <ReactFlow
+                  nodes={visibleFlowNodes}
+                  edges={flowEdges}
+                  onNodesChange={onNodesChange}
+                  onEdgesChange={onEdgesChange}
+                  onConnect={onConnect}
+                  onConnectStart={onConnectStart}
+                  onConnectEnd={onConnectEnd}
+                  onPaneClick={onPaneClick}
+                  onInit={setReactFlowInstance}
+                  nodeTypes={nodeTypes}
+                  edgeTypes={edgeTypes}
+                  isValidConnection={isValidConnection}
+                  connectionMode={ConnectionMode.Loose}
+                  connectionLineType={ConnectionLineType.Straight}
+                  connectionRadius={40}
+                  defaultEdgeOptions={{ interactionWidth: 20 }}
+                >
+                  <div data-no-export="true">
+                    <Controls position="bottom-right" />
+                  </div>
+                  {showBackground ? <Background gap={16} size={1} /> : null}
+                </ReactFlow>
+                {activeView === VIEW_PHYSICAL ? (
+                  <DefaultValuesPanel entries={defaultValueEntries} />
+                ) : null}
+                {showAntiCheat ? (
+                  <AntiCheatPanel
+                    entries={classIdEntries}
+                    status={antiCheatStatus}
+                  />
+                ) : null}
+              </div>
+            </main>
+          </div>
         </div>
+        <ConfirmDiscardDialog
+          open={isConfirmDialogOpen}
+          onOpenChange={onConfirmDialogOpenChange}
+          onConfirm={onConfirmDiscardChanges}
+          onCancel={onCancelDiscardChanges}
+        />
+        <DeleteDialog
+          open={deleteDialog.open}
+          kind={deleteDialog.kind}
+          onOpenChange={onDeleteDialogOpenChange}
+          onConfirm={onConfirmDelete}
+          onCancel={() => onDeleteDialogOpenChange(false)}
+        />
+        <DuplicateDialog
+          open={duplicateDialog.open}
+          kind={duplicateDialog.kind}
+          onOpenChange={onDuplicateDialogOpenChange}
+        />
+        <ImportWarningDialog
+          open={importWarningDialog.open}
+          count={importWarningDialog.count}
+          onOpenChange={onImportWarningOpenChange}
+        />
+        <Toast.Root
+          open={hiddenContentToast.open}
+          onOpenChange={onHiddenContentToastOpenChange}
+          className="toast-root"
+          data-no-export="true"
+        >
+          <Toast.Title className="toast-title">
+            {hiddenContentToast.title}
+          </Toast.Title>
+          <Toast.Description className="toast-description">
+            {hiddenContentToast.description}
+          </Toast.Description>
+        </Toast.Root>
+        <Toast.Viewport
+          className="toast-viewport"
+          data-no-export="true"
+        />
       </div>
-      <ConfirmDiscardDialog
-        open={isConfirmDialogOpen}
-        onOpenChange={onConfirmDialogOpenChange}
-        onConfirm={onConfirmDiscardChanges}
-        onCancel={onCancelDiscardChanges}
-      />
-      <DeleteDialog
-        open={deleteDialog.open}
-        kind={deleteDialog.kind}
-        onOpenChange={onDeleteDialogOpenChange}
-        onConfirm={onConfirmDelete}
-        onCancel={() => onDeleteDialogOpenChange(false)}
-      />
-      <DuplicateDialog
-        open={duplicateDialog.open}
-        kind={duplicateDialog.kind}
-        onOpenChange={onDuplicateDialogOpenChange}
-      />
-      <ImportWarningDialog
-        open={importWarningDialog.open}
-        count={importWarningDialog.count}
-        onOpenChange={onImportWarningOpenChange}
-      />
-    </div>
+    </Toast.Provider>
   )
 }
 
