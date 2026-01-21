@@ -904,12 +904,16 @@ export function useModelState({
         conceptual: normalizedActiveView === VIEW_CONCEPTUAL,
       }
 
+      const classCount = current.filter(
+        (node) => node.type === CLASS_NODE_TYPE,
+      ).length
+
       return {
         id: `class-${idSuffix}`,
         type: CLASS_NODE_TYPE,
         position,
         data: {
-          label: `Class${current.length + 1}`,
+          label: `Class${classCount + 1}`,
           attributes: [],
           color: nextColor,
           visibility: defaultVisibility,
