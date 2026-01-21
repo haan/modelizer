@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useRef, useState } from 'react'
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { normalizeAttributes } from '../attributes.js'
 import {
   CLASS_NODE_TYPE,
@@ -13,7 +13,6 @@ import {
 } from '../model/constants.js'
 import { normalizeEdges } from '../model/edgeUtils.js'
 import { sanitizeFileName } from '../model/fileUtils.js'
-import { sha256 } from 'js-sha256'
 import { importJavaModelizer } from '../model/javaModelizerImport.js'
 import {
   normalizeVisibility,
@@ -31,8 +30,77 @@ const buildHashPayload = (payload) => ({
   edges: Array.isArray(payload?.edges) ? payload.edges : [],
 })
 
-const computeModelHash = (payload) =>
-  sha256(JSON.stringify(buildHashPayload(payload)))
+const isSamePosition = (a, b) =>
+  a?.x === b?.x && a?.y === b?.y
+
+const isSameNode = (prev, next) => {
+  if (!prev || !next) {
+    return false
+  }
+  if (prev.type !== next.type) {
+    return false
+  }
+  if (!isSamePosition(prev.position, next.position)) {
+    return false
+  }
+  if (prev.width !== next.width || prev.height !== next.height) {
+    return false
+  }
+  if (prev.data !== next.data) {
+    return false
+  }
+  if (prev.style !== next.style) {
+    return false
+  }
+  return true
+}
+
+const isSameEdge = (prev, next) => {
+  if (!prev || !next) {
+    return false
+  }
+  if (prev.type !== next.type) {
+    return false
+  }
+  if (prev.source !== next.source || prev.target !== next.target) {
+    return false
+  }
+  if (prev.sourceHandle !== next.sourceHandle) {
+    return false
+  }
+  if (prev.targetHandle !== next.targetHandle) {
+    return false
+  }
+  if (prev.data !== next.data) {
+    return false
+  }
+  if (prev.style !== next.style) {
+    return false
+  }
+  if (prev.markerEnd !== next.markerEnd) {
+    return false
+  }
+  if (prev.markerStart !== next.markerStart) {
+    return false
+  }
+  return true
+}
+
+const hasMeaningfulNodeChange = (prevNodes, nextNodes) => {
+  if (prevNodes.length !== nextNodes.length) {
+    return true
+  }
+  const prevById = new Map(prevNodes.map((node) => [node.id, node]))
+  return nextNodes.some((node) => !isSameNode(prevById.get(node.id), node))
+}
+
+const hasMeaningfulEdgeChange = (prevEdges, nextEdges) => {
+  if (prevEdges.length !== nextEdges.length) {
+    return true
+  }
+  const prevById = new Map(prevEdges.map((edge) => [edge.id, edge]))
+  return nextEdges.some((edge) => !isSameEdge(prevById.get(edge.id), edge))
+}
 
 export function useFileActions({
   nodes,
@@ -53,8 +121,9 @@ export function useFileActions({
 }) {
   const [isDirty, setIsDirty] = useState(false)
   const [isConfirmDialogOpen, setIsConfirmDialogOpen] = useState(false)
-  const [antiCheatStatus, setAntiCheatStatus] = useState('ok')
   const fileHandleRef = useRef(null)
+  const prevNodesRef = useRef(nodes)
+  const prevEdgesRef = useRef(edges)
   const normalizedActiveView =
     activeView === VIEW_LOGICAL || activeView === VIEW_PHYSICAL
       ? activeView
@@ -95,19 +164,31 @@ export function useFileActions({
     () => JSON.stringify(buildModelPayload(), null, 2),
     [buildModelPayload],
   )
+  const isDragging = useMemo(
+    () => nodes.some((node) => node.dragging || node.resizing),
+    [nodes],
+  )
 
   useEffect(() => {
+    const prevNodes = prevNodesRef.current
+    const prevEdges = prevEdgesRef.current
+    prevNodesRef.current = nodes
+    prevEdgesRef.current = edges
+
+    if (isDragging) {
+      return
+    }
+    if (
+      !hasMeaningfulNodeChange(prevNodes, nodes) &&
+      !hasMeaningfulEdgeChange(prevEdges, edges)
+    ) {
+      return
+    }
     setIsDirty(getSerializedModelForDirty() !== lastSavedRef.current)
-  }, [getSerializedModelForDirty])
+  }, [edges, getSerializedModelForDirty, isDragging, nodes])
 
   const applyLoadedModel = useCallback(
     (payload, handle) => {
-      const expectedHash =
-        typeof payload?.hash === 'string' ? payload.hash : null
-      const computedHash = expectedHash ? computeModelHash(payload) : null
-      setAntiCheatStatus(
-        expectedHash && computedHash === expectedHash ? 'ok' : 'tampered',
-      )
       const nextNodes = (payload?.nodes ?? []).map((node, index) => {
         const nodeId = node?.id ?? `class-${Date.now()}-${index}`
         const data = node?.data ?? {}
@@ -316,7 +397,6 @@ export function useFileActions({
       2,
     )
     setIsDirty(false)
-    setAntiCheatStatus('ok')
     onNewModelCreated?.()
   }, [
     onNewModelCreated,
@@ -477,14 +557,7 @@ export function useFileActions({
 
   const onSaveModelAs = useCallback(async () => {
     const basePayload = buildModelPayload()
-    const serialized = JSON.stringify(
-      {
-        ...basePayload,
-        hash: computeModelHash(basePayload),
-      },
-      null,
-      2,
-    )
+    const serialized = JSON.stringify(basePayload, null, 2)
     const serializedForDirty = JSON.stringify(basePayload, null, 2)
     const normalizedName = sanitizeFileName(modelName || 'Untitled model')
     const fileName = normalizedName
@@ -532,14 +605,7 @@ export function useFileActions({
   const onSaveModel = useCallback(async () => {
     if (fileHandleRef.current?.createWritable) {
       const basePayload = buildModelPayload()
-      const serialized = JSON.stringify(
-        {
-          ...basePayload,
-          hash: computeModelHash(basePayload),
-        },
-        null,
-        2,
-      )
+      const serialized = JSON.stringify(basePayload, null, 2)
       const serializedForDirty = JSON.stringify(basePayload, null, 2)
       try {
         const writable = await fileHandleRef.current.createWritable()
@@ -569,6 +635,5 @@ export function useFileActions({
     onSaveModel,
     onSaveModelAs,
     onImportJavaModelizer,
-    antiCheatStatus,
   }
 }
