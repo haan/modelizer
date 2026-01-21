@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import { CirclePicker } from 'react-color'
-import { CLASS_COLOR_PALETTE } from '../../classPalette'
+import { CLASS_COLOR_PALETTE } from '../../../classPalette'
 
 export default function ClassesPanelOptionsPanel({
   accentColor,
@@ -103,3 +103,4 @@ export default function ClassesPanelOptionsPanel({
     </div>
   )
 }
+

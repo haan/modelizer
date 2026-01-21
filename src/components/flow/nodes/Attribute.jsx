@@ -1,7 +1,7 @@
 import { memo } from 'react'
 import { Position } from 'reactflow'
-import { formatAttributeType } from '../../attributes.js'
-import AttributeHandle from './AttributeHandle.jsx'
+import { formatAttributeType } from '../../../attributes.js'
+import AttributeHandle from '../handles/AttributeHandle.jsx'
 
 function Attribute({
   attributeId,

@@ -1,7 +1,7 @@
 import { EdgeLabelRenderer, useStore } from 'reactflow'
-import { AssociationLabel } from './AssociationLabel.jsx'
-import { MultiplicityLabel } from './MultiplicityLabel.jsx'
-import { RoleLabel } from './RoleLabel.jsx'
+import { AssociationLabel } from '../labels/AssociationLabel.jsx'
+import { MultiplicityLabel } from '../labels/MultiplicityLabel.jsx'
+import { RoleLabel } from '../labels/RoleLabel.jsx'
 
 function distance(a, b) {
   return Math.sqrt((b.x - a.x) ** 2 + (b.y - a.y) ** 2)

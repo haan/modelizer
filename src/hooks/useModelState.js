@@ -8,7 +8,7 @@ import {
 } from 'reactflow'
 import { CLASS_COLOR_PALETTE, getRandomPaletteColor } from '../classPalette.js'
 import { createAttribute, normalizeAttributes } from '../attributes.js'
-import { getAssociationLayout } from '../components/flow/associationUtils.js'
+import { getAssociationLayout } from '../components/flow/utils/associationUtils.js'
 import { normalizeEdges } from '../model/edgeUtils.js'
 import {
   ASSOCIATION_EDGE_TYPE,

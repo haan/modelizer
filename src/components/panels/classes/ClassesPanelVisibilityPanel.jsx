@@ -1,4 +1,4 @@
-import CheckboxInput from '../ui/Checkbox.jsx'
+import CheckboxInput from '../../ui/Checkbox.jsx'
 
 export default function ClassesPanelVisibilityPanel({
   accentColor,
@@ -54,3 +54,4 @@ export default function ClassesPanelVisibilityPanel({
     </div>
   )
 }
+

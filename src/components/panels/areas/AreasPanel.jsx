@@ -1,29 +1,29 @@
 import { useState } from 'react'
 import * as Accordion from '@radix-ui/react-accordion'
-import NotesPanelItem from './NotesPanelItem.jsx'
+import AreasPanelItem from './AreasPanelItem.jsx'
 
-export default function NotesPanel({
+export default function AreasPanel({
   nodes,
-  onAddNote,
-  onRenameNote,
-  onUpdateNoteText,
-  onUpdateNoteVisibility,
-  onDeleteNote,
-  onHighlightNote,
+  onAddArea,
+  onRenameArea,
+  onUpdateAreaColor,
+  onUpdateAreaVisibility,
+  onDeleteArea,
+  onHighlightArea,
 }) {
-  const [openNoteId, setOpenNoteId] = useState('')
+  const [openAreaId, setOpenAreaId] = useState('')
 
   if (!nodes.length) {
     return (
       <div className="flex flex-col gap-1 text-sm">
         <div className="flex items-center justify-between">
           <div className="text-xs font-semibold uppercase tracking-wide opacity-60 py-1">
-            Notes
+            Areas
           </div>
           <button
             className="inline-flex items-center gap-1 rounded-md px-2 py-1 text-xs text-base-content/70 hover:bg-base-300 hover:text-base-content"
             type="button"
-            onClick={onAddNote}
+            onClick={onAddArea}
           >
             <svg
               xmlns="http://www.w3.org/2000/svg"
@@ -39,7 +39,7 @@ export default function NotesPanel({
               <path d="M12 5v14" />
               <path d="M5 12h14" />
             </svg>
-            Add note
+            Add area
           </button>
         </div>
       </div>
@@ -50,12 +50,12 @@ export default function NotesPanel({
     <div className="flex flex-col gap-1 text-sm">
       <div className="flex items-center justify-between">
         <div className="text-xs font-semibold uppercase tracking-wide opacity-60 py-1">
-          Notes
+          Areas
         </div>
         <button
           className="inline-flex items-center gap-1 rounded-md px-2 py-1 text-xs text-base-content/70 hover:bg-base-300 hover:text-base-content"
           type="button"
-          onClick={onAddNote}
+          onClick={onAddArea}
         >
           <svg
             xmlns="http://www.w3.org/2000/svg"
@@ -71,30 +71,31 @@ export default function NotesPanel({
             <path d="M12 5v14" />
             <path d="M5 12h14" />
           </svg>
-          Add note
+          Add area
         </button>
       </div>
       <Accordion.Root
         type="single"
         collapsible
-        value={openNoteId}
-        onValueChange={setOpenNoteId}
+        value={openAreaId}
+        onValueChange={setOpenAreaId}
         className="flex flex-col gap-1"
       >
-        {nodes.map((note) => (
-          <NotesPanelItem
-            key={note.id}
-            note={note}
-            isOpen={openNoteId === note.id}
-            onToggleOpen={(nextOpen) => setOpenNoteId(nextOpen)}
-            onRename={onRenameNote}
-            onUpdateText={onUpdateNoteText}
-            onUpdateVisibility={onUpdateNoteVisibility}
-            onDelete={onDeleteNote}
-            onHighlight={onHighlightNote}
+        {nodes.map((area) => (
+          <AreasPanelItem
+            key={area.id}
+            area={area}
+            isOpen={openAreaId === area.id}
+            onToggleOpen={(nextOpen) => setOpenAreaId(nextOpen)}
+            onRename={onRenameArea}
+            onUpdateColor={onUpdateAreaColor}
+            onUpdateVisibility={onUpdateAreaVisibility}
+            onDelete={onDeleteArea}
+            onHighlight={onHighlightArea}
           />
         ))}
       </Accordion.Root>
     </div>
   )
 }
+

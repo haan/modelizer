@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from 'react'
 import * as Accordion from '@radix-ui/react-accordion'
-import Input from '../ui/Input.jsx'
-import CheckboxInput from '../ui/Checkbox.jsx'
+import Input from '../../ui/Input.jsx'
+import CheckboxInput from '../../ui/Checkbox.jsx'
 
 export default function NotesPanelItem({
   note,
@@ -248,3 +248,4 @@ export default function NotesPanelItem({
     </Accordion.Item>
   )
 }
+

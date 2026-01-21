@@ -2,21 +2,21 @@ import * as Tooltip from '@radix-ui/react-tooltip'
 import * as Accordion from '@radix-ui/react-accordion'
 import { useSortable } from '@dnd-kit/sortable'
 import { CSS } from '@dnd-kit/utilities'
-import Input from '../ui/Input.jsx'
-import SelectField from '../ui/Select.jsx'
-import CheckboxInput from '../ui/Checkbox.jsx'
+import Input from '../../ui/Input.jsx'
+import SelectField from '../../ui/Select.jsx'
+import CheckboxInput from '../../ui/Checkbox.jsx'
 import {
   ATTRIBUTE_TYPE_OPTIONS,
   ATTRIBUTE_TYPE_PARAMS_DEFAULT,
   ATTRIBUTE_TYPE_UNDEFINED,
   getTypeParamKind,
-} from '../../attributes.js'
-import { normalizeVisibility } from '../../model/viewUtils.js'
+} from '../../../attributes.js'
+import { normalizeVisibility } from '../../../model/viewUtils.js'
 import {
   VIEW_CONCEPTUAL,
   VIEW_LOGICAL,
   VIEW_PHYSICAL,
-} from '../../model/constants.js'
+} from '../../../model/constants.js'
 
 export default function ClassesPanelAttributesItem({
   id,
@@ -431,3 +431,4 @@ export default function ClassesPanelAttributesItem({
     </li>
   )
 }
+

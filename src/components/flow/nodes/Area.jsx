@@ -1,5 +1,5 @@
 import { NodeResizer } from 'reactflow'
-import { CLASS_COLOR_PALETTE } from '../../classPalette.js'
+import { CLASS_COLOR_PALETTE } from '../../../classPalette.js'
 
 const withAlpha = (hex, alpha) => {
   if (typeof hex !== 'string' || !hex.startsWith('#')) {

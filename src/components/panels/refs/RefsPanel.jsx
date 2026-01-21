@@ -4,7 +4,7 @@ import {
   VIEW_CONCEPTUAL,
   VIEW_LOGICAL,
   VIEW_PHYSICAL,
-} from '../../model/constants.js'
+} from '../../../model/constants.js'
 
 export default function RefsPanel({
   edges,
@@ -43,3 +43,4 @@ export default function RefsPanel({
     </div>
   )
 }
+

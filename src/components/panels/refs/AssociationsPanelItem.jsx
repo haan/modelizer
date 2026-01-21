@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from 'react'
 import * as Accordion from '@radix-ui/react-accordion'
-import SelectField from '../ui/Select.jsx'
-import Input from '../ui/Input.jsx'
+import SelectField from '../../ui/Select.jsx'
+import Input from '../../ui/Input.jsx'
 
 const UNDEFINED_MULTIPLICITY_VALUE = '__undefined__'
 const MULTIPLICITY_OPTIONS = [
@@ -453,3 +453,4 @@ export default function AssociationsPanelItem({
       </Accordion.Item>
   )
 }
+

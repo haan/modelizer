@@ -1,5 +1,5 @@
 import { Position } from 'reactflow'
-import ClassHandle from './ClassHandle.jsx'
+import ClassHandle from '../handles/ClassHandle.jsx'
 
 export default function AssociationHelperNode() {
   return (

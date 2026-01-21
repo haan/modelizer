@@ -18,8 +18,8 @@ import { InfoPanel, Navbar, Sidebar } from './components/layout/index.js'
 import { useFileActions } from './hooks/useFileActions.js'
 import { useKeyboardShortcuts } from './hooks/useKeyboardShortcuts.js'
 import { useModelState } from './hooks/useModelState.js'
-import DefaultValuesPanel from './components/flow/DefaultValuesPanel.jsx'
-import AntiCheatPanel from './components/flow/AntiCheatPanel.jsx'
+import DefaultValuesPanel from './components/flow/overlays/DefaultValuesPanel.jsx'
+import AntiCheatPanel from './components/flow/overlays/AntiCheatPanel.jsx'
 import { sanitizeFileName } from './model/fileUtils.js'
 import {
   DEFAULT_VIEW,

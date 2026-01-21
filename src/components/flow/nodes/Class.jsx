@@ -1,16 +1,16 @@
 import { useLayoutEffect, useRef } from 'react'
 import { Position, useUpdateNodeInternals } from 'reactflow'
-import { CLASS_COLOR_PALETTE } from '../../classPalette.js'
-import { normalizeVisibility } from '../../model/viewUtils.js'
+import { CLASS_COLOR_PALETTE } from '../../../classPalette.js'
+import { normalizeVisibility } from '../../../model/viewUtils.js'
 import {
   VIEW_CONCEPTUAL,
   VIEW_LOGICAL,
   VIEW_PHYSICAL,
-} from '../../model/constants.js'
-import { formatAttributeType } from '../../attributes.js'
+} from '../../../model/constants.js'
+import { formatAttributeType } from '../../../attributes.js'
 import Attribute from './Attribute.jsx'
-import ClassHandle from './ClassHandle.jsx'
-import CompositionHandle from './CompositionHandle.jsx'
+import ClassHandle from '../handles/ClassHandle.jsx'
+import CompositionHandle from '../handles/CompositionHandle.jsx'
 
 export function Class({ data, id, selected }) {
   const nodeRef = useRef(null)

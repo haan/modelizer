@@ -14,7 +14,7 @@ import {
   verticalListSortingStrategy,
 } from '@dnd-kit/sortable'
 import ClassesPanelAttributesItem from './ClassesPanelAttributesItem.jsx'
-import { ATTRIBUTE_TYPE_PARAMS_DEFAULT } from '../../attributes.js'
+import { ATTRIBUTE_TYPE_PARAMS_DEFAULT } from '../../../attributes.js'
 
 export default function ClassesPanelAttributesPanel({
   attributes,
@@ -139,3 +139,4 @@ export default function ClassesPanelAttributesPanel({
     </DndContext>
   )
 }
+
