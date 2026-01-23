@@ -31,6 +31,8 @@ export default function Sidebar({
   showNotes = true,
   showAreas = true,
 }) {
+  const appVersion =
+    typeof __APP_VERSION__ === 'string' ? `v${__APP_VERSION__}` : 'v0.0.0'
   const sidebarButtonClass =
     'peer/menu-button flex w-full flex-col items-center justify-center gap-1 rounded-md px-1 py-2 text-[10px] leading-tight text-center outline-none transition-[width,height,padding] focus-visible:ring-2 focus-visible:ring-base-content/20 hover:bg-base-300 data-[active=true]:bg-base-300 data-[active=true]:font-medium data-[active=true]:text-primary disabled:cursor-not-allowed disabled:opacity-50 disabled:hover:bg-transparent'
 
@@ -470,7 +472,9 @@ export default function Sidebar({
           </div>
           </Tooltip.Provider>
         </div>
-        <div data-sidebar="footer" className="flex flex-col gap-2 p-2" />
+        <div data-sidebar="footer" className="flex flex-col gap-2 p-2">
+          <div className="text-xs text-base-content/50">{appVersion}</div>
+        </div>
       </div>
     </aside>
   )
