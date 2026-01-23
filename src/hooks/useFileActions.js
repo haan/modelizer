@@ -7,6 +7,7 @@ import {
   MODEL_VERSION,
   AREA_NODE_TYPE,
   NOTE_NODE_TYPE,
+  COMPOSITION_EDGE_TYPE,
   VIEW_CONCEPTUAL,
   VIEW_LOGICAL,
   VIEW_PHYSICAL,
@@ -114,6 +115,7 @@ export function useFileActions({
   activeView = DEFAULT_VIEW,
   showNotes = true,
   showAreas = true,
+  showCompositionAggregation = false,
   onHiddenContent,
   onImportWarning,
   onNewModelCreated,
@@ -323,10 +325,16 @@ export function useFileActions({
       if (onHiddenContent) {
         const hasNotes = nextNodes.some((node) => node.type === NOTE_NODE_TYPE)
         const hasAreas = nextNodes.some((node) => node.type === AREA_NODE_TYPE)
+        const hasCompositions = nextEdges.some(
+          (edge) =>
+            edge.type === COMPOSITION_EDGE_TYPE ||
+            edge.sourceHandle === 'composition-source',
+        )
         const hiddenNotes = hasNotes && !showNotes
         const hiddenAreas = hasAreas && !showAreas
-        if (hiddenNotes || hiddenAreas) {
-          onHiddenContent({ hiddenNotes, hiddenAreas })
+        const hiddenCompositions = hasCompositions && !showCompositionAggregation
+        if (hiddenNotes || hiddenAreas || hiddenCompositions) {
+          onHiddenContent({ hiddenNotes, hiddenAreas, hiddenCompositions })
         }
       }
     },
@@ -339,6 +347,7 @@ export function useFileActions({
       setNodes,
       showAreas,
       showNotes,
+      showCompositionAggregation,
       onHiddenContent,
       onModelLoaded,
     ],

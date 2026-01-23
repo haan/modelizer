@@ -194,7 +194,8 @@ function App() {
     setImportWarningDialog({ open: true, count })
   }, [])
 
-  const onHiddenContent = useCallback(({ hiddenNotes, hiddenAreas }) => {
+  const onHiddenContent = useCallback(
+    ({ hiddenNotes, hiddenAreas, hiddenCompositions }) => {
     const parts = []
     if (hiddenNotes) {
       parts.push('Notes')
@@ -202,10 +203,16 @@ function App() {
     if (hiddenAreas) {
       parts.push('Areas')
     }
+    if (hiddenCompositions) {
+      parts.push('Composite aggregations')
+    }
     if (parts.length === 0) {
       return
     }
-    const subject = parts.join(' and ')
+    const subject =
+      parts.length <= 2
+        ? parts.join(' and ')
+        : `${parts.slice(0, -1).join(', ')}, and ${parts.at(-1)}`
     const verb = 'are'
     const pronoun = 'them'
     setHiddenContentToast({
@@ -213,7 +220,9 @@ function App() {
       title: 'Hidden content',
       description: `This file contains ${subject}, but ${subject} ${verb} disabled in Settings. Enable ${subject} to view ${pronoun}.`,
     })
-  }, [])
+  },
+  [],
+)
 
   useEffect(() => {
     writeStoredBool(STORAGE_KEYS.showBackground, showBackground)
@@ -492,6 +501,7 @@ function App() {
     activeView,
     showNotes,
     showAreas,
+    showCompositionAggregation,
     onHiddenContent,
     onImportWarning,
     onNewModelCreated: () => {
