@@ -1,6 +1,6 @@
 Modelizer is a lightweight database modeling tool developed and maintained by [Laurent Haan](https://www.haan.lu) for teaching the database modeling process. Modelizer is a technological successor to [Java Modelizer](https://modelizer.fisch.lu/) by Bob Fisch. It follows the [naming conventions for database modeling](https://www.edu.lu/xcgnr).
 
-Online version: https://modelizer.haan.lu/  
+Online version: https://www.modelizer.lu/  
 Github: https://github.com/haan/modelizer
 
 ## Run locally (Windows)
