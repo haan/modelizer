@@ -15,7 +15,6 @@ import {
 import { normalizeEdges } from '../model/edgeUtils.js'
 import { sanitizeFileName } from '../model/fileUtils.js'
 import { importJavaModelizer } from '../model/javaModelizerImport.js'
-import { importMySql } from '../model/mysqlImport.js'
 import {
   normalizeVisibility,
   normalizeViewPositions,
@@ -617,7 +616,8 @@ export function useFileActions({
         return
       }
 
-      const payload = importMySql(fileText, fileName)
+      const { importMySql } = await import('../model/mysqlImport.js')
+      const payload = await importMySql(fileText, fileName)
       if (!payload) {
         return
       }

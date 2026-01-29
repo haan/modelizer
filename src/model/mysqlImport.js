@@ -1,4 +1,3 @@
-import { Parser } from 'node-sql-parser'
 import { ATTRIBUTE_TYPE_PARAMS_DEFAULT } from '../attributes.js'
 import { CLASS_COLOR_PALETTE } from '../classPalette.js'
 import {
@@ -198,13 +197,14 @@ const getRelationshipHandles = (sourcePos, targetPos, sourceAttrId, targetAttrId
   }
 }
 
-export function importMySql(sqlText, fileName) {
+export async function importMySql(sqlText, fileName) {
   if (typeof sqlText !== 'string') {
     return null
   }
 
   let ast
   try {
+    const { Parser } = await import('node-sql-parser')
     const parser = new Parser()
     ast = parser.astify(sqlText, { database: 'MySQL' })
   } catch (error) {
