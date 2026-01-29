@@ -1,4 +1,4 @@
-import { ASSOCIATION_EDGE_TYPE } from './constants.js'
+import { ASSOCIATION_EDGE_TYPE, COMPOSITION_EDGE_TYPE } from './constants.js'
 
 function getFloatingGroupKey(edge) {
   if (!edge.source || !edge.target) {
@@ -17,7 +17,10 @@ function recomputeFloatingEdgeParallels(edges) {
   const groups = new Map()
 
   edges.forEach((edge) => {
-    if (edge.type !== ASSOCIATION_EDGE_TYPE) {
+    if (
+      edge.type !== ASSOCIATION_EDGE_TYPE &&
+      edge.type !== COMPOSITION_EDGE_TYPE
+    ) {
       return
     }
 
@@ -48,7 +51,10 @@ function recomputeFloatingEdgeParallels(edges) {
 
   let didChange = false
   const nextEdges = edges.map((edge) => {
-    if (edge.type !== ASSOCIATION_EDGE_TYPE) {
+    if (
+      edge.type !== ASSOCIATION_EDGE_TYPE &&
+      edge.type !== COMPOSITION_EDGE_TYPE
+    ) {
       return edge
     }
 

@@ -140,7 +140,7 @@ Notes:
 Enable/disable confirmations when deleting things (classes, attributes, associations, relationships).
 
 ### Composite aggregation (optional)
-If enabled, you can create composition edges using a special handle in the top-right of classes.
+If enabled, you can convert associations into composition edges from the Associations panel.
 
 ### PNG export colors
 You can choose whether accent colors should be included in PNG exports.

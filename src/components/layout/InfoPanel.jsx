@@ -35,6 +35,8 @@ function InfoPanel({
   onDeleteAssociation,
   onUpdateAssociationMultiplicity,
   onUpdateAssociationRole,
+  showCompositionAggregation,
+  onToggleAssociationComposition,
   onHighlightAssociation,
   onAddNote,
   onRenameNote,
@@ -127,10 +129,12 @@ function InfoPanel({
               nodes={nodes}
               activeView={activeView}
               viewSpecificSettingsOnly={viewSpecificSettingsOnly}
+              showCompositionAggregation={showCompositionAggregation}
               onRenameAssociation={onRenameAssociation}
               onDeleteAssociation={onDeleteAssociation}
               onUpdateAssociationMultiplicity={onUpdateAssociationMultiplicity}
               onUpdateAssociationRole={onUpdateAssociationRole}
+              onToggleAssociationComposition={onToggleAssociationComposition}
               onHighlightAssociation={onHighlightAssociation}
             />
           ) : (

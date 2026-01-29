@@ -2,6 +2,7 @@ import { useEffect, useRef, useState } from 'react'
 import * as Accordion from '@radix-ui/react-accordion'
 import SelectField from '../../ui/Select.jsx'
 import Input from '../../ui/Input.jsx'
+import CheckboxInput from '../../ui/Checkbox.jsx'
 
 const UNDEFINED_MULTIPLICITY_VALUE = '__undefined__'
 const MULTIPLICITY_OPTIONS = [
@@ -22,6 +23,8 @@ export default function AssociationsPanelItem({
   onDeleteAssociation,
   onUpdateAssociationMultiplicity,
   onUpdateAssociationRole,
+  showCompositionAggregation = false,
+  onToggleAssociationComposition,
   onHighlightAssociation,
   isOpen = false,
   onToggleOpen,
@@ -30,6 +33,10 @@ export default function AssociationsPanelItem({
   const canEditMultiplicity = edge.type !== 'associativeAssociation'
   const canEditRole =
     edge.type === 'association' || edge.type === 'reflexiveAssociation'
+  const canToggleComposition =
+    showCompositionAggregation &&
+    (edge.type === 'association' || edge.type === 'composition')
+  const isComposition = edge.type === 'composition'
   const isReflexive = edge.source === edge.target
   const label = edge.data?.name ?? ''
   const multiplicityA = edge.data?.multiplicityA ?? ''
@@ -419,6 +426,28 @@ export default function AssociationsPanelItem({
                   ) : null}
                 </div>
               </div>
+              {canToggleComposition ? (
+                <div className="mt-2">
+                  <div className="text-xs font-semibold uppercase tracking-wide opacity-60 py-1">
+                    Composition
+                  </div>
+                  <label className="flex items-center gap-2 text-xs">
+                    <CheckboxInput
+                      checked={isComposition}
+                      onCheckedChange={(checked) =>
+                        onToggleAssociationComposition?.(
+                          edge.id,
+                          Boolean(checked),
+                        )
+                      }
+                      onClick={(event) => event.stopPropagation()}
+                      onMouseDown={(event) => event.stopPropagation()}
+                      aria-label="Toggle composition"
+                    />
+                    <span>Composite aggregation</span>
+                  </label>
+                </div>
+              ) : null}
               <div className="flex flex-1 items-center justify-center pt-2">
                 <button
                   className="inline-flex h-8 items-center justify-center gap-2 whitespace-nowrap rounded-md p-2 text-xs font-medium transition-colors hover:bg-base-300 hover:text-accent-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:pointer-events-none disabled:opacity-50 [&_svg]:pointer-events-none [&_svg]:size-4 [&_svg]:shrink-0"

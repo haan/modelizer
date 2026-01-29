@@ -10,10 +10,12 @@ export default function RefsPanel({
   edges,
   nodes,
   activeView,
+  showCompositionAggregation,
   onRenameAssociation,
   onDeleteAssociation,
   onUpdateAssociationMultiplicity,
   onUpdateAssociationRole,
+  onToggleAssociationComposition,
   onHighlightAssociation,
 }) {
   const hideAssociations = activeView !== VIEW_CONCEPTUAL
@@ -25,10 +27,12 @@ export default function RefsPanel({
         <AssociationsPanel
           edges={edges}
           nodes={nodes}
+          showCompositionAggregation={showCompositionAggregation}
           onRenameAssociation={onRenameAssociation}
           onDeleteAssociation={onDeleteAssociation}
           onUpdateAssociationMultiplicity={onUpdateAssociationMultiplicity}
           onUpdateAssociationRole={onUpdateAssociationRole}
+          onToggleAssociationComposition={onToggleAssociationComposition}
           onHighlightAssociation={onHighlightAssociation}
         />
       )}

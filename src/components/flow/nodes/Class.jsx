@@ -10,7 +10,6 @@ import {
 import { formatAttributeType } from '../../../attributes.js'
 import Attribute from './Attribute.jsx'
 import ClassHandle from '../handles/ClassHandle.jsx'
-import CompositionHandle from '../handles/CompositionHandle.jsx'
 
 export function Class({ data, id, selected }) {
   const nodeRef = useRef(null)
@@ -22,7 +21,6 @@ export function Class({ data, id, selected }) {
   const showNull = nullDisplayMode === 'null'
   const showNotNull = nullDisplayMode === 'not-null'
   const activeView = data?.activeView ?? VIEW_CONCEPTUAL
-  const showCompositionAggregation = data?.showCompositionAggregation ?? false
   const showHandles = activeView === VIEW_CONCEPTUAL
   const showAttributeHandles = activeView !== VIEW_CONCEPTUAL
   const handleVisibilityClass = showHandles ? '' : 'opacity-0 pointer-events-none'
@@ -87,12 +85,6 @@ export function Class({ data, id, selected }) {
     columnTemplate = `minmax(0, 1fr) ${typeColumnWidth} ${constraintsColumnWidth}`
   }
   const borderClass = selected ? 'border-primary' : 'border-base-content/70'
-  const compositionHandleStyle = {
-    left: '100%',
-    top: 0,
-    transform: 'translate(-50%, -50%)',
-  }
-
   useLayoutEffect(() => {
     if (!showAttributeHandles) {
       return
@@ -106,7 +98,6 @@ export function Class({ data, id, selected }) {
     id,
     showHandles,
     showAttributeHandles,
-    showCompositionAggregation,
     updateNodeInternals,
   ])
 
@@ -219,16 +210,6 @@ export function Class({ data, id, selected }) {
             isActive={showHandles}
             className={handleVisibilityClass}
           />
-          {showCompositionAggregation ? (
-            <CompositionHandle
-              id="composition-source"
-              type="source"
-              position={Position.Top}
-              isActive={showHandles}
-              className={handleVisibilityClass}
-              style={compositionHandleStyle}
-            />
-          ) : null}
         </>
       ) : null}
     </div>

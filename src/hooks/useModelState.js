@@ -528,14 +528,9 @@ export function useModelState({
           params.targetHandle === 'association-target' ||
           isAssociationHelperNode(params.source) ||
           isAssociationHelperNode(params.target)
-        const isCompositionConnection =
-          params.sourceHandle === 'composition-source'
         const isAttributeConnection =
           isAttributeHandle(params.sourceHandle) &&
           isAttributeHandle(params.targetHandle)
-        if (isCompositionConnection && params.source === params.target) {
-          return current
-        }
         const sourceAttributeId = isAttributeConnection
           ? getAttributeIdFromHandle(params.sourceHandle)
           : null
@@ -552,23 +547,19 @@ export function useModelState({
         }
         const nextType = isAttributeConnection
           ? RELATIONSHIP_EDGE_TYPE
-          : isCompositionConnection
-            ? COMPOSITION_EDGE_TYPE
-            : connectsToAssociationHelper
-              ? ASSOCIATIVE_EDGE_TYPE
-              : params.source === params.target
-                ? REFLEXIVE_EDGE_TYPE
-                : ASSOCIATION_EDGE_TYPE
+          : connectsToAssociationHelper
+            ? ASSOCIATIVE_EDGE_TYPE
+            : params.source === params.target
+              ? REFLEXIVE_EDGE_TYPE
+              : ASSOCIATION_EDGE_TYPE
         const typeData =
           nextType === RELATIONSHIP_EDGE_TYPE
             ? 'relationship'
             : nextType === ASSOCIATIVE_EDGE_TYPE
               ? 'associative'
-              : nextType === COMPOSITION_EDGE_TYPE
-                ? 'composition'
-                : nextType === REFLEXIVE_EDGE_TYPE
-                  ? 'reflexive'
-                  : 'association'
+              : nextType === REFLEXIVE_EDGE_TYPE
+                ? 'reflexive'
+                : 'association'
         const classLabel =
           nextType === ASSOCIATIVE_EDGE_TYPE
             ? getNodeLabel(
@@ -669,10 +660,7 @@ export function useModelState({
                   },
         }
 
-        if (
-          nextType !== ASSOCIATION_EDGE_TYPE &&
-          nextType !== COMPOSITION_EDGE_TYPE
-        ) {
+        if (nextType !== ASSOCIATION_EDGE_TYPE) {
           return addEdge(baseEdge, current)
         }
 
@@ -710,14 +698,6 @@ export function useModelState({
     }
     if (connection.targetHandle.endsWith('-source')) {
       return false
-    }
-    if (connection.sourceHandle === 'composition-source') {
-      if (connection.source === connection.target) {
-        return false
-      }
-      if (!CLASS_HANDLE_IDS.has(connection.targetHandle)) {
-        return false
-      }
     }
     if (
       isAttributeHandle(connection.sourceHandle) &&
@@ -1324,6 +1304,40 @@ export function useModelState({
           }
         }),
       )
+    },
+    [updateEdgesAndPanel],
+  )
+
+  const onToggleAssociationComposition = useCallback(
+    (edgeId, nextValue) => {
+      updateEdgesAndPanel((current) => {
+        const nextEdges = current.map((edge) => {
+          if (edge.id !== edgeId) {
+            return edge
+          }
+          if (
+            edge.type !== ASSOCIATION_EDGE_TYPE &&
+            edge.type !== COMPOSITION_EDGE_TYPE
+          ) {
+            return edge
+          }
+          if (nextValue && edge.source === edge.target) {
+            return edge
+          }
+          const nextType = nextValue
+            ? COMPOSITION_EDGE_TYPE
+            : ASSOCIATION_EDGE_TYPE
+          return {
+            ...edge,
+            type: nextType,
+            data: {
+              ...(edge.data ?? {}),
+              type: nextValue ? 'composition' : 'association',
+            },
+          }
+        })
+        return normalizeEdges(nextEdges)
+      })
     },
     [updateEdgesAndPanel],
   )
@@ -1938,14 +1952,26 @@ export function useModelState({
       })
     }
 
-    const visibleAssociationEdges = edges.filter(
-      (edge) =>
-        (edge.type === ASSOCIATION_EDGE_TYPE ||
-          edge.type === REFLEXIVE_EDGE_TYPE ||
-          edge.type === COMPOSITION_EDGE_TYPE) &&
-        visibleClassIds.has(edge.source) &&
-        visibleClassIds.has(edge.target),
-    )
+    const visibleAssociationEdges = edges.filter((edge) => {
+      if (
+        edge.type !== ASSOCIATION_EDGE_TYPE &&
+        edge.type !== REFLEXIVE_EDGE_TYPE &&
+        edge.type !== COMPOSITION_EDGE_TYPE
+      ) {
+        return false
+      }
+
+      if (
+        edge.type === COMPOSITION_EDGE_TYPE &&
+        !showCompositionAggregation
+      ) {
+        return false
+      }
+
+      return (
+        visibleClassIds.has(edge.source) && visibleClassIds.has(edge.target)
+      )
+    })
     const visibleAssociationIds = new Set(
       visibleAssociationEdges.map((edge) => edge.id),
     )
@@ -1978,7 +2004,13 @@ export function useModelState({
     })
 
     return [...visibleAssociationEdges, ...visibleAssociativeEdges]
-  }, [edges, normalizedActiveView, visibleAttributeIds, visibleClassIds])
+  }, [
+    edges,
+    normalizedActiveView,
+    showCompositionAggregation,
+    visibleAttributeIds,
+    visibleClassIds,
+  ])
 
   const flowNodes = useMemo(() => {
     const decoratedNodes = nodes
@@ -2069,6 +2101,7 @@ export function useModelState({
     onUpdateAreaVisibility,
     onUpdateAssociationMultiplicity,
     onUpdateAssociationRole,
+    onToggleAssociationComposition,
     onHighlightAssociation,
     onHighlightNote,
     onHighlightArea,

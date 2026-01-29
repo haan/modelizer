@@ -12,10 +12,12 @@ const ASSOCIATION_TYPES = new Set([
 export default function AssociationsPanel({
   edges,
   nodes,
+  showCompositionAggregation = false,
   onRenameAssociation,
   onDeleteAssociation,
   onUpdateAssociationMultiplicity,
   onUpdateAssociationRole,
+  onToggleAssociationComposition,
   onHighlightAssociation,
 }) {
   const [openAssociationId, setOpenAssociationId] = useState('')
@@ -23,7 +25,15 @@ export default function AssociationsPanel({
     nodes.map((node) => [node.id, node.data?.label ?? node.id]),
   )
   const edgeById = new Map(edges.map((edge) => [edge.id, edge]))
-  const associations = edges.filter((edge) => ASSOCIATION_TYPES.has(edge.type))
+  const associations = edges.filter((edge) => {
+    if (!ASSOCIATION_TYPES.has(edge.type)) {
+      return false
+    }
+    if (edge.type === 'composition' && !showCompositionAggregation) {
+      return false
+    }
+    return true
+  })
 
   if (!associations.length) {
     return (
@@ -92,6 +102,8 @@ export default function AssociationsPanel({
               onDeleteAssociation={onDeleteAssociation}
               onUpdateAssociationMultiplicity={onUpdateAssociationMultiplicity}
               onUpdateAssociationRole={onUpdateAssociationRole}
+              showCompositionAggregation={showCompositionAggregation}
+              onToggleAssociationComposition={onToggleAssociationComposition}
               onHighlightAssociation={onHighlightAssociation}
             />
           )
