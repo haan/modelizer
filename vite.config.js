@@ -2,6 +2,7 @@ import { defineConfig } from 'vite'
 import react from '@vitejs/plugin-react'
 import tailwindcss from '@tailwindcss/vite'
 import fs from 'node:fs'
+import { visualizer } from 'rollup-plugin-visualizer'
 
 const packageJson = JSON.parse(
   fs.readFileSync(new URL('./package.json', import.meta.url), 'utf-8'),
@@ -12,7 +13,17 @@ export default defineConfig({
   define: {
     __APP_VERSION__: JSON.stringify(packageJson.version),
   },
-  plugins: [react(), tailwindcss()],
+  plugins: [
+    react(),
+    tailwindcss(),
+    process.env.ANALYZE === 'true'
+      ? visualizer({
+          filename: 'stats.html',
+          template: 'treemap',
+          open: true,
+        })
+      : null,
+  ].filter(Boolean),
   build: {
     chunkSizeWarningLimit: 700,
     rollupOptions: {
@@ -22,6 +33,14 @@ export default defineConfig({
             return
           }
 
+          if (
+            id.includes('node-sql-parser') ||
+            id.includes('big-integer') ||
+            id.includes('@types/pegjs') ||
+            id.includes('pegjs')
+          ) {
+            return 'mysql-parser'
+          }
           if (id.includes('reactflow')) {
             return 'reactflow'
           }
