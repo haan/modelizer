@@ -1,7 +1,4 @@
-import {
-  ATTRIBUTE_TYPE_PARAMS_DEFAULT,
-  ATTRIBUTE_TYPE_UNDEFINED,
-} from '../attributes.js'
+import { ATTRIBUTE_TYPE_PARAMS_DEFAULT } from '../attributes.js'
 import { CLASS_COLOR_PALETTE } from '../classPalette.js'
 import {
   ASSOCIATION_EDGE_TYPE,
@@ -128,7 +125,7 @@ const mapDatatype = (raw) => {
     return { type: 'time', typeParams, isFallback: false }
   }
 
-  return { type: ATTRIBUTE_TYPE_UNDEFINED, typeParams, isFallback: true }
+  return { type: '', typeParams, isFallback: true }
 }
 
 const shiftPositions = (nodes) => {

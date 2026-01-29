@@ -71,6 +71,6 @@ export const DIALOG_COPY = {
   importWarnings: {
     title: 'Unrecognized attribute types',
     description: (count) =>
-      `${count} attribute ${count === 1 ? 'type was' : 'types were'} set to Undefined because the Java Modelizer data type could not be matched.`,
+      `${count} attribute ${count === 1 ? 'type was' : 'types were'} set to Undefined because the data type could not be matched.`,
   },
 }

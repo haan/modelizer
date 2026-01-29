@@ -490,6 +490,7 @@ function App() {
     onSaveModel,
     onSaveModelAs,
     onImportJavaModelizer,
+    onImportMySql,
   } = useFileActions({
     nodes,
     edges,
@@ -695,6 +696,7 @@ function App() {
             onSaveModel={onSaveModel}
             onSaveModelAs={onSaveModelAs}
             onImportJavaModelizer={onImportJavaModelizer}
+            onImportMySql={onImportMySql}
             onExportPng={onExportPng}
             showBackground={showBackground}
             showAccentColors={showAccentColors}
