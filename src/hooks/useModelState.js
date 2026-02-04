@@ -669,74 +669,71 @@ export function useModelState({
                   : params.source,
               ) ?? 'Association'
             : null
-        const isDuplicate =
-          nextType === ASSOCIATION_EDGE_TYPE
-            ? false
-            : current.some((edge) => {
-                if (edge.type !== nextType) {
-                  return false
-                }
+        const isDuplicate = (() => {
+          if (nextType === ASSOCIATION_EDGE_TYPE) {
+            return false
+          }
 
-                if (nextType === REFLEXIVE_EDGE_TYPE) {
-                  return (
-                    edge.source === params.source &&
-                    edge.target === params.target
-                  )
-                }
+          if (nextType === REFLEXIVE_EDGE_TYPE) {
+            const existingCount = current.reduce((count, edge) => {
+              if (edge.type !== REFLEXIVE_EDGE_TYPE) {
+                return count
+              }
+              if (edge.source !== params.source || edge.target !== params.target) {
+                return count
+              }
+              return count + 1
+            }, 0)
+            return existingCount >= 2
+          }
 
-                if (nextType === ASSOCIATIVE_EDGE_TYPE) {
-                  const matchesDirect =
-                    edge.source === params.source &&
-                    edge.target === params.target
-                  const matchesReverse =
-                    edge.source === params.target &&
-                    edge.target === params.source
-                  return matchesDirect || matchesReverse
-                }
+          return current.some((edge) => {
+            if (edge.type !== nextType) {
+              return false
+            }
 
-                if (nextType === RELATIONSHIP_EDGE_TYPE) {
-                  const nextSourceAttr = getAttributeIdFromHandle(
-                    params.sourceHandle,
-                  )
-                  const nextTargetAttr = getAttributeIdFromHandle(
-                    params.targetHandle,
-                  )
-                  const existingSourceAttr = getAttributeIdFromHandle(
-                    edge.sourceHandle,
-                  )
-                  const existingTargetAttr = getAttributeIdFromHandle(
-                    edge.targetHandle,
-                  )
-                  if (!nextSourceAttr || !nextTargetAttr) {
-                    return false
-                  }
-                  if (!existingSourceAttr || !existingTargetAttr) {
-                    return false
-                  }
+            if (nextType === ASSOCIATIVE_EDGE_TYPE) {
+              const matchesDirect =
+                edge.source === params.source && edge.target === params.target
+              const matchesReverse =
+                edge.source === params.target && edge.target === params.source
+              return matchesDirect || matchesReverse
+            }
 
-                  const matchesDirect =
-                    edge.source === params.source &&
-                    edge.target === params.target &&
-                    existingSourceAttr === nextSourceAttr &&
-                    existingTargetAttr === nextTargetAttr
-                  const matchesReverse =
-                    edge.source === params.target &&
-                    edge.target === params.source &&
-                    existingSourceAttr === nextTargetAttr &&
-                    existingTargetAttr === nextSourceAttr
+            if (nextType === RELATIONSHIP_EDGE_TYPE) {
+              const nextSourceAttr = getAttributeIdFromHandle(params.sourceHandle)
+              const nextTargetAttr = getAttributeIdFromHandle(params.targetHandle)
+              const existingSourceAttr = getAttributeIdFromHandle(edge.sourceHandle)
+              const existingTargetAttr = getAttributeIdFromHandle(edge.targetHandle)
+              if (!nextSourceAttr || !nextTargetAttr) {
+                return false
+              }
+              if (!existingSourceAttr || !existingTargetAttr) {
+                return false
+              }
 
-                  return matchesDirect || matchesReverse
-                }
+              const matchesDirect =
+                edge.source === params.source &&
+                edge.target === params.target &&
+                existingSourceAttr === nextSourceAttr &&
+                existingTargetAttr === nextTargetAttr
+              const matchesReverse =
+                edge.source === params.target &&
+                edge.target === params.source &&
+                existingSourceAttr === nextTargetAttr &&
+                existingTargetAttr === nextSourceAttr
 
-                const matchesDirect =
-                  edge.source === params.source &&
-                  edge.target === params.target
-                const matchesReverse =
-                  edge.source === params.target &&
-                  edge.target === params.source
+              return matchesDirect || matchesReverse
+            }
 
-                return matchesDirect || matchesReverse
-              })
+            const matchesDirect =
+              edge.source === params.source && edge.target === params.target
+            const matchesReverse =
+              edge.source === params.target && edge.target === params.source
+
+            return matchesDirect || matchesReverse
+          })
+        })()
 
         if (isDuplicate) {
           onDuplicateEdge?.({ kind: typeData })

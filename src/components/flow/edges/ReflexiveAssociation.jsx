@@ -75,25 +75,31 @@ export function ReflexiveAssociation({
     return null
   }
 
+  const reflexiveIndex = Math.min(data?.reflexiveIndex ?? 0, 1)
+  const isRight = reflexiveIndex === 1
+  const isBottom = false
+
   const widthStep = Math.min(40, rect.width / 4)
   const heightStep = Math.min(40, rect.height / 4)
-  const startX = rect.x
-  const startY = rect.y + heightStep
-  const leftX = startX - widthStep
-  const upY = startY - heightStep * 2
-  const rightX = leftX + widthStep * 2
-  const endY = upY + heightStep
+  const startX = isRight ? rect.x + rect.width : rect.x
+  const startY = isBottom
+    ? rect.y + rect.height - heightStep
+    : rect.y + heightStep
+  const outerX = isRight ? startX + widthStep : startX - widthStep
+  const verticalExtremeY = startY - heightStep * 2
+  const innerX = isRight ? outerX - widthStep * 2 : outerX + widthStep * 2
+  const endY = verticalExtremeY + heightStep
 
   const points = [
     { x: startX, y: startY },
-    { x: leftX, y: startY },
-    { x: leftX, y: upY },
-    { x: rightX, y: upY },
-    { x: rightX, y: endY },
+    { x: outerX, y: startY },
+    { x: outerX, y: verticalExtremeY },
+    { x: innerX, y: verticalExtremeY },
+    { x: innerX, y: endY },
   ]
   const edgePath = getSmoothPath(points)
-  const labelX = (leftX + rightX) / 2
-  const labelY = upY - 8
+  const labelX = (outerX + innerX) / 2
+  const labelY = verticalExtremeY - 8
 
   const multiplicityA = data?.multiplicityA ?? ''
   const multiplicityB = data?.multiplicityB ?? ''
@@ -120,25 +126,41 @@ export function ReflexiveAssociation({
       <EdgeLabelRenderer>
         {multiplicityA ? (
           <MultiplicityLabel
-            transform={`translate(-100%, -100%) translate(${startX}px, ${startY-1}px)`}
+            transform={
+              isRight
+                ? `translate(0%, -100%) translate(${startX}px, ${startY - 1}px)`
+                : `translate(-100%, -100%) translate(${startX}px, ${startY - 1}px)`
+            }
             label={multiplicityA}
           />
         ) : null}
         {multiplicityB ? (
           <MultiplicityLabel
-            transform={`translate(-100%, -100%) translate(${rightX-1}px, ${endY}px)`}
+            transform={
+              isRight
+                ? `translate(0%, -100%) translate(${innerX + 1}px, ${endY}px)`
+                : `translate(-100%, -100%) translate(${innerX - 1}px, ${endY}px)`
+            }
             label={multiplicityB}
           />
         ) : null}
         {roleA ? (
           <RoleLabel
-            transform={`translate(-100%, 0%) translate(${startX}px, ${startY+1}px)`}
+            transform={
+              isRight
+                ? `translate(0%, 0%) translate(${startX}px, ${startY + 1}px)`
+                : `translate(-100%, 0%) translate(${startX}px, ${startY + 1}px)`
+            }
             label={roleA}
           />
         ) : null}
         {roleB ? (
           <RoleLabel
-            transform={`translate(0%, -100%) translate(${rightX+1}px, ${endY}px)`}
+            transform={
+              isRight
+                ? `translate(-100%, -100%) translate(${innerX - 1}px, ${endY}px)`
+                : `translate(0%, -100%) translate(${innerX + 1}px, ${endY}px)`
+            }
             label={roleB}
           />
         ) : null}

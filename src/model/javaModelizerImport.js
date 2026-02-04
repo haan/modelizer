@@ -300,6 +300,7 @@ export function importJavaModelizer(text, fileName) {
 
   const edges = []
   const associationIdByKey = new Map()
+  const reflexiveCountByClass = new Map()
   const relationshipKeySet = new Set()
   const nodeById = new Map(nodes.map((node) => [node.id, node]))
 
@@ -348,20 +349,60 @@ export function importJavaModelizer(text, fileName) {
         return
       }
 
-      const associationClassName = parsedC.table
-      const associationKey = [
-        normalizeText(link?.name),
-        [sourceId, targetId].sort().join('|'),
-        associationClassName ?? '',
-      ].join('::')
-      if (associationIdByKey.has(associationKey)) {
+      const isReflexive = sourceId === targetId
+      if (isReflexive) {
+        const existingCount = reflexiveCountByClass.get(sourceId) ?? 0
+        if (existingCount >= 2) {
+          return
+        }
+        reflexiveCountByClass.set(sourceId, existingCount + 1)
+      } else {
+        const associationClassName = parsedC.table
+        const associationKey = [
+          normalizeText(link?.name),
+          [sourceId, targetId].sort().join('|'),
+          associationClassName ?? '',
+        ].join('::')
+        if (associationIdByKey.has(associationKey)) {
+          return
+        }
+        const edgeId = createId('edge', tableIndex * 100 + linkIndex)
+        associationIdByKey.set(associationKey, edgeId)
+        const associationEdge = addAssociationEdge({
+          id: edgeId,
+          source: sourceId,
+          target: targetId,
+          type: ASSOCIATION_EDGE_TYPE,
+          data: {
+            multiplicityA: normalizeText(endpointA.cardinality),
+            multiplicityB: normalizeText(endpointB.cardinality),
+            roleA: normalizeText(endpointA.role),
+            roleB: normalizeText(endpointB.role),
+            name: normalizeText(link?.name),
+            type: 'association',
+          },
+        })
+
+        if (associationClassName) {
+          const assocClassId = classIdByName.get(associationClassName)
+          if (assocClassId) {
+            edges.push({
+              id: createId('edge-assoc', tableIndex * 100 + linkIndex),
+              source: assocClassId,
+              target: `assoc-edge-${associationEdge}`,
+              type: ASSOCIATIVE_EDGE_TYPE,
+              data: {
+                name: associationClassName,
+                type: 'associative',
+                autoName: true,
+              },
+            })
+          }
+        }
         return
       }
 
       const edgeId = createId('edge', tableIndex * 100 + linkIndex)
-      associationIdByKey.set(associationKey, edgeId)
-
-      const isReflexive = sourceId === targetId
       addAssociationEdge({
         id: edgeId,
         source: sourceId,
@@ -377,6 +418,7 @@ export function importJavaModelizer(text, fileName) {
         },
       })
 
+      const associationClassName = parsedC.table
       if (associationClassName) {
         const assocClassId = classIdByName.get(associationClassName)
         if (assocClassId) {

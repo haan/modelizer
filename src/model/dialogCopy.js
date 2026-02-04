@@ -53,9 +53,9 @@ export const DIALOG_COPY = {
         'An associative association between this class and the association already exists. Remove the existing associative association before creating another.',
     },
     reflexive: {
-      title: 'Duplicate reflexive association',
+      title: 'Reflexive association limit',
       description:
-        'Two reflexive associations on the same class are not supported. Remove the existing reflexive association before creating another.',
+        'Up to two reflexive associations on the same class are supported. Remove an existing reflexive association before creating another.',
     },
     association: {
       title: 'Duplicate association',
