@@ -73,6 +73,8 @@ export default function ClassesPanel({
   viewSpecificSettingsOnly,
   openClassId: controlledOpenClassId,
   onOpenClassIdChange,
+  openAttributeId,
+  onOpenAttributeIdChange,
 }) {
   const sensors = useSensors(
     useSensor(PointerSensor, {
@@ -178,6 +180,8 @@ export default function ClassesPanel({
                     node={node}
                     isOpen={openClassId === node.id}
                     onToggleOpen={(nextOpen) => setOpenClassId(nextOpen)}
+                    openAttributeId={openAttributeId}
+                    onOpenAttributeIdChange={onOpenAttributeIdChange}
                     onRename={onRenameClass}
                     onReorderAttributes={onReorderAttributes}
                     onUpdateAttribute={onUpdateAttribute}

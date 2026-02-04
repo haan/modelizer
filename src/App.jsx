@@ -140,6 +140,7 @@ function App() {
   )
   const [activeView, setActiveView] = useState(DEFAULT_VIEW)
   const [openClassId, setOpenClassId] = useState('')
+  const [openAttributeId, setOpenAttributeId] = useState('')
   const [openAssociationId, setOpenAssociationId] = useState('')
   const [openRelationshipId, setOpenRelationshipId] = useState('')
   const [duplicateDialog, setDuplicateDialog] = useState({
@@ -374,10 +375,17 @@ function App() {
         return
       }
 
+      const attributeId =
+        target instanceof Element
+          ? target.closest('[data-attribute-id]')?.getAttribute('data-attribute-id') ?? ''
+          : ''
       setActiveSidebarItem('tables')
       setOpenClassId(node.id)
+      if (attributeId) {
+        setOpenAttributeId(attributeId)
+      }
     },
-    [setActiveSidebarItem, setOpenClassId],
+    [setActiveSidebarItem, setOpenAttributeId, setOpenClassId],
   )
 
   const onFlowEdgeClick = useCallback(
@@ -794,6 +802,8 @@ function App() {
                 activeItem={activeSidebarItem}
                 openClassId={openClassId}
                 onOpenClassIdChange={setOpenClassId}
+                openAttributeId={openAttributeId}
+                onOpenAttributeIdChange={setOpenAttributeId}
                 openAssociationId={openAssociationId}
                 onOpenAssociationIdChange={setOpenAssociationId}
                 openRelationshipId={openRelationshipId}

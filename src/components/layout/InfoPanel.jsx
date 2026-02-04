@@ -17,6 +17,8 @@ function InfoPanel({
   activeItem,
   openClassId,
   onOpenClassIdChange,
+  openAttributeId,
+  onOpenAttributeIdChange,
   openAssociationId,
   onOpenAssociationIdChange,
   openRelationshipId,
@@ -98,6 +100,8 @@ function InfoPanel({
               viewSpecificSettingsOnly={viewSpecificSettingsOnly}
               openClassId={openClassId}
               onOpenClassIdChange={onOpenClassIdChange}
+              openAttributeId={openAttributeId}
+              onOpenAttributeIdChange={onOpenAttributeIdChange}
             />
           ) : activeItem === 'notes' ? (
             showNotes ? (

@@ -16,6 +16,8 @@ export default function ClassesPanelItem({
   node,
   isOpen = false,
   onToggleOpen,
+  openAttributeId,
+  onOpenAttributeIdChange,
   onRename,
   onReorderAttributes,
   onUpdateAttribute,
@@ -312,6 +314,8 @@ export default function ClassesPanelItem({
               onDeleteAttribute={onDeleteAttribute}
               activeView={activeView}
               viewSpecificSettingsOnly={viewSpecificSettingsOnly}
+              openAttributeId={openAttributeId}
+              onOpenAttributeIdChange={onOpenAttributeIdChange}
             />
           </div>
         </div>

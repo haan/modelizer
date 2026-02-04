@@ -24,9 +24,18 @@ export default function ClassesPanelAttributesPanel({
   onDeleteAttribute,
   activeView,
   viewSpecificSettingsOnly,
+  openAttributeId: controlledOpenAttributeId,
+  onOpenAttributeIdChange,
 }) {
   const attributeIds = attributes.map((attribute) => attribute.id)
-  const [openAttributeId, setOpenAttributeId] = useState('')
+  const [uncontrolledOpenAttributeId, setUncontrolledOpenAttributeId] =
+    useState('')
+  const openAttributeId =
+    typeof controlledOpenAttributeId === 'string'
+      ? controlledOpenAttributeId
+      : uncontrolledOpenAttributeId
+  const setOpenAttributeId =
+    onOpenAttributeIdChange ?? setUncontrolledOpenAttributeId
   const sensors = useSensors(
     useSensor(PointerSensor, {
       activationConstraint: { distance: 4 },

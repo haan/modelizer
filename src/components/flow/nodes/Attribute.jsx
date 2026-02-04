@@ -54,7 +54,10 @@ function Attribute({
   const rowStyle = useGridLayout ? { gridTemplateColumns: columnTemplate } : undefined
 
   return (
-    <li className="relative -mx-3 px-3">
+    <li
+      className="relative -mx-3 px-3"
+      data-attribute-id={attributeId}
+    >
       {showHandles ? (
         <>
           <AttributeHandle
