@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from 'react'
 import * as Accordion from '@radix-ui/react-accordion'
+import * as Tooltip from '@radix-ui/react-tooltip'
 import { useSortable } from '@dnd-kit/sortable'
 import { CSS } from '@dnd-kit/utilities'
 import { CLASS_COLOR_PALETTE } from '../../../classPalette.js'
@@ -7,6 +8,9 @@ import ClassesPanelAttributesPanel from './ClassesPanelAttributesPanel.jsx'
 import ClassesPanelOptionsPanel from './ClassesPanelOptionsPanel.jsx'
 import ClassesPanelVisibilityPanel from './ClassesPanelVisibilityPanel.jsx'
 import Input from '../../ui/Input.jsx'
+
+const TOOLTIP_CONTENT_CLASS =
+  'rounded-md border border-base-content/10 bg-base-100 px-2 py-1 text-xs text-base-content shadow-lg'
 
 export default function ClassesPanelItem({
   node,
@@ -24,6 +28,7 @@ export default function ClassesPanelItem({
   showAccentColors = true,
   activeView,
   viewSpecificSettingsOnly,
+  addAttributeShortcutLabel = '',
 }) {
   const accentColor = node.data?.color ?? CLASS_COLOR_PALETTE[0]
   const accentBorderColor = showAccentColors ? accentColor : 'transparent'
@@ -257,31 +262,46 @@ export default function ClassesPanelItem({
               <span className="text-xs font-semibold uppercase tracking-wide opacity-70">
                 Attributes
               </span>
-              <button
-                type="button"
-                className="inline-flex items-center gap-1 rounded-md px-2 py-1 text-xs text-base-content/70 hover:bg-base-300 hover:text-base-content"
-                onClick={(event) => {
-                  event.stopPropagation()
-                  onAddAttribute?.(node.id)
-                }}
-                onMouseDown={(event) => event.stopPropagation()}
-              >
-                <svg
-                  xmlns="http://www.w3.org/2000/svg"
-                  viewBox="0 0 24 24"
-                  fill="none"
-                  stroke="currentColor"
-                  strokeWidth="2"
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  className="h-3 w-3"
-                  aria-hidden="true"
-                >
-                  <path d="M12 5v14" />
-                  <path d="M5 12h14" />
-                </svg>
-                Add attribute
-              </button>
+              <Tooltip.Root>
+                <Tooltip.Trigger asChild>
+                  <button
+                    type="button"
+                    className="inline-flex items-center gap-1 rounded-md px-2 py-1 text-xs text-base-content/70 hover:bg-base-300 hover:text-base-content"
+                    onClick={(event) => {
+                      event.stopPropagation()
+                      onAddAttribute?.(node.id)
+                    }}
+                    onMouseDown={(event) => event.stopPropagation()}
+                  >
+                    <svg
+                      xmlns="http://www.w3.org/2000/svg"
+                      viewBox="0 0 24 24"
+                      fill="none"
+                      stroke="currentColor"
+                      strokeWidth="2"
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      className="h-3 w-3"
+                      aria-hidden="true"
+                    >
+                      <path d="M12 5v14" />
+                      <path d="M5 12h14" />
+                    </svg>
+                    Add attribute
+                  </button>
+                </Tooltip.Trigger>
+                <Tooltip.Portal>
+                  <Tooltip.Content
+                    side="bottom"
+                    align="center"
+                    sideOffset={8}
+                    className={TOOLTIP_CONTENT_CLASS}
+                  >
+                    {addAttributeShortcutLabel}
+                    <Tooltip.Arrow className="fill-base-100" />
+                  </Tooltip.Content>
+                </Tooltip.Portal>
+              </Tooltip.Root>
             </div>
             <ClassesPanelAttributesPanel
               attributes={attributes}

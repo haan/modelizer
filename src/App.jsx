@@ -541,6 +541,7 @@ function App() {
   useKeyboardShortcuts({
     nodes,
     edges,
+    onAddAttribute,
     onDeleteAssociation,
     onDeleteClass,
     onDeleteSelection,

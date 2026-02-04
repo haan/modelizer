@@ -909,9 +909,23 @@ export function useModelState({
 
     updateNodesAndPanel((current) => {
       const nextNode = buildNode(current)
-      return [...current, nextNode]
+      const nextNodes = current.map((node) =>
+        node.selected ? { ...node, selected: false } : node,
+      )
+      return [...nextNodes, { ...nextNode, selected: true }]
     })
-  }, [normalizedActiveView, reactFlowInstance, reactFlowWrapper, updateNodesAndPanel])
+    updateEdgesAndPanel((current) =>
+      current.map((edge) =>
+        edge.selected ? { ...edge, selected: false, data: edge.data } : edge,
+      ),
+    )
+  }, [
+    normalizedActiveView,
+    reactFlowInstance,
+    reactFlowWrapper,
+    updateEdgesAndPanel,
+    updateNodesAndPanel,
+  ])
 
   const onAddNote = useCallback(() => {
     const wrapperBounds = reactFlowWrapper.current?.getBoundingClientRect()

@@ -1,8 +1,10 @@
 import { useEffect, useRef } from 'react'
+import { CLASS_NODE_TYPE } from '../model/constants.js'
 
 export function useKeyboardShortcuts({
   nodes,
   edges,
+  onAddAttribute,
   onDeleteAssociation,
   onDeleteClass,
   onDeleteSelection,
@@ -45,6 +47,21 @@ export function useKeyboardShortcuts({
           event.preventDefault()
           onRequestNewModel()
         }
+        if (key === 'a') {
+          if (!event.altKey || event.shiftKey) {
+            return
+          }
+
+          const selectedClass = nodesRef.current.find(
+            (node) => node.selected && node.type === CLASS_NODE_TYPE,
+          )
+          if (!selectedClass) {
+            return
+          }
+
+          event.preventDefault()
+          onAddAttribute?.(selectedClass.id)
+        }
       }
 
       if (key === 'delete' || key === 'backspace') {
@@ -70,6 +87,7 @@ export function useKeyboardShortcuts({
       window.removeEventListener('keydown', handleKeyDown)
     }
   }, [
+    onAddAttribute,
     onDeleteAssociation,
     onDeleteClass,
     onDeleteSelection,
