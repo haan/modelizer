@@ -15,3 +15,4 @@ export const VIEW_CONCEPTUAL = 'conceptual'
 export const VIEW_LOGICAL = 'logical'
 export const VIEW_PHYSICAL = 'physical'
 export const DEFAULT_VIEW = VIEW_CONCEPTUAL
+export const RELATIONSHIP_EDGE_STUB_DISTANCE = 15

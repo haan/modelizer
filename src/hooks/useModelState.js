@@ -22,6 +22,7 @@ import {
   HIGHLIGHT_ZOOM,
   NOTE_NODE_TYPE,
   REFLEXIVE_EDGE_TYPE,
+  RELATIONSHIP_EDGE_STUB_DISTANCE,
   RELATIONSHIP_EDGE_TYPE,
   VIEW_CONCEPTUAL,
   VIEW_LOGICAL,
@@ -198,6 +199,106 @@ export function useModelState({
     (changes) => {
       setNodes((current) => {
         const nextNodes = applyNodeChanges(changes, current)
+        const movedClassIds = new Set()
+        if (normalizedActiveView !== VIEW_CONCEPTUAL) {
+          const nextById = new Map(nextNodes.map((node) => [node.id, node]))
+          changes.forEach((change) => {
+            if (change.type !== 'position') {
+              return
+            }
+            const node = nextById.get(change.id)
+            if (node?.type === CLASS_NODE_TYPE) {
+              movedClassIds.add(change.id)
+            }
+          })
+        }
+
+        if (movedClassIds.size > 0) {
+          const classPositionsX = new Map()
+          nextNodes.forEach((node) => {
+            if (node.type !== CLASS_NODE_TYPE) {
+              return
+            }
+            const rawWidth = node.measured?.width ?? node.width ?? 180
+            const width =
+              typeof rawWidth === 'number' ? rawWidth : Number.parseFloat(rawWidth)
+            const resolvedWidth = Number.isFinite(width) ? width : 180
+            const leftX = node.position?.x
+            if (typeof leftX !== 'number') {
+              return
+            }
+
+            classPositionsX.set(node.id, {
+              leftX,
+              rightX: leftX + resolvedWidth,
+              centerX: leftX + resolvedWidth / 2,
+            })
+          })
+
+          setEdges((currentEdges) => {
+            let didChange = false
+            const nextEdges = currentEdges.map((edge) => {
+              if (edge.type !== RELATIONSHIP_EDGE_TYPE) {
+                return edge
+              }
+              if (
+                !movedClassIds.has(edge.source) &&
+                !movedClassIds.has(edge.target)
+              ) {
+                return edge
+              }
+              if (edge.source === edge.target) {
+                return edge
+              }
+
+              const sourcePosition = classPositionsX.get(edge.source)
+              const targetPosition = classPositionsX.get(edge.target)
+              if (!sourcePosition || !targetPosition) {
+                return edge
+              }
+
+              const sourceAttributeId = getAttributeIdFromHandle(edge.sourceHandle)
+              const targetAttributeId = getAttributeIdFromHandle(edge.targetHandle)
+              if (!sourceAttributeId || !targetAttributeId) {
+                return edge
+              }
+
+              const deltaX = targetPosition.centerX - sourcePosition.centerX
+              if (deltaX === 0) {
+                return edge
+              }
+
+              const nextSourceSide = deltaX > 0 ? 'right' : 'left'
+              const xOverlap =
+                Math.min(sourcePosition.rightX, targetPosition.rightX) -
+                Math.max(sourcePosition.leftX, targetPosition.leftX)
+
+              const nextTargetSide =
+                xOverlap > -3 * RELATIONSHIP_EDGE_STUB_DISTANCE
+                  ? nextSourceSide
+                  : deltaX > 0
+                    ? 'left'
+                    : 'right'
+              const nextSourceHandle = `${nextSourceSide}-${sourceAttributeId}-source`
+              const nextTargetHandle = `${nextTargetSide}-${targetAttributeId}-target`
+
+              if (
+                nextSourceHandle === edge.sourceHandle &&
+                nextTargetHandle === edge.targetHandle
+              ) {
+                return edge
+              }
+
+              didChange = true
+              return {
+                ...edge,
+                sourceHandle: nextSourceHandle,
+                targetHandle: nextTargetHandle,
+              }
+            })
+            return didChange ? nextEdges : currentEdges
+          })
+        }
         const updatedClassIds = new Set()
         const updatedAreaIds = new Set()
         const updatedAreaSizeIds = new Set()
@@ -421,7 +522,7 @@ export function useModelState({
         })
       })
     },
-    [normalizedActiveView, setNodes],
+    [normalizedActiveView, setEdges, setNodes],
   )
 
   useEffect(() => {

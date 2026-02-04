@@ -1,4 +1,5 @@
 import { getSmoothStepPath, Position } from 'reactflow'
+import { RELATIONSHIP_EDGE_STUB_DISTANCE } from '../../../model/constants.js'
 
 export function Relationship({
   id,
@@ -18,6 +19,7 @@ export function Relationship({
     targetX,
     targetY,
     targetPosition,
+    offset: RELATIONSHIP_EDGE_STUB_DISTANCE,
   })
   const strokeClass = selected ? 'text-primary' : 'text-base-content/70'
   const arrowSize = 10
