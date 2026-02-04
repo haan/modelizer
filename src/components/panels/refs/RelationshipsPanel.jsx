@@ -31,9 +31,18 @@ export default function RelationshipsPanel({
   nodes,
   onDeleteAssociation,
   onHighlightAssociation,
+  openRelationshipId: controlledOpenRelationshipId,
+  onOpenRelationshipIdChange,
 }) {
   const relationships = edges.filter((edge) => edge.type === 'relationship')
-  const [openRelationshipId, setOpenRelationshipId] = useState('')
+  const [uncontrolledOpenRelationshipId, setUncontrolledOpenRelationshipId] =
+    useState('')
+  const openRelationshipId =
+    typeof controlledOpenRelationshipId === 'string'
+      ? controlledOpenRelationshipId
+      : uncontrolledOpenRelationshipId
+  const setOpenRelationshipId =
+    onOpenRelationshipIdChange ?? setUncontrolledOpenRelationshipId
   const nodeLabels = new Map(
     nodes.map((node) => [node.id, node.data?.label ?? node.id]),
   )

@@ -17,6 +17,10 @@ export default function RefsPanel({
   onUpdateAssociationRole,
   onToggleAssociationComposition,
   onHighlightAssociation,
+  openAssociationId,
+  onOpenAssociationIdChange,
+  openRelationshipId,
+  onOpenRelationshipIdChange,
 }) {
   const hideAssociations = activeView !== VIEW_CONCEPTUAL
   const hideRelationships = activeView === VIEW_CONCEPTUAL
@@ -34,6 +38,8 @@ export default function RefsPanel({
           onUpdateAssociationRole={onUpdateAssociationRole}
           onToggleAssociationComposition={onToggleAssociationComposition}
           onHighlightAssociation={onHighlightAssociation}
+          openAssociationId={openAssociationId}
+          onOpenAssociationIdChange={onOpenAssociationIdChange}
         />
       )}
       {hideRelationships ? null : (
@@ -42,6 +48,8 @@ export default function RefsPanel({
           nodes={nodes}
           onDeleteAssociation={onDeleteAssociation}
           onHighlightAssociation={onHighlightAssociation}
+          openRelationshipId={openRelationshipId}
+          onOpenRelationshipIdChange={onOpenRelationshipIdChange}
         />
       )}
     </div>

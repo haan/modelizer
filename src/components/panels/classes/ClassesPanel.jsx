@@ -71,6 +71,8 @@ export default function ClassesPanel({
   showAccentColors,
   activeView,
   viewSpecificSettingsOnly,
+  openClassId: controlledOpenClassId,
+  onOpenClassIdChange,
 }) {
   const sensors = useSensors(
     useSensor(PointerSensor, {
@@ -83,7 +85,12 @@ export default function ClassesPanel({
   const shortcutLabel = isMac ? 'Cmd+Opt+C' : 'Ctrl+Alt+C'
   const addAttributeShortcutLabel = isMac ? 'Cmd+Opt+A' : 'Ctrl+Alt+A'
   const itemIds = nodes.map((node) => node.id)
-  const [openClassId, setOpenClassId] = useState('')
+  const [uncontrolledOpenClassId, setUncontrolledOpenClassId] = useState('')
+  const openClassId =
+    typeof controlledOpenClassId === 'string'
+      ? controlledOpenClassId
+      : uncontrolledOpenClassId
+  const setOpenClassId = onOpenClassIdChange ?? setUncontrolledOpenClassId
 
   useEffect(() => {
     if (!onAddClass) {

@@ -15,6 +15,12 @@ function InfoPanel({
   width,
   onResizeStart,
   activeItem,
+  openClassId,
+  onOpenClassIdChange,
+  openAssociationId,
+  onOpenAssociationIdChange,
+  openRelationshipId,
+  onOpenRelationshipIdChange,
   nodes,
   edges,
   activeView,
@@ -90,6 +96,8 @@ function InfoPanel({
               showAccentColors={showAccentColors}
               activeView={activeView}
               viewSpecificSettingsOnly={viewSpecificSettingsOnly}
+              openClassId={openClassId}
+              onOpenClassIdChange={onOpenClassIdChange}
             />
           ) : activeItem === 'notes' ? (
             showNotes ? (
@@ -136,6 +144,10 @@ function InfoPanel({
               onUpdateAssociationRole={onUpdateAssociationRole}
               onToggleAssociationComposition={onToggleAssociationComposition}
               onHighlightAssociation={onHighlightAssociation}
+              openAssociationId={openAssociationId}
+              onOpenAssociationIdChange={onOpenAssociationIdChange}
+              openRelationshipId={openRelationshipId}
+              onOpenRelationshipIdChange={onOpenRelationshipIdChange}
             />
           ) : (
             <p className="text-sm opacity-70">

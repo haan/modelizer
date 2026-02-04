@@ -21,9 +21,14 @@ import { useModelState } from './hooks/useModelState.js'
 import DefaultValuesPanel from './components/flow/overlays/DefaultValuesPanel.jsx'
 import { sanitizeFileName } from './model/fileUtils.js'
 import {
+  ASSOCIATION_EDGE_TYPE,
+  ASSOCIATIVE_EDGE_TYPE,
+  CLASS_NODE_TYPE,
+  COMPOSITION_EDGE_TYPE,
   DEFAULT_VIEW,
   NOTE_NODE_TYPE,
   AREA_NODE_TYPE,
+  REFLEXIVE_EDGE_TYPE,
   RELATIONSHIP_EDGE_TYPE,
   VIEW_CONCEPTUAL,
   VIEW_PHYSICAL,
@@ -134,6 +139,9 @@ function App() {
     readStoredBool(STORAGE_KEYS.showAreas, false),
   )
   const [activeView, setActiveView] = useState(DEFAULT_VIEW)
+  const [openClassId, setOpenClassId] = useState('')
+  const [openAssociationId, setOpenAssociationId] = useState('')
+  const [openRelationshipId, setOpenRelationshipId] = useState('')
   const [duplicateDialog, setDuplicateDialog] = useState({
     open: false,
     kind: 'association',
@@ -354,6 +362,46 @@ function App() {
     onDuplicateEdge,
     activeView,
   })
+
+  const onFlowNodeClick = useCallback(
+    (event, node) => {
+      const target = event.target
+      if (target instanceof Element && target.closest('.react-flow__handle')) {
+        return
+      }
+
+      if (node?.type !== CLASS_NODE_TYPE) {
+        return
+      }
+
+      setActiveSidebarItem('tables')
+      setOpenClassId(node.id)
+    },
+    [setActiveSidebarItem, setOpenClassId],
+  )
+
+  const onFlowEdgeClick = useCallback(
+    (_event, edge) => {
+      if (
+        !edge ||
+        (edge.type !== ASSOCIATION_EDGE_TYPE &&
+          edge.type !== COMPOSITION_EDGE_TYPE &&
+          edge.type !== ASSOCIATIVE_EDGE_TYPE &&
+          edge.type !== REFLEXIVE_EDGE_TYPE &&
+          edge.type !== RELATIONSHIP_EDGE_TYPE)
+      ) {
+        return
+      }
+
+      setActiveSidebarItem('refs')
+      if (edge.type === RELATIONSHIP_EDGE_TYPE) {
+        setOpenRelationshipId(edge.id)
+      } else {
+        setOpenAssociationId(edge.id)
+      }
+    },
+    [setActiveSidebarItem],
+  )
 
   const onToggleNotes = useCallback(() => {
     setShowNotes((current) => {
@@ -744,6 +792,12 @@ function App() {
                 width={infoWidth}
                 onResizeStart={onResizeStart}
                 activeItem={activeSidebarItem}
+                openClassId={openClassId}
+                onOpenClassIdChange={setOpenClassId}
+                openAssociationId={openAssociationId}
+                onOpenAssociationIdChange={setOpenAssociationId}
+                openRelationshipId={openRelationshipId}
+                onOpenRelationshipIdChange={setOpenRelationshipId}
                 nodes={panelNodes}
                 edges={panelEdges}
                 activeView={activeView}
@@ -796,6 +850,8 @@ function App() {
                   onConnect={onConnect}
                   onConnectStart={onConnectStart}
                   onConnectEnd={onConnectEnd}
+                  onNodeClick={onFlowNodeClick}
+                  onEdgeClick={onFlowEdgeClick}
                   onPaneClick={onPaneClick}
                   onInit={setReactFlowInstance}
                   nodeTypes={nodeTypes}

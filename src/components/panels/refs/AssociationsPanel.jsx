@@ -19,8 +19,17 @@ export default function AssociationsPanel({
   onUpdateAssociationRole,
   onToggleAssociationComposition,
   onHighlightAssociation,
+  openAssociationId: controlledOpenAssociationId,
+  onOpenAssociationIdChange,
 }) {
-  const [openAssociationId, setOpenAssociationId] = useState('')
+  const [uncontrolledOpenAssociationId, setUncontrolledOpenAssociationId] =
+    useState('')
+  const openAssociationId =
+    typeof controlledOpenAssociationId === 'string'
+      ? controlledOpenAssociationId
+      : uncontrolledOpenAssociationId
+  const setOpenAssociationId =
+    onOpenAssociationIdChange ?? setUncontrolledOpenAssociationId
   const nodeLabels = new Map(
     nodes.map((node) => [node.id, node.data?.label ?? node.id]),
   )
