@@ -9,12 +9,12 @@ Windows:
 3) Double-click "modelizer.bat".
 
 URL:
-http://localhost:4173
+http://localhost:8080
 
 Stop the server:
 Close the "Modelizer Server" window.
 
 Troubleshooting:
 - If the page does not load, check the "Modelizer Server" window.
-- Port 4173 might already be in use.
+- Port 8080 might already be in use.
 - Windows may show a firewall prompt the first time. Allow on Private networks.

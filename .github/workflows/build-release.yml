@@ -11,7 +11,7 @@ permissions:
 
 env:
   # Change miniserve version here (only once)
-  MINISERVE_VERSION: "0.32.0"
+  MINISERVE_VERSION: "0.33.0"
 
   # Final zip name (tag: modelizer-v1.0.0.zip)
   ZIP_NAME: "modelizer-${{ github.ref_name }}.zip"
