@@ -1,170 +1,185 @@
-Modelizer is a lightweight database modeling tool created for teaching the database modeling process. It is intentionally **not** a "smart" modeling assistant:
-- it **does not validate** your model
-- it **does not correct** decisions
-- it **does not auto-generate relationships** from associations  
-It simply helps you **draw and document** your model quickly and clearly.
+Modelizer is a lightweight database modeling tool for teaching conceptual, logical, and physical modeling.
+It is intentionally **not** a smart assistant:
+- it does **not validate** your model
+- it does **not auto-correct** modeling choices
+- it does **not auto-generate** relationships from associations
 
-## Typical workflow (recommended)
+## Recommended workflow
 
-1. **Create a new model** (`File > New`)
-2. **Add classes** and place them on the canvas
-3. Add **attributes** (names, types, constraints, default values)
-4. In **Conceptual view**, create **associations** and set **multiplicities**
-5. Switch to **Logical / Physical view** and create **relationships**
-6. **Save** the model file (`File > Save`)
-7. **Export as PNG** when you need a diagram for a report or submission
+1. Create a model (`File > New`).
+2. Add classes and attributes in **Classes**.
+3. Build associations in **Conceptual** view.
+4. Build attribute relationships in **Logical** or **Physical** view.
+5. Save as `.mdlz`.
+6. Export current view as PNG when needed.
 
-## Views: Conceptual, Logical, Physical
+## Interface overview
 
-Modelizer provides three views of the same model. You can switch views using the sidebar.
+### Top menu
+- **File**: New, Open, Save, Save As, Import (Java Modelizer / MySQL), Export as PNG.
+- **Settings**: toggle composition, confirmation dialogs, PNG accent colors, Notes, Areas.
+- **View**: background, accent colors, fullscreen, view-specific settings toggle, constraint display mode.
+- **Help**: opens this dialog plus the About tab.
 
-### Conceptual view
+### Left sidebar
+- Quick actions: New, Open, Save, Export.
+- Panels: Classes, Refs, optional Notes, optional Areas.
+- Views: Conceptual, Logical, Physical.
+- Sync button: copy positions from previous modeling phase (disabled in conceptual view).
 
-Use this view to focus on **structure and meaning**.
-- Classes
-- Associations (including reflexive and associative associations)
-- Multiplicities
+## Views
 
-### Logical view
+### Conceptual
+- Shows classes and associations.
+- Relationships are hidden.
+- Attribute handles are hidden.
 
-Use this view when you transition to database logic.
-- Classes
-- Relationships (attribute-to-attribute)
+### Logical
+- Shows classes and relationships.
+- Associations are hidden.
+- Attribute handles are visible.
 
-### Physical view
+### Physical
+- Shows classes and relationships with full attribute details.
+- Default values overlay appears when at least one attribute has a default value.
 
-Use this view for database-ready details.
-- Classes
-- Relationships
-- Attribute types
-- Constraints
-- Default values
+## Classes and attributes
 
-## Create and edit classes
+### Classes
+- Add class from **Classes > Add class**.
+- Class is auto-selected when created.
+- Class names are generated as `Class1`, `Class2`, ... (counting classes only).
+- You can reorder, rename, focus, recolor, set visibility, and delete classes.
+- `Ctrl+Alt+C` (`Cmd+Opt+C` on macOS): add class.
 
-### Add a class
-- Open the **Classes** panel
-- Click **Add class**
-- Drag the class on the canvas to position it
-- Adding a class in logical or physical view has it hidden by default in conceptual view.
+### Attributes
+- Add attribute from class header button.
+- `Ctrl+Alt+A` (`Cmd+Opt+A` on macOS): add attribute to currently selected class.
+- Attribute editor supports:
+  - name
+  - visibility (Conceptual, Logical/Physical)
+  - logical name
+  - constraints: N, UQ, AI
+  - type + parameters (`varchar`, `decimal`, `enum`, etc.)
+  - default value
+  - delete
 
-### Rename a class
-- Rename it directly inside the **Classes** panel
+### Constraint display mode (View menu)
+- **Show Null**: nullable attributes show `N`.
+- **Show Not Null** (default): non-nullable attributes show `NN`.
+- **Show Null as ?**: nullable attributes append `?` to type (physical class view).
 
-### Delete a class
-- Select the class and delete it from the panel (Confirmation dialogs can be enabled/disabled in **Settings**.)
+In physical class rendering, attributes with a default value are marked with `*` after the name.
 
-## Add and edit attributes
+## Associations and relationships
 
-Attributes are managed inside the **Classes** panel. Adding an attribute in logical or physical view has it hidden by default in conceptual view.
+### Associations (Conceptual view)
+Create associations by connecting class handles.
 
-For each attribute, you can define:
+Supported:
+- association
+- reflexive association (max 2 per class)
+- associative association (class connected to an association)
+- composition (when enabled in Settings)
 
-### Name
-The attribute name as shown in the current view.
+### Composition
+- Enable via `Settings > Enable composite aggregation`.
+- Created by toggling **Composite aggregation** in an association item in Refs.
+- Uses association data (name, multiplicities, roles) and keeps it when toggled.
+- Hidden from conceptual canvas when composition setting is disabled.
 
-### Visibility
-Define in what view this attribute should be visible.
+### Relationships (Logical/Physical views)
+- Create relationships by connecting attribute handles.
+- Duplicate relationships between the same two attributes are blocked (direction ignored).
+- While moving classes in logical/physical, relationship handles auto-switch sides to keep routing coherent.
 
-### Logical name
-Define an alternate name for this attribute in logical/physical view.
+## Notes and Areas
 
-### Constraints
-Constraints are available as toggles:
-- **Null** (nullable / not nullable depending on your display mode)
-- **Unique**
-- **Auto Increment**
+### Notes
+- Disabled by default (`Settings > Enable notes`).
+- Notes panel allows add, rename, focus, visibility per view group, text editing, delete.
+- Notes are draggable on the canvas.
+- Positions are stored per view and synchronized to later views until manually moved there.
 
-How "Null" is shown can be configured in the **View** menu (for example `N`, `NN`, or as `?` on the type).
+### Areas
+- Disabled by default (`Settings > Enable areas`).
+- Areas are colored, resizable regions for visual grouping.
+- Areas panel allows add, rename, focus, color, visibility per view group, delete.
+- Areas render behind classes/edges and above the background.
+- Position **and size** are stored per view and synchronized similarly to classes/notes.
 
-### Type
-Pick a type or leave it as **Undefined**.
+## Import, save, and export
 
-Some types allow additional parameters:
-- `varchar(n)` → Max Length  
-- `decimal(p,s)` → Precision and Scale  
-- `enum(...)` → Comma-separated enumeration values
+### Open / Save / Save As (`.mdlz`)
+- Models are local files.
+- No server-side storage.
+- Creating a new model resets to conceptual view and resets the viewport.
+- Opening or importing a model switches to conceptual view and runs fit view.
 
-### Default value
-Optional. If at least one attribute has a default value, Modelizer shows a **Default Values** panel (and includes it in PNG exports).
+### Import
+- **Java Modelizer** (`.mod`)
+- **MySQL** (`.sql`)
 
-## Create associations (Conceptual view)
+Import behavior:
+- unmatched attribute types are mapped to **Undefined** (`type: ''`) and reported in a warning dialog
+- if imported file contains Notes, Areas, or Composite aggregations that are currently disabled, a warning toast is shown
 
-Associations are created in **Conceptual view** by connecting classes on the canvas.
-
-Modelizer supports:
-- **Association** (between two classes)
-- **Reflexive association** (a class connected to itself)
-- **Associative association** (a class connected to an association)
-- **Composite aggregation** (a strong dependency between two classes)
-
-After creating an association, open the **Refs** panel to edit:
-- association name (if used)
-- multiplicities
-- roles / labels (if needed)
-
-## Create relationships (Logical / Physical view)
-
-Relationships are created in **Logical** or **Physical** view by connecting **attributes**.
-
-Use the **Refs** panel to review and delete relationships cleanly.
-
-## Keeping layouts consistent between views (Sync)
-
-Classes sync their positions automatically as long as they haven't been moved manually.
-
-Logical and Physical views include a **Sync** option in the sidebar.
-
-Use it when you want to copy the positions from the previous view so that your diagrams stay aligned across the modeling process.
-
-## Save, open, export
-
-### Save / Open (`.mdlz`)
-Saving creates a model file on your computer.
-
-There is **no server-side storage**:
-- nothing is uploaded automatically
-- models must be saved/downloaded manually
+MySQL importer notes:
+- focused on MySQL DDL parsing
+- foreign keys are imported as relationships
+- composite foreign keys are ignored
 
 ### Export as PNG
-`File > Export as PNG` exports the **current view** as an image.
+- Exports current viewport content.
+- Respects current view and visibility.
+- Default Values overlay is included when visible.
+- Accent bars can be included/excluded via Settings.
 
-Notes:
-- the export includes what you currently see (view + visibility settings)
-- the Default Values panel is included when it is visible
-- export format is currently **PNG only**
+## View options
 
-## Settings that matter
+- **Show/Hide background**
+- **Show/Hide accent colors**
+- **Show/Hide fullscreen**: hides sidebar and info panel.
+- **Show only view-specific settings / Show all the settings**:
+  - limits attribute editor fields to view-relevant controls when enabled
 
-### Confirmation dialogs
-Enable/disable confirmations when deleting things (classes, attributes, associations, relationships).
+## Shortcuts
 
-### Composite aggregation (optional)
-If enabled, you can convert associations into composition edges from the Associations panel.
+- New model: `Ctrl/Cmd + N`
+- Open model: `Ctrl/Cmd + O`
+- Save model: `Ctrl/Cmd + S`
+- Add class: `Ctrl+Alt+C` / `Cmd+Opt+C`
+- Add attribute to selected class: `Ctrl+Alt+A` / `Cmd+Opt+A`
+- Delete selection: `Delete` / `Backspace`
 
-### PNG export colors
-You can choose whether accent colors should be included in PNG exports.
+## Unsaved changes and persistence
 
-### Local settings storage
-User settings are stored in the browser using **localStorage**.  
-(Models are **not** stored there — only your preferences.)
+- Dirty state is indicated with `*` next to model name.
+- Browser unload warning appears if there are unsaved changes.
+- UI preferences are stored in `localStorage`:
+  - background
+  - accent colors
+  - constraint display mode
+  - confirmation dialogs
+  - PNG accent export
+  - view-specific settings toggle
+  - fullscreen
+  - composition enabled
+  - notes enabled
+  - areas enabled
 
-## Teacher tools (optional)
+## Current defaults
 
-### Anti-cheat panel
-If enabled, Modelizer can display internal identifiers and tamper status (based on the model file data).  
-This is meant as a classroom tool and may be hidden in normal usage.
+- View: conceptual
+- Constraint display: Show Not Null
+- Confirmation dialogs: enabled
+- Include accent colors in PNG export: enabled
+- Composite aggregation: disabled
+- Notes: disabled
+- Areas: disabled
 
-## Keyboard shortcuts
+## Limitations
 
-- New model: **Ctrl/Cmd + N**
-- Open: **Ctrl/Cmd + O**
-- Save: **Ctrl/Cmd + S**
-- Delete selected class/edge: **Delete**
-
-## Things to keep in mind
-
-- Modelizer will not tell you whether your model is "correct".
-- Associations and relationships are intentionally separate concepts in Modelizer.
-- Export is currently PNG only.
-- Always save your `.mdlz` file if you want to continue later.
+- No automated correctness checks.
+- No automatic conversion from associations to relationships.
+- Export format is PNG only.
