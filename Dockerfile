@@ -7,11 +7,10 @@ RUN npm ci
 COPY . .
 RUN npm run build
 
-FROM nginx:1.29.5-alpine3.23
+FROM svenstaro/miniserve:0.33.0-alpine
 
-COPY docker/nginx.conf /etc/nginx/conf.d/default.conf
-COPY --from=builder /app/dist /usr/share/nginx/html
+COPY --from=builder /app/dist /srv
 
 EXPOSE 80
 
-CMD ["nginx", "-g", "daemon off;"]
+CMD ["/srv", "--index", "index.html", "--spa", "--port", "80"]
