@@ -145,7 +145,7 @@ export default function RelationshipsPanelItem({
                     />
                   </svg>
                   <span className="font-bold text-base-content/70">
-                    Attribute From
+                    Column From
                   </span>
                 </div>
                 <button type="button" className="text-left">
@@ -195,7 +195,7 @@ export default function RelationshipsPanelItem({
                     />
                   </svg>
                   <span className="font-bold text-base-content/70">
-                    Attribute To
+                    Column To
                   </span>
                 </div>
                 <button type="button" className="text-left">

@@ -259,7 +259,7 @@ export default function AssociationsPanelItem({
                       />
                     </svg>
                     <div className="font-bold text-base-content/70">
-                      {sourceIsAssociation ? 'Association' : 'Table A'}
+                      {sourceIsAssociation ? 'Association' : 'Class A'}
                     </div>
                   </div>
                   <button type="button" className="text-left">
@@ -351,7 +351,7 @@ export default function AssociationsPanelItem({
                       />
                     </svg>
                     <div className="font-bold text-base-content/70">
-                      {targetIsAssociation ? 'Association' : 'Table B'}
+                      {targetIsAssociation ? 'Association' : 'Class B'}
                     </div>
                   </div>
                   <button type="button" className="text-left">

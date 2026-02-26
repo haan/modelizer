@@ -15,11 +15,12 @@ import {
   verticalListSortingStrategy,
 } from '@dnd-kit/sortable'
 import ClassesPanelItem from './ClassesPanelItem.jsx'
+import { VIEW_CONCEPTUAL } from '../../../model/constants.js'
 
 const TOOLTIP_CLASS =
   'rounded-md border border-base-content/10 bg-base-100 px-2 py-1 text-xs text-base-content shadow-lg'
 
-function AddClassButton({ onAddClass, shortcutLabel }) {
+function AddClassButton({ onAddClass, shortcutLabel, label }) {
   return (
     <Tooltip.Root>
       <Tooltip.Trigger asChild>
@@ -42,7 +43,7 @@ function AddClassButton({ onAddClass, shortcutLabel }) {
             <path d="M12 5v14" />
             <path d="M5 12h14" />
           </svg>
-          Add class
+          {label}
         </button>
       </Tooltip.Trigger>
       <Tooltip.Portal>
@@ -86,6 +87,9 @@ export default function ClassesPanel({
     /Mac|iPhone|iPad|iPod/.test(navigator.platform)
   const shortcutLabel = isMac ? 'Cmd+Opt+C' : 'Ctrl+Alt+C'
   const addAttributeShortcutLabel = isMac ? 'Cmd+Opt+A' : 'Ctrl+Alt+A'
+  const isConceptualView = activeView === VIEW_CONCEPTUAL
+  const headingLabel = isConceptualView ? 'Classes' : 'Tables'
+  const addButtonLabel = isConceptualView ? 'Add class' : 'Add table'
   const itemIds = nodes.map((node) => node.id)
   const [uncontrolledOpenClassId, setUncontrolledOpenClassId] = useState('')
   const openClassId =
@@ -152,9 +156,13 @@ export default function ClassesPanel({
       <Tooltip.Provider delayDuration={100}>
         <div className="flex items-center justify-between">
           <div className="text-xs font-semibold uppercase tracking-wide opacity-60 py-1">
-            Classes
+            {headingLabel}
           </div>
-          <AddClassButton onAddClass={onAddClass} shortcutLabel={shortcutLabel} />
+          <AddClassButton
+            onAddClass={onAddClass}
+            shortcutLabel={shortcutLabel}
+            label={addButtonLabel}
+          />
         </div>
         {nodes.length ? (
           <DndContext

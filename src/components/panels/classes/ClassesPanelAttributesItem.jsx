@@ -31,6 +31,7 @@ export default function ClassesPanelAttributesItem({
   visibility,
   activeView,
   viewSpecificSettingsOnly,
+  attributeNoun = 'attribute',
   isOpen = false,
   onChangeName,
   onChangeLogicalName,
@@ -76,6 +77,8 @@ export default function ClassesPanelAttributesItem({
     viewSpecificSettingsOnly && activeView !== VIEW_PHYSICAL
   const hideLogicalName =
     viewSpecificSettingsOnly && activeView === VIEW_CONCEPTUAL
+  const attributeNameLabel =
+    attributeNoun.charAt(0).toUpperCase() + attributeNoun.slice(1)
 
   return (
     <li
@@ -91,7 +94,11 @@ export default function ClassesPanelAttributesItem({
                 <button
                   type="button"
                   className="inline-flex h-5 w-5 items-center justify-center rounded-md text-base-content/60 transition-colors hover:bg-base-300 hover:text-base-content"
-                  aria-label={isOpen ? 'Collapse attribute' : 'Expand attribute'}
+                  aria-label={
+                    isOpen
+                      ? `Collapse ${attributeNoun}`
+                      : `Expand ${attributeNoun}`
+                  }
                   aria-expanded={isOpen}
                   tabIndex={-1}
                   onClick={(event) => event.stopPropagation()}
@@ -118,7 +125,7 @@ export default function ClassesPanelAttributesItem({
               className="inline-flex h-5 w-5 items-center justify-center rounded-md text-base-content/50 hover:bg-base-300 hover:text-base-content cursor-grab active:cursor-grabbing"
               onClick={(event) => event.stopPropagation()}
               onMouseDown={(event) => event.stopPropagation()}
-              aria-label="Reorder attribute"
+              aria-label={`Reorder ${attributeNoun}`}
               {...sortableAttributes}
               {...listeners}
               tabIndex={-1}
@@ -147,7 +154,7 @@ export default function ClassesPanelAttributesItem({
                   size="xs"
                   className="min-w-0 flex-1"
                   value={name ?? ''}
-                  placeholder="Attribute"
+                  placeholder={attributeNameLabel}
                   onChange={(event) => onChangeName?.(event.target.value)}
                   onClick={(event) => event.stopPropagation()}
                   onMouseDown={(event) => event.stopPropagation()}

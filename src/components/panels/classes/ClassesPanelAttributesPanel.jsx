@@ -24,6 +24,7 @@ export default function ClassesPanelAttributesPanel({
   onDeleteAttribute,
   activeView,
   viewSpecificSettingsOnly,
+  attributeNoun = 'attribute',
   openAttributeId: controlledOpenAttributeId,
   onOpenAttributeIdChange,
 }) {
@@ -91,6 +92,7 @@ export default function ClassesPanelAttributesPanel({
                 visibility={attribute.visibility}
                 activeView={activeView}
                 viewSpecificSettingsOnly={viewSpecificSettingsOnly}
+                attributeNoun={attributeNoun}
                 isOpen={openAttributeId === attribute.id}
                 onChangeName={(nextValue) =>
                   onUpdateAttribute?.(nodeId, attribute.id, {

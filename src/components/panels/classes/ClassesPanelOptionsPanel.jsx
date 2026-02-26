@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import { CirclePicker } from 'react-color'
 import { CLASS_COLOR_PALETTE } from '../../../classPalette'
+import { VIEW_CONCEPTUAL } from '../../../model/constants.js'
 
 export default function ClassesPanelOptionsPanel({
   accentColor,
@@ -9,10 +10,12 @@ export default function ClassesPanelOptionsPanel({
   nodeId,
   onDeleteClass,
   showAccentColors = true,
+  activeView,
 }) {
   const currentColor = color ?? accentColor
   const [isPickerOpen, setIsPickerOpen] = useState(false)
   const accentBorderColor = showAccentColors ? accentColor : 'transparent'
+  const entityNoun = activeView === VIEW_CONCEPTUAL ? 'class' : 'table'
 
   return (
     <div className="w-full rounded-b-md border-b border-base-content/20">
@@ -36,10 +39,10 @@ export default function ClassesPanelOptionsPanel({
             onMouseDown={(event) => event.stopPropagation()}
             aria-haspopup="dialog"
             aria-expanded={isPickerOpen}
-            aria-label="Choose class color"
+            aria-label={`Choose ${entityNoun} color`}
             style={{ backgroundColor: currentColor }}
           >
-            <span className="sr-only">Choose class color</span>
+            <span className="sr-only">{`Choose ${entityNoun} color`}</span>
           </button>
           {isPickerOpen ? (
             <div className="absolute right-0 top-10 z-20">

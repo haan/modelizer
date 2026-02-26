@@ -4,6 +4,7 @@ import * as Tooltip from '@radix-ui/react-tooltip'
 import { useSortable } from '@dnd-kit/sortable'
 import { CSS } from '@dnd-kit/utilities'
 import { CLASS_COLOR_PALETTE } from '../../../classPalette.js'
+import { VIEW_CONCEPTUAL } from '../../../model/constants.js'
 import ClassesPanelAttributesPanel from './ClassesPanelAttributesPanel.jsx'
 import ClassesPanelOptionsPanel from './ClassesPanelOptionsPanel.jsx'
 import ClassesPanelVisibilityPanel from './ClassesPanelVisibilityPanel.jsx'
@@ -40,6 +41,17 @@ export default function ClassesPanelItem({
   const label = node.data?.label ?? ''
   const color = node.data?.color ?? CLASS_COLOR_PALETTE[0]
   const classVisibility = node.data?.visibility
+  const isConceptualView = activeView === VIEW_CONCEPTUAL
+  const entityNoun = isConceptualView ? 'class' : 'table'
+  const entityNameLabel = isConceptualView ? 'Class name' : 'Table name'
+  const untitledEntityLabel = isConceptualView
+    ? 'Untitled class'
+    : 'Untitled table'
+  const attributesLabel = isConceptualView ? 'Attributes' : 'Columns'
+  const addAttributeLabel = isConceptualView
+    ? 'Add attribute'
+    : 'Add column'
+  const attributeNoun = isConceptualView ? 'attribute' : 'column'
   const {
     attributes: sortableAttributes,
     listeners,
@@ -100,7 +112,7 @@ export default function ClassesPanelItem({
               <button
                 type="button"
                 className="inline-flex h-5 w-5 items-center justify-center rounded-md text-base-content/60 hover:bg-base-200 hover:text-base-content"
-                aria-label="Toggle class details"
+                aria-label={`Toggle ${entityNoun} details`}
                 onClick={(event) => event.stopPropagation()}
               >
                 <svg
@@ -124,7 +136,7 @@ export default function ClassesPanelItem({
               className="inline-flex h-6 w-6 items-center justify-center rounded-md text-base-content/50 transition-opacity hover:bg-base-200 hover:text-base-content cursor-grab active:cursor-grabbing"
               onClick={(event) => event.stopPropagation()}
               onMouseDown={(event) => event.stopPropagation()}
-              aria-label="Reorder class"
+              aria-label={`Reorder ${entityNoun}`}
               {...sortableAttributes}
               {...listeners}
             >
@@ -154,7 +166,7 @@ export default function ClassesPanelItem({
                   size="sm"
                   className="min-w-0 font-semibold"
                   value={draft}
-                  placeholder="Class name"
+                  placeholder={entityNameLabel}
                   onChange={(event) => {
                     const nextValue = event.target.value
                     setDraft(nextValue)
@@ -180,7 +192,7 @@ export default function ClassesPanelItem({
                 />
               ) : (
                 <span className="truncate text-md p-1">
-                  {label || 'Untitled class'}
+                  {label || untitledEntityLabel}
                 </span>
               )}
             </div>
@@ -193,7 +205,7 @@ export default function ClassesPanelItem({
                   onHighlightClass?.(node.id)
                 }}
                 onMouseDown={(event) => event.stopPropagation()}
-                aria-label="Highlight class"
+                aria-label={`Highlight ${entityNoun}`}
               >
                 <svg
                   xmlns="http://www.w3.org/2000/svg"
@@ -225,7 +237,7 @@ export default function ClassesPanelItem({
                   startEditing()
                 }}
                 onMouseDown={(event) => event.stopPropagation()}
-                aria-label="Edit class name"
+                aria-label={`Edit ${entityNoun} name`}
               >
                 <svg
                   xmlns="http://www.w3.org/2000/svg"
@@ -262,7 +274,7 @@ export default function ClassesPanelItem({
           >
             <div className="flex items-center justify-between">
               <span className="text-xs font-semibold uppercase tracking-wide opacity-70">
-                Attributes
+                {attributesLabel}
               </span>
               <Tooltip.Root>
                 <Tooltip.Trigger asChild>
@@ -289,7 +301,7 @@ export default function ClassesPanelItem({
                       <path d="M12 5v14" />
                       <path d="M5 12h14" />
                     </svg>
-                    Add attribute
+                    {addAttributeLabel}
                   </button>
                 </Tooltip.Trigger>
                 <Tooltip.Portal>
@@ -314,6 +326,7 @@ export default function ClassesPanelItem({
               onDeleteAttribute={onDeleteAttribute}
               activeView={activeView}
               viewSpecificSettingsOnly={viewSpecificSettingsOnly}
+              attributeNoun={attributeNoun}
               openAttributeId={openAttributeId}
               onOpenAttributeIdChange={onOpenAttributeIdChange}
             />
@@ -326,6 +339,7 @@ export default function ClassesPanelItem({
           onChangeColor={onUpdateClassColor}
           onDeleteClass={onDeleteClass}
           showAccentColors={showAccentColors}
+          activeView={activeView}
         />
       </Accordion.Content>
     </Accordion.Item>
