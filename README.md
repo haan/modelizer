@@ -15,6 +15,29 @@ Download: GitHub Releases
 The release includes a tiny local webserver based on miniserve:
 https://github.com/svenstaro/miniserve
 
+## Run with Docker
+
+Run the latest published image from Docker Hub:
+
+```bash
+docker run --rm -p 8080:80 haanlaurent/modelizer:latest
+```
+
+Then open: http://localhost:8080
+
+Run a specific version tag:
+
+```bash
+docker run --rm -p 8080:80 haanlaurent/modelizer:<version>
+```
+
+Build and run locally from this repository:
+
+```bash
+docker build -t modelizer:local .
+docker run --rm -p 8080:80 modelizer:local
+```
+
 ## Supported modeling elements
 
 Modelizer supports:
