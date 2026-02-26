@@ -99,6 +99,80 @@ jobs:
           name: ${{ env.ZIP_NAME }}
           path: ${{ env.ZIP_NAME }}
 
+      - name: Set up Docker Buildx
+        if: startsWith(github.ref, 'refs/tags/')
+        uses: docker/setup-buildx-action@v3
+
+      - name: Log in to Docker Hub
+        if: startsWith(github.ref, 'refs/tags/')
+        uses: docker/login-action@v3
+        with:
+          username: ${{ secrets.DOCKERHUB_USERNAME }}
+          password: ${{ secrets.DOCKERHUB_TOKEN }}
+
+      - name: Derive Docker image version from tag
+        id: image_vars
+        if: startsWith(github.ref, 'refs/tags/')
+        shell: bash
+        run: |
+          set -euo pipefail
+          echo "version=${GITHUB_REF_NAME#v}" >> "$GITHUB_OUTPUT"
+
+      - name: Build and push Docker image
+        if: startsWith(github.ref, 'refs/tags/')
+        uses: docker/build-push-action@v6
+        with:
+          context: .
+          file: ./Dockerfile
+          push: true
+          tags: |
+            haanlaurent/modelizer:${{ steps.image_vars.outputs.version }}
+            haanlaurent/modelizer:latest
+
+      - name: Deploy dist to personal webserver (SFTP)
+        if: startsWith(github.ref, 'refs/tags/')
+        env:
+          SFTP_HOST: ${{ secrets.SFTP_HOST }}
+          SFTP_PORT: ${{ secrets.SFTP_PORT }}
+          SFTP_USER: ${{ secrets.SFTP_USER }}
+          SFTP_PASSWORD: ${{ secrets.SFTP_PASSWORD }}
+          SFTP_PRIVATE_KEY: ${{ secrets.SFTP_PRIVATE_KEY }}
+          SFTP_TARGET_PATH: ${{ secrets.SFTP_TARGET_PATH }}
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          if [ -z "${SFTP_HOST:-}" ] || [ -z "${SFTP_USER:-}" ] || [ -z "${SFTP_TARGET_PATH:-}" ]; then
+            echo "SFTP secrets not fully configured (host/user/target path). Skipping deploy."
+            exit 0
+          fi
+
+          if [ -z "${SFTP_PASSWORD:-}" ] && [ -z "${SFTP_PRIVATE_KEY:-}" ]; then
+            echo "No SFTP auth secret configured (password or private key). Skipping deploy."
+            exit 0
+          fi
+
+          sudo apt-get update
+          sudo apt-get install -y lftp
+
+          CONNECT_COMMAND=""
+          if [ -n "${SFTP_PRIVATE_KEY:-}" ]; then
+            mkdir -p ~/.ssh
+            chmod 700 ~/.ssh
+            printf '%s\n' "${SFTP_PRIVATE_KEY}" > ~/.ssh/id_sftp_deploy
+            chmod 600 ~/.ssh/id_sftp_deploy
+            CONNECT_COMMAND='set sftp:connect-program "ssh -a -x -i ~/.ssh/id_sftp_deploy -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null";'
+          fi
+
+          lftp <<EOF
+          set net:max-retries 2
+          set sftp:auto-confirm yes
+          ${CONNECT_COMMAND}
+          open -u "${SFTP_USER}","${SFTP_PASSWORD:-}" sftp://${SFTP_HOST}:${SFTP_PORT:-22}
+          mirror -R --delete --verbose dist "${SFTP_TARGET_PATH}"
+          bye
+          EOF
+
       - name: Create GitHub Release and upload asset (tag runs)
         if: startsWith(github.ref, 'refs/tags/')
         uses: softprops/action-gh-release@v2

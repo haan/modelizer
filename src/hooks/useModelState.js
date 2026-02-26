@@ -1420,6 +1420,27 @@ export function useModelState({
     [updateEdgesAndPanel],
   )
 
+  const onUpdateAssociationComment = useCallback(
+    (edgeId, nextValue) => {
+      updateEdgesAndPanel((current) =>
+        current.map((edge) => {
+          if (edge.id !== edgeId) {
+            return edge
+          }
+
+          return {
+            ...edge,
+            data: {
+              ...(edge.data ?? {}),
+              comment: nextValue,
+            },
+          }
+        }),
+      )
+    },
+    [updateEdgesAndPanel],
+  )
+
   const onToggleAssociationComposition = useCallback(
     (edgeId, nextValue) => {
       updateEdgesAndPanel((current) => {
@@ -2213,6 +2234,7 @@ export function useModelState({
     onUpdateAreaVisibility,
     onUpdateAssociationMultiplicity,
     onUpdateAssociationRole,
+    onUpdateAssociationComment,
     onToggleAssociationComposition,
     onHighlightAssociation,
     onHighlightNote,

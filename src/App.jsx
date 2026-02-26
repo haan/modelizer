@@ -334,6 +334,7 @@ function App() {
     onDeleteArea: deleteArea,
     onUpdateAssociationMultiplicity,
     onUpdateAssociationRole,
+    onUpdateAssociationComment,
     onToggleAssociationComposition,
     onHighlightAssociation,
     onHighlightNote,
@@ -828,6 +829,7 @@ function App() {
                 onDeleteAssociation={onDeleteAssociation}
                 onUpdateAssociationMultiplicity={onUpdateAssociationMultiplicity}
                 onUpdateAssociationRole={onUpdateAssociationRole}
+                onUpdateAssociationComment={onUpdateAssociationComment}
                 showCompositionAggregation={showCompositionAggregation}
                 onToggleAssociationComposition={onToggleAssociationComposition}
                 onHighlightAssociation={onHighlightAssociation}

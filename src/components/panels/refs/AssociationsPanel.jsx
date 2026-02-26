@@ -17,6 +17,7 @@ export default function AssociationsPanel({
   onDeleteAssociation,
   onUpdateAssociationMultiplicity,
   onUpdateAssociationRole,
+  onUpdateAssociationComment,
   onToggleAssociationComposition,
   onHighlightAssociation,
   openAssociationId: controlledOpenAssociationId,
@@ -111,6 +112,7 @@ export default function AssociationsPanel({
               onDeleteAssociation={onDeleteAssociation}
               onUpdateAssociationMultiplicity={onUpdateAssociationMultiplicity}
               onUpdateAssociationRole={onUpdateAssociationRole}
+              onUpdateAssociationComment={onUpdateAssociationComment}
               showCompositionAggregation={showCompositionAggregation}
               onToggleAssociationComposition={onToggleAssociationComposition}
               onHighlightAssociation={onHighlightAssociation}

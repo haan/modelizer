@@ -43,6 +43,7 @@ function InfoPanel({
   onDeleteAssociation,
   onUpdateAssociationMultiplicity,
   onUpdateAssociationRole,
+  onUpdateAssociationComment,
   showCompositionAggregation,
   onToggleAssociationComposition,
   onHighlightAssociation,
@@ -146,6 +147,7 @@ function InfoPanel({
               onDeleteAssociation={onDeleteAssociation}
               onUpdateAssociationMultiplicity={onUpdateAssociationMultiplicity}
               onUpdateAssociationRole={onUpdateAssociationRole}
+              onUpdateAssociationComment={onUpdateAssociationComment}
               onToggleAssociationComposition={onToggleAssociationComposition}
               onHighlightAssociation={onHighlightAssociation}
               openAssociationId={openAssociationId}

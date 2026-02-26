@@ -15,6 +15,7 @@ export default function RefsPanel({
   onDeleteAssociation,
   onUpdateAssociationMultiplicity,
   onUpdateAssociationRole,
+  onUpdateAssociationComment,
   onToggleAssociationComposition,
   onHighlightAssociation,
   openAssociationId,
@@ -36,6 +37,7 @@ export default function RefsPanel({
           onDeleteAssociation={onDeleteAssociation}
           onUpdateAssociationMultiplicity={onUpdateAssociationMultiplicity}
           onUpdateAssociationRole={onUpdateAssociationRole}
+          onUpdateAssociationComment={onUpdateAssociationComment}
           onToggleAssociationComposition={onToggleAssociationComposition}
           onHighlightAssociation={onHighlightAssociation}
           openAssociationId={openAssociationId}

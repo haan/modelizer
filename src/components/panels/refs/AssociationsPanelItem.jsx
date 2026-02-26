@@ -23,6 +23,7 @@ export default function AssociationsPanelItem({
   onDeleteAssociation,
   onUpdateAssociationMultiplicity,
   onUpdateAssociationRole,
+  onUpdateAssociationComment,
   showCompositionAggregation = false,
   onToggleAssociationComposition,
   onHighlightAssociation,
@@ -36,6 +37,10 @@ export default function AssociationsPanelItem({
   const canToggleComposition =
     showCompositionAggregation &&
     (edge.type === 'association' || edge.type === 'composition')
+  const canComment =
+    edge.type === 'association' ||
+    edge.type === 'reflexiveAssociation' ||
+    edge.type === 'composition'
   const isComposition = edge.type === 'composition'
   const isReflexive = edge.source === edge.target
   const label = edge.data?.name ?? ''
@@ -43,6 +48,7 @@ export default function AssociationsPanelItem({
   const multiplicityB = edge.data?.multiplicityB ?? ''
   const roleA = edge.data?.roleA ?? ''
   const roleB = edge.data?.roleB ?? ''
+  const comment = edge.data?.comment ?? ''
   const [isEditing, setIsEditing] = useState(false)
   const [draft, setDraft] = useState(label)
   const inputRef = useRef(null)
@@ -446,6 +452,21 @@ export default function AssociationsPanelItem({
                     />
                     <span>Composite aggregation</span>
                   </label>
+                </div>
+              ) : null}
+              {canComment ? (
+                <div className="mt-2">
+                  <div className="text-xs font-semibold uppercase tracking-wide opacity-60 py-1">
+                    Comment
+                  </div>
+                  <textarea
+                    className="min-h-[96px] w-full rounded-md border border-base-content/20 bg-transparent px-2 py-1 text-xs focus:outline-none focus:ring-1 focus:ring-ring"
+                    placeholder="Write your comment..."
+                    value={comment}
+                    onChange={(event) =>
+                      onUpdateAssociationComment?.(edge.id, event.target.value)
+                    }
+                  />
                 </div>
               ) : null}
               <div className="flex flex-1 items-center justify-center pt-2">
