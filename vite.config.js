@@ -2,7 +2,6 @@ import { defineConfig } from 'vite'
 import react from '@vitejs/plugin-react'
 import tailwindcss from '@tailwindcss/vite'
 import fs from 'node:fs'
-import { visualizer } from 'rollup-plugin-visualizer'
 
 const packageJson = JSON.parse(
   fs.readFileSync(new URL('./package.json', import.meta.url), 'utf-8'),
@@ -16,13 +15,6 @@ export default defineConfig({
   plugins: [
     react(),
     tailwindcss(),
-    process.env.ANALYZE === 'true'
-      ? visualizer({
-          filename: 'stats.html',
-          template: 'treemap',
-          open: true,
-        })
-      : null,
   ].filter(Boolean),
   build: {
     chunkSizeWarningLimit: 700,
