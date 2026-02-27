@@ -4,6 +4,7 @@ Modelizer is a lightweight database modeling tool developed for teaching the dat
 
 Online version: https://www.modelizer.lu/  
 Download: GitHub Releases
+Docker image: https://hub.docker.com/r/haanlaurent/modelizer
 
 ## Run locally (Windows)
 
@@ -18,6 +19,7 @@ https://github.com/svenstaro/miniserve
 ## Run with Docker
 
 Run the latest published image from Docker Hub:
+https://hub.docker.com/r/haanlaurent/modelizer
 
 ```bash
 docker run --rm -p 8080:80 haanlaurent/modelizer:latest
