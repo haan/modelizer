@@ -2,7 +2,7 @@
 
 Modelizer is a lightweight database modeling tool developed for teaching the database modeling process (initially for courses in Luxembourg).
 
-Online version: https://modelizer.haan.lu/  
+Online version: https://www.modelizer.lu/  
 Download: GitHub Releases
 
 ## Run locally (Windows)
