@@ -1005,8 +1005,10 @@ export function useModelState({
       }
     }
 
+    let nextClassId = ''
     updateNodesAndPanel((current) => {
       const nextNode = buildNode(current)
+      nextClassId = nextNode.id
       const nextNodes = current.map((node) =>
         node.selected ? { ...node, selected: false } : node,
       )
@@ -1017,6 +1019,7 @@ export function useModelState({
         edge.selected ? { ...edge, selected: false, data: edge.data } : edge,
       ),
     )
+    return nextClassId
   }, [
     normalizedActiveView,
     reactFlowInstance,
@@ -1643,6 +1646,7 @@ export function useModelState({
 
   const onAddAttribute = useCallback(
     (nodeId) => {
+      let createdAttributeId = ''
       updateNodesAndPanel((current) =>
         current.map((node) => {
           if (node.id !== nodeId) {
@@ -1657,6 +1661,7 @@ export function useModelState({
             nodeId,
             `attribute${currentAttributes.length + 1}`,
           )
+          createdAttributeId = nextAttribute.id
           if (normalizedActiveView !== VIEW_CONCEPTUAL) {
             nextAttribute.visibility = {
               ...nextAttribute.visibility,
@@ -1674,6 +1679,7 @@ export function useModelState({
           }
         }),
       )
+      return createdAttributeId
     },
     [normalizedActiveView, updateNodesAndPanel],
   )

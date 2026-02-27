@@ -140,6 +140,8 @@ function App() {
   )
   const [activeView, setActiveView] = useState(DEFAULT_VIEW)
   const [openClassId, setOpenClassId] = useState('')
+  const [autoEditClassId, setAutoEditClassId] = useState('')
+  const [autoEditAttributeId, setAutoEditAttributeId] = useState('')
   const [openAttributeId, setOpenAttributeId] = useState('')
   const [openAssociationId, setOpenAssociationId] = useState('')
   const [openRelationshipId, setOpenRelationshipId] = useState('')
@@ -321,7 +323,7 @@ function App() {
     onConnectStart,
     onConnectEnd,
     isValidConnection,
-    onAddClass,
+    onAddClass: addClass,
     onAddNote,
     onAddArea,
     onSyncViewPositions,
@@ -346,7 +348,7 @@ function App() {
     onUpdateNoteVisibility,
     onUpdateAreaColor,
     onUpdateAreaVisibility,
-    onAddAttribute,
+    onAddAttribute: addAttribute,
     onDeleteAttribute: deleteAttribute,
     onUpdateClassColor,
     onUpdateClassVisibility,
@@ -364,6 +366,46 @@ function App() {
     onDuplicateEdge,
     activeView,
   })
+
+  const onAddClass = useCallback(() => {
+    const classId = addClass?.()
+    if (!classId) {
+      return
+    }
+
+    setActiveSidebarItem('tables')
+    setOpenClassId(classId)
+    setAutoEditClassId(classId)
+    requestAnimationFrame(() => {
+      setAutoEditClassId('')
+    })
+    setOpenAttributeId('')
+  }, [
+    addClass,
+    setActiveSidebarItem,
+    setOpenAttributeId,
+    setOpenClassId,
+    setAutoEditClassId,
+  ])
+
+  const onAddAttribute = useCallback(
+    (nodeId) => {
+      const createdAttributeId = addAttribute?.(nodeId)
+      if (!createdAttributeId) {
+        return
+      }
+
+      setActiveSidebarItem('tables')
+      setOpenClassId(nodeId)
+      setOpenAttributeId(createdAttributeId)
+      setAutoEditAttributeId(createdAttributeId)
+    },
+    [addAttribute, setActiveSidebarItem],
+  )
+
+  const onAutoEditAttributeConsumed = useCallback(() => {
+    setAutoEditAttributeId('')
+  }, [])
 
   const onFlowNodeClick = useCallback(
     (event, node) => {
@@ -803,6 +845,9 @@ function App() {
                 activeItem={activeSidebarItem}
                 openClassId={openClassId}
                 onOpenClassIdChange={setOpenClassId}
+                autoEditClassId={autoEditClassId}
+                autoEditAttributeId={autoEditAttributeId}
+                onAutoEditAttributeConsumed={onAutoEditAttributeConsumed}
                 openAttributeId={openAttributeId}
                 onOpenAttributeIdChange={setOpenAttributeId}
                 openAssociationId={openAssociationId}
@@ -872,6 +917,7 @@ function App() {
                   connectionMode={ConnectionMode.Loose}
                   connectionLineType={ConnectionLineType.Straight}
                   connectionRadius={40}
+                  maxZoom={3}
                   defaultEdgeOptions={{ interactionWidth: 20 }}
                 >
                   <div data-no-export="true">

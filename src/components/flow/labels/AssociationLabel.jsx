@@ -2,7 +2,7 @@ export function AssociationLabel({ transform, label }) {
   return (
     <div
       style={{ transform }}
-      className="nodrag nopan absolute px-1 py-0 text-[12px] bg-base-100/0"
+      className="nodrag nopan absolute rounded-sm bg-white/80 px-1 py-0 text-[12px] backdrop-blur-[1px]"
     >
       {label}
     </div>

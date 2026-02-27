@@ -1,3 +1,4 @@
+import { useEffect, useRef } from 'react'
 import * as Tooltip from '@radix-ui/react-tooltip'
 import * as Accordion from '@radix-ui/react-accordion'
 import { useSortable } from '@dnd-kit/sortable'
@@ -33,6 +34,8 @@ export default function ClassesPanelAttributesItem({
   viewSpecificSettingsOnly,
   attributeNoun = 'attribute',
   isOpen = false,
+  shouldAutoEditName = false,
+  onAutoEditNameConsumed,
   onChangeName,
   onChangeLogicalName,
   onChangeType,
@@ -57,6 +60,7 @@ export default function ClassesPanelAttributesItem({
     transform: CSS.Transform.toString(transform),
     transition,
   }
+  const nameInputRef = useRef(null)
   const isNullable = Boolean(nullable)
   const isUnique = Boolean(unique)
   const isAutoIncrement = Boolean(autoIncrement)
@@ -79,6 +83,22 @@ export default function ClassesPanelAttributesItem({
     viewSpecificSettingsOnly && activeView === VIEW_CONCEPTUAL
   const attributeNameLabel =
     attributeNoun.charAt(0).toUpperCase() + attributeNoun.slice(1)
+
+  useEffect(() => {
+    if (!shouldAutoEditName) {
+      return
+    }
+
+    const frame = requestAnimationFrame(() => {
+      nameInputRef.current?.focus()
+      nameInputRef.current?.select()
+      onAutoEditNameConsumed?.()
+    })
+
+    return () => {
+      cancelAnimationFrame(frame)
+    }
+  }, [onAutoEditNameConsumed, shouldAutoEditName])
 
   return (
     <li
@@ -151,11 +171,20 @@ export default function ClassesPanelAttributesItem({
               </button>
               <div className="flex min-w-0 flex-1 items-center gap-1">
                 <Input
+                  ref={nameInputRef}
                   size="xs"
                   className="min-w-0 flex-1"
                   value={name ?? ''}
                   placeholder={attributeNameLabel}
                   onChange={(event) => onChangeName?.(event.target.value)}
+                  onKeyDown={(event) => {
+                    if (event.key !== 'Enter') {
+                      return
+                    }
+                    event.preventDefault()
+                    event.stopPropagation()
+                    event.currentTarget.blur()
+                  }}
                   onClick={(event) => event.stopPropagation()}
                   onMouseDown={(event) => event.stopPropagation()}
                 />

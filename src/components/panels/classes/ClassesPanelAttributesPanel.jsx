@@ -27,6 +27,8 @@ export default function ClassesPanelAttributesPanel({
   attributeNoun = 'attribute',
   openAttributeId: controlledOpenAttributeId,
   onOpenAttributeIdChange,
+  autoEditAttributeId = '',
+  onAutoEditAttributeConsumed,
 }) {
   const attributeIds = attributes.map((attribute) => attribute.id)
   const [uncontrolledOpenAttributeId, setUncontrolledOpenAttributeId] =
@@ -94,6 +96,8 @@ export default function ClassesPanelAttributesPanel({
                 viewSpecificSettingsOnly={viewSpecificSettingsOnly}
                 attributeNoun={attributeNoun}
                 isOpen={openAttributeId === attribute.id}
+                shouldAutoEditName={autoEditAttributeId === attribute.id}
+                onAutoEditNameConsumed={onAutoEditAttributeConsumed}
                 onChangeName={(nextValue) =>
                   onUpdateAttribute?.(nodeId, attribute.id, {
                     name: nextValue,

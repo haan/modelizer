@@ -17,6 +17,9 @@ function InfoPanel({
   activeItem,
   openClassId,
   onOpenClassIdChange,
+  autoEditClassId,
+  autoEditAttributeId,
+  onAutoEditAttributeConsumed,
   openAttributeId,
   onOpenAttributeIdChange,
   openAssociationId,
@@ -101,6 +104,9 @@ function InfoPanel({
               viewSpecificSettingsOnly={viewSpecificSettingsOnly}
               openClassId={openClassId}
               onOpenClassIdChange={onOpenClassIdChange}
+              autoEditClassId={autoEditClassId}
+              autoEditAttributeId={autoEditAttributeId}
+              onAutoEditAttributeConsumed={onAutoEditAttributeConsumed}
               openAttributeId={openAttributeId}
               onOpenAttributeIdChange={onOpenAttributeIdChange}
             />

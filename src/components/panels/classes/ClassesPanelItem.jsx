@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from 'react'
+import { useCallback, useEffect, useRef, useState } from 'react'
 import * as Accordion from '@radix-ui/react-accordion'
 import * as Tooltip from '@radix-ui/react-tooltip'
 import { useSortable } from '@dnd-kit/sortable'
@@ -16,6 +16,9 @@ const TOOLTIP_CONTENT_CLASS =
 export default function ClassesPanelItem({
   node,
   isOpen = false,
+  shouldAutoEdit = false,
+  autoEditAttributeId = '',
+  onAutoEditAttributeConsumed,
   onToggleOpen,
   openAttributeId,
   onOpenAttributeIdChange,
@@ -61,7 +64,7 @@ export default function ClassesPanelItem({
     transition,
     isDragging,
   } = useSortable({ id: node.id })
-  const [isEditing, setIsEditing] = useState(false)
+  const [isEditing, setIsEditing] = useState(shouldAutoEdit)
   const [draft, setDraft] = useState(label)
   const inputRef = useRef(null)
   const originalLabelRef = useRef(label)
@@ -69,6 +72,11 @@ export default function ClassesPanelItem({
     transform: CSS.Transform.toString(transform),
     transition,
   }
+  const startEditing = useCallback(() => {
+    originalLabelRef.current = label
+    setDraft(label)
+    setIsEditing(true)
+  }, [label])
 
   useEffect(() => {
     if (isEditing) {
@@ -80,13 +88,6 @@ export default function ClassesPanelItem({
   const commit = () => {
     setIsEditing(false)
   }
-
-  const startEditing = () => {
-    originalLabelRef.current = label
-    setDraft(label)
-    setIsEditing(true)
-  }
-
 
   const toggleOpen = () => {
     onToggleOpen?.(isOpen ? '' : node.id)
@@ -329,6 +330,8 @@ export default function ClassesPanelItem({
               attributeNoun={attributeNoun}
               openAttributeId={openAttributeId}
               onOpenAttributeIdChange={onOpenAttributeIdChange}
+              autoEditAttributeId={autoEditAttributeId}
+              onAutoEditAttributeConsumed={onAutoEditAttributeConsumed}
             />
           </div>
         </div>

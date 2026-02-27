@@ -74,6 +74,9 @@ export default function ClassesPanel({
   viewSpecificSettingsOnly,
   openClassId: controlledOpenClassId,
   onOpenClassIdChange,
+  autoEditClassId = '',
+  autoEditAttributeId = '',
+  onAutoEditAttributeConsumed,
   openAttributeId,
   onOpenAttributeIdChange,
 }) {
@@ -85,8 +88,8 @@ export default function ClassesPanel({
   const isMac =
     typeof navigator !== 'undefined' &&
     /Mac|iPhone|iPad|iPod/.test(navigator.platform)
-  const shortcutLabel = isMac ? 'Cmd+Opt+C' : 'Ctrl+Alt+C'
-  const addAttributeShortcutLabel = isMac ? 'Cmd+Opt+A' : 'Ctrl+Alt+A'
+  const shortcutLabel = isMac ? 'Ctrl+Opt+C' : 'Ctrl+Alt+C'
+  const addAttributeShortcutLabel = isMac ? 'Ctrl+Opt+A' : 'Ctrl+Alt+A'
   const isConceptualView = activeView === VIEW_CONCEPTUAL
   const headingLabel = isConceptualView ? 'Classes' : 'Tables'
   const addButtonLabel = isConceptualView ? 'Add class' : 'Add table'
@@ -104,6 +107,10 @@ export default function ClassesPanel({
     }
 
     const handleKeyDown = (event) => {
+      const key = event.key?.toLowerCase()
+      const isAddClassShortcut =
+        key === 'c' && event.ctrlKey && event.altKey && !event.shiftKey
+
       const target = event.target
       const isEditable =
         target instanceof HTMLElement &&
@@ -111,16 +118,15 @@ export default function ClassesPanel({
           target.tagName === 'INPUT' ||
           target.tagName === 'TEXTAREA' ||
           target.tagName === 'SELECT')
-      if (isEditable) {
+      if (isEditable && !isAddClassShortcut) {
         return
       }
 
-      const key = event.key?.toLowerCase()
       if (key !== 'c') {
         return
       }
 
-      const modifierOk = isMac ? event.metaKey : event.ctrlKey
+      const modifierOk = event.ctrlKey
       if (!modifierOk || !event.altKey || event.shiftKey) {
         return
       }
@@ -187,6 +193,9 @@ export default function ClassesPanel({
                     key={node.id}
                     node={node}
                     isOpen={openClassId === node.id}
+                    shouldAutoEdit={autoEditClassId === node.id}
+                    autoEditAttributeId={autoEditAttributeId}
+                    onAutoEditAttributeConsumed={onAutoEditAttributeConsumed}
                     onToggleOpen={(nextOpen) => setOpenClassId(nextOpen)}
                     openAttributeId={openAttributeId}
                     onOpenAttributeIdChange={onOpenAttributeIdChange}

@@ -50,11 +50,11 @@ It is intentionally **not** a smart assistant:
 - Class is auto-selected when created.
 - Class names are generated as `Class1`, `Class2`, ... (counting classes only).
 - You can reorder, rename, focus, recolor, set visibility, and delete classes.
-- `Ctrl+Alt+C` (`Cmd+Opt+C` on macOS): add class.
+- `Ctrl+Alt+C` (`Ctrl+Opt+C` on macOS): add class.
 
 ### Attributes
 - Add attribute from class header button.
-- `Ctrl+Alt+A` (`Cmd+Opt+A` on macOS): add attribute to currently selected class.
+- `Ctrl+Alt+A` (`Ctrl+Opt+A` on macOS): add attribute to currently selected class.
 - Attribute editor supports:
   - name
   - visibility (Conceptual, Logical/Physical)
@@ -148,8 +148,8 @@ MySQL importer notes:
 - New model: `Ctrl/Cmd + N`
 - Open model: `Ctrl/Cmd + O`
 - Save model: `Ctrl/Cmd + S`
-- Add class: `Ctrl+Alt+C` / `Cmd+Opt+C`
-- Add attribute to selected class: `Ctrl+Alt+A` / `Cmd+Opt+A`
+- Add class: `Ctrl+Alt+C` / `Ctrl+Opt+C`
+- Add attribute to selected class: `Ctrl+Alt+A` / `Ctrl+Opt+A`
 - Delete selection: `Delete` / `Backspace`
 
 ## Unsaved changes and persistence

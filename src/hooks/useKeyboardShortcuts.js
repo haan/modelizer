@@ -21,7 +21,15 @@ export function useKeyboardShortcuts({
   }, [edges, nodes])
 
   useEffect(() => {
+    const isMac =
+      typeof navigator !== 'undefined' &&
+      /Mac|iPhone|iPad|iPod/.test(navigator.platform)
+
     const handleKeyDown = (event) => {
+      const key = event.key?.toLowerCase()
+      const isAddAttributeShortcut =
+        key === 'a' && event.ctrlKey && event.altKey && !event.shiftKey
+
       const target = event.target
       const isEditable =
         target instanceof HTMLElement &&
@@ -29,11 +37,10 @@ export function useKeyboardShortcuts({
           target.tagName === 'INPUT' ||
           target.tagName === 'TEXTAREA' ||
           target.tagName === 'SELECT')
-      if (isEditable) {
+      if (isEditable && !isAddAttributeShortcut) {
         return
       }
 
-      const key = event.key?.toLowerCase()
       if (event.ctrlKey || event.metaKey) {
         if (key === 's') {
           event.preventDefault()
@@ -48,6 +55,9 @@ export function useKeyboardShortcuts({
           onRequestNewModel()
         }
         if (key === 'a') {
+          if (!event.ctrlKey || (isMac && event.metaKey)) {
+            return
+          }
           if (!event.altKey || event.shiftKey) {
             return
           }
