@@ -98,8 +98,10 @@ export function ReflexiveAssociation({
     { x: innerX, y: endY },
   ]
   const edgePath = getSmoothPath(points)
-  const labelX = (outerX + innerX) / 2
-  const labelY = verticalExtremeY - 8
+  const topLabelX = (outerX + innerX) / 2
+  const topLabelY = verticalExtremeY - 10
+  const verticalCenterY = (startY + verticalExtremeY) / 2
+  const associationNameX = isRight ? outerX + 4 : outerX - 4
 
   const multiplicityA = data?.multiplicityA ?? ''
   const multiplicityB = data?.multiplicityB ?? ''
@@ -156,17 +158,18 @@ export function ReflexiveAssociation({
         ) : null}
         {roleB ? (
           <RoleLabel
-            transform={
-              isRight
-                ? `translate(-100%, -100%) translate(${innerX - 1}px, ${endY}px)`
-                : `translate(0%, -100%) translate(${innerX + 1}px, ${endY}px)`
-            }
+            transform={`translate(-50%, -50%) translate(${topLabelX}px, ${topLabelY}px)`}
             label={roleB}
           />
         ) : null}
         {name ? (
           <AssociationLabel
-            transform={`translate(-50%, -50%) translate(${labelX}px, ${labelY-2}px)`}
+            transform={
+              isRight
+                ? `translate(0%, -50%) translate(${associationNameX}px, ${verticalCenterY}px)`
+                : `translate(-100%, -50%) translate(${associationNameX}px, ${verticalCenterY}px)`
+            }
+            className={isRight ? 'text-left' : 'text-right'}
             label={name}
           />
         ) : null}
