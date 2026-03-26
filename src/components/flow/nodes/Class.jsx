@@ -16,12 +16,16 @@ export function Class({ data, id, selected }) {
   const updateNodeInternals = useUpdateNodeInternals()
   const accentColor = data?.color ?? CLASS_COLOR_PALETTE[0]
   const showAccentColors = data?.showAccentColors ?? true
+  const showConceptualOperationsCompartment =
+    data?.showConceptualOperationsCompartment ?? false
   const nullDisplayMode = data?.nullDisplayMode ?? 'not-null'
   const showNullAsQuestion = nullDisplayMode === 'null-as-question'
   const showNull = nullDisplayMode === 'null'
   const showNotNull = nullDisplayMode === 'not-null'
   const activeView = data?.activeView ?? VIEW_CONCEPTUAL
   const showHandles = activeView === VIEW_CONCEPTUAL
+  const showOperationsCompartment =
+    activeView === VIEW_CONCEPTUAL && showConceptualOperationsCompartment
   const showAttributeHandles = activeView !== VIEW_CONCEPTUAL
   const handleVisibilityClass = showHandles ? '' : 'opacity-0 pointer-events-none'
   const showTypeDetails = activeView === VIEW_PHYSICAL
@@ -97,6 +101,7 @@ export function Class({ data, id, selected }) {
   }, [
     id,
     showHandles,
+    showOperationsCompartment,
     showAttributeHandles,
     updateNodeInternals,
   ])
@@ -111,7 +116,7 @@ export function Class({ data, id, selected }) {
         className="h-2 rounded-t-[6px]"
         style={{ backgroundColor: showAccentColors ? accentColor : 'transparent' }}
       />
-      <div className="border-b border-base-content px-3 pb-2 pt-1 text-sm font-semibold">
+      <div className="border-b border-base-content/70 px-3 pb-2 pt-1 text-sm font-semibold">
         {data.label ?? ''}
       </div>
       <div className="px-3 py-2 text-xs">
@@ -152,6 +157,12 @@ export function Class({ data, id, selected }) {
           </ul>
         )}
       </div>
+      {showOperationsCompartment ? (
+        <>
+          <div className="border-t border-base-content/70" />
+          <div className="h-6 px-3" />
+        </>
+      ) : null}
       {showHandles ? (
         <>
           <ClassHandle

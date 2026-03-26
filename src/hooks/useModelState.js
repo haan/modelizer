@@ -118,6 +118,7 @@ export function useModelState({
   reactFlowInstance,
   reactFlowWrapper,
   showAccentColors,
+  showConceptualOperationsCompartment,
   showCompositionAggregation,
   nullDisplayMode,
   onDuplicateEdge,
@@ -2170,6 +2171,7 @@ export function useModelState({
             data: {
               ...node.data,
               showAccentColors,
+              showConceptualOperationsCompartment,
               showCompositionAggregation,
               nullDisplayMode,
               activeView: normalizedActiveView,
@@ -2206,6 +2208,7 @@ export function useModelState({
     nodes,
     normalizedActiveView,
     showAccentColors,
+    showConceptualOperationsCompartment,
     showCompositionAggregation,
   ])
 

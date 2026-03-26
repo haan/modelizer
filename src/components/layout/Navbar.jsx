@@ -18,6 +18,8 @@ export default function Navbar({
   onToggleBackground,
   showAccentColors,
   onToggleAccentColors,
+  showConceptualOperationsCompartment,
+  onToggleConceptualOperationsCompartment,
   showFullscreen,
   onToggleFullscreen,
   showCompositionAggregation,
@@ -198,6 +200,20 @@ export default function Navbar({
                       {showCompositionAggregation
                         ? 'Disable composite aggregation'
                         : 'Enable composite aggregation'}
+                    </span>
+                  </Menubar.Item>
+                  <Menubar.Item
+                    className={settingsItemClass}
+                    onSelect={() =>
+                      onToggleConceptualOperationsCompartment?.(
+                        !showConceptualOperationsCompartment,
+                      )
+                    }
+                  >
+                    <span>
+                      {showConceptualOperationsCompartment
+                        ? 'Disable operations compartment'
+                        : 'Enable operations compartment'}
                     </span>
                   </Menubar.Item>
                   <Menubar.Item

@@ -38,6 +38,8 @@ const MIN_INFO_WIDTH = 370
 const STORAGE_KEYS = {
   showBackground: 'modelizer.showBackground',
   showAccentColors: 'modelizer.showAccentColors',
+  showConceptualOperationsCompartment:
+    'modelizer.showConceptualOperationsCompartment',
   nullDisplayMode: 'modelizer.nullDisplayMode',
   confirmDelete: 'modelizer.confirmDelete',
   includeAccentColorsInExport: 'modelizer.includeAccentColorsInExport',
@@ -114,6 +116,10 @@ function App() {
   const [showAccentColors, setShowAccentColors] = useState(() =>
     readStoredBool(STORAGE_KEYS.showAccentColors, true),
   )
+  const [showConceptualOperationsCompartment, setShowConceptualOperationsCompartment] =
+    useState(() =>
+      readStoredBool(STORAGE_KEYS.showConceptualOperationsCompartment, false),
+    )
   const [nullDisplayMode, setNullDisplayMode] = useState(() =>
     readStoredString(STORAGE_KEYS.nullDisplayMode, 'not-null'),
   )
@@ -244,6 +250,13 @@ function App() {
   }, [showAccentColors])
 
   useEffect(() => {
+    writeStoredBool(
+      STORAGE_KEYS.showConceptualOperationsCompartment,
+      showConceptualOperationsCompartment,
+    )
+  }, [showConceptualOperationsCompartment])
+
+  useEffect(() => {
     writeStoredString(STORAGE_KEYS.nullDisplayMode, nullDisplayMode)
   }, [nullDisplayMode])
 
@@ -361,6 +374,7 @@ function App() {
     reactFlowInstance,
     reactFlowWrapper,
     showAccentColors,
+    showConceptualOperationsCompartment,
     showCompositionAggregation,
     nullDisplayMode,
     onDuplicateEdge,
@@ -800,6 +814,9 @@ function App() {
             onExportPng={onExportPng}
             showBackground={showBackground}
             showAccentColors={showAccentColors}
+            showConceptualOperationsCompartment={
+              showConceptualOperationsCompartment
+            }
             showFullscreen={showFullscreen}
             showCompositionAggregation={showCompositionAggregation}
             showNotes={showNotes}
@@ -807,6 +824,9 @@ function App() {
             onToggleBackground={() => setShowBackground((current) => !current)}
             onToggleAccentColors={() =>
               setShowAccentColors((current) => !current)
+            }
+            onToggleConceptualOperationsCompartment={() =>
+              setShowConceptualOperationsCompartment((current) => !current)
             }
             onToggleFullscreen={() => setShowFullscreen((current) => !current)}
             onToggleCompositionAggregation={() =>
