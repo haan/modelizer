@@ -7,7 +7,7 @@ RUN npm ci
 COPY . .
 RUN npm run build
 
-FROM svenstaro/miniserve:0.33.0-alpine
+FROM svenstaro/miniserve:0.35.0-alpine
 
 COPY --from=builder /app/dist /srv
 
