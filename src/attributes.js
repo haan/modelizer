@@ -147,7 +147,8 @@ export const ATTRIBUTE_TYPE_OPTIONS = [
   { value: 'timestamp', label: 'timestamp' },
   { value: 'date', label: 'date' },
   { value: 'time', label: 'time' },
-  { value: 'enum(e)', label: 'enum(e)' }
+  { value: 'enum(e)', label: 'enum(e)' },
+  { value: 'blob', label: 'blob' }
 ]
 
 export function createAttribute(nodeId, name) {
