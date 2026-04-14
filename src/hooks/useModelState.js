@@ -13,6 +13,7 @@ import { normalizeEdges } from '../model/edgeUtils.js'
 import {
   ASSOCIATION_EDGE_TYPE,
   ASSOCIATION_LINE_STYLE_ORTHOGONAL,
+  ASSOCIATION_LINE_STYLE_MANUAL,
   ASSOCIATION_LINE_STYLE_STRAIGHT,
   ASSOCIATION_HELPER_NODE_TYPE,
   ASSOCIATION_NODE_SIZE,
@@ -115,6 +116,66 @@ const getAttributeIdFromHandle = (handleId) => {
 }
 
 const isAttributeHandle = (handleId) => Boolean(getAttributeIdFromHandle(handleId))
+
+const normalizeControlPoints = (value) => {
+  if (!Array.isArray(value)) {
+    return []
+  }
+
+  return value
+    .map((entry) => ({
+      x: Number(entry?.x),
+      y: Number(entry?.y),
+    }))
+    .filter((entry) => Number.isFinite(entry.x) && Number.isFinite(entry.y))
+}
+
+const getDistanceSquaredToSegment = (point, segmentStart, segmentEnd) => {
+  const vx = segmentEnd.x - segmentStart.x
+  const vy = segmentEnd.y - segmentStart.y
+  const wx = point.x - segmentStart.x
+  const wy = point.y - segmentStart.y
+  const segmentLengthSquared = vx * vx + vy * vy
+
+  if (segmentLengthSquared === 0) {
+    const dx = point.x - segmentStart.x
+    const dy = point.y - segmentStart.y
+    return dx * dx + dy * dy
+  }
+
+  const t = Math.max(
+    0,
+    Math.min(1, (wx * vx + wy * vy) / segmentLengthSquared),
+  )
+  const projectionX = segmentStart.x + t * vx
+  const projectionY = segmentStart.y + t * vy
+  const dx = point.x - projectionX
+  const dy = point.y - projectionY
+  return dx * dx + dy * dy
+}
+
+const getClosestSegmentIndex = (pathPoints, point) => {
+  if (!Array.isArray(pathPoints) || pathPoints.length < 2) {
+    return 0
+  }
+
+  let bestIndex = 0
+  let bestDistance = Number.POSITIVE_INFINITY
+
+  for (let index = 0; index < pathPoints.length - 1; index += 1) {
+    const distance = getDistanceSquaredToSegment(
+      point,
+      pathPoints[index],
+      pathPoints[index + 1],
+    )
+    if (distance < bestDistance) {
+      bestDistance = distance
+      bestIndex = index
+    }
+  }
+
+  return bestIndex
+}
 
 export function useModelState({
   reactFlowInstance,
@@ -760,6 +821,7 @@ export function useModelState({
                       roleA: '',
                       roleB: '',
                       lineStyle: ASSOCIATION_LINE_STYLE_ORTHOGONAL,
+                      controlPoints: [],
                     }
                 : {
                     multiplicityA: '',
@@ -1462,7 +1524,9 @@ export function useModelState({
       const nextLineStyle =
         nextValue === ASSOCIATION_LINE_STYLE_STRAIGHT
           ? ASSOCIATION_LINE_STYLE_STRAIGHT
-          : ASSOCIATION_LINE_STYLE_ORTHOGONAL
+          : nextValue === ASSOCIATION_LINE_STYLE_MANUAL
+            ? ASSOCIATION_LINE_STYLE_MANUAL
+            : ASSOCIATION_LINE_STYLE_ORTHOGONAL
       updateEdgesAndPanel((current) =>
         current.map((edge) => {
           if (edge.id !== edgeId) {
@@ -1491,6 +1555,203 @@ export function useModelState({
       )
     },
     [updateEdgesAndPanel],
+  )
+
+  const onUpdateAssociationControlPoints = useCallback(
+    (edgeId, nextPoints) => {
+      const normalizedPoints = normalizeControlPoints(nextPoints)
+      updateEdgesAndPanel((current) =>
+        current.map((edge) => {
+          if (edge.id !== edgeId) {
+            return edge
+          }
+
+          if (
+            edge.type !== ASSOCIATION_EDGE_TYPE &&
+            edge.type !== COMPOSITION_EDGE_TYPE
+          ) {
+            return edge
+          }
+
+          return {
+            ...edge,
+            data: {
+              ...(edge.data ?? {}),
+              controlPoints: normalizedPoints,
+            },
+          }
+        }),
+      )
+    },
+    [updateEdgesAndPanel],
+  )
+
+  const onMoveAssociationControlPoint = useCallback(
+    (edgeId, controlPointIndex, nextPoint) => {
+      if (!Number.isFinite(controlPointIndex)) {
+        return
+      }
+
+      updateEdgesAndPanel((current) =>
+        current.map((edge) => {
+          if (edge.id !== edgeId) {
+            return edge
+          }
+
+          if (
+            edge.type !== ASSOCIATION_EDGE_TYPE &&
+            edge.type !== COMPOSITION_EDGE_TYPE
+          ) {
+            return edge
+          }
+
+          const controlPoints = normalizeControlPoints(edge.data?.controlPoints)
+          if (
+            controlPointIndex < 0 ||
+            controlPointIndex >= controlPoints.length ||
+            !Number.isFinite(nextPoint?.x) ||
+            !Number.isFinite(nextPoint?.y)
+          ) {
+            return edge
+          }
+
+          const nextControlPoints = [...controlPoints]
+          nextControlPoints[controlPointIndex] = {
+            x: nextPoint.x,
+            y: nextPoint.y,
+          }
+
+          return {
+            ...edge,
+            data: {
+              ...(edge.data ?? {}),
+              controlPoints: nextControlPoints,
+            },
+          }
+        }),
+      )
+    },
+    [updateEdgesAndPanel],
+  )
+
+  const onDeleteAssociationControlPoint = useCallback(
+    (edgeId, controlPointIndex) => {
+      if (!Number.isFinite(controlPointIndex)) {
+        return
+      }
+
+      updateEdgesAndPanel((current) =>
+        current.map((edge) => {
+          if (edge.id !== edgeId) {
+            return edge
+          }
+
+          if (
+            edge.type !== ASSOCIATION_EDGE_TYPE &&
+            edge.type !== COMPOSITION_EDGE_TYPE
+          ) {
+            return edge
+          }
+
+          const controlPoints = normalizeControlPoints(edge.data?.controlPoints)
+          if (
+            controlPointIndex < 0 ||
+            controlPointIndex >= controlPoints.length
+          ) {
+            return edge
+          }
+
+          const nextControlPoints = controlPoints.filter(
+            (_entry, index) => index !== controlPointIndex,
+          )
+
+          return {
+            ...edge,
+            data: {
+              ...(edge.data ?? {}),
+              controlPoints: nextControlPoints,
+            },
+          }
+        }),
+      )
+    },
+    [updateEdgesAndPanel],
+  )
+
+  const onResetAssociationRouting = useCallback(
+    (edgeId) => {
+      onUpdateAssociationControlPoints(edgeId, [])
+    },
+    [onUpdateAssociationControlPoints],
+  )
+
+  const onEdgeDoubleClick = useCallback(
+    (event, edge) => {
+      if (
+        !edge ||
+        normalizedActiveView !== VIEW_CONCEPTUAL ||
+        (edge.type !== ASSOCIATION_EDGE_TYPE &&
+          edge.type !== COMPOSITION_EDGE_TYPE)
+      ) {
+        return
+      }
+
+      const flowPoint = reactFlowInstance?.screenToFlowPosition
+        ? reactFlowInstance.screenToFlowPosition({
+            x: event.clientX,
+            y: event.clientY,
+          })
+        : null
+      if (!flowPoint) {
+        return
+      }
+
+      const sourceNode =
+        reactFlowInstance?.getNode(edge.source) ??
+        nodesRef.current.find((node) => node.id === edge.source)
+      const targetNode =
+        reactFlowInstance?.getNode(edge.target) ??
+        nodesRef.current.find((node) => node.id === edge.target)
+      const layout = getAssociationLayout(sourceNode, targetNode, edge.data)
+      if (!layout) {
+        return
+      }
+
+      const controlPoints = normalizeControlPoints(edge.data?.controlPoints)
+      const isManualRouting =
+        edge.data?.lineStyle === ASSOCIATION_LINE_STYLE_MANUAL ||
+        controlPoints.length > 0
+      const basePathPoints = layout.pathPoints ?? [
+        { x: layout.sourceX, y: layout.sourceY },
+        { x: layout.targetX, y: layout.targetY },
+      ]
+      const insertSegmentIndex = getClosestSegmentIndex(basePathPoints, flowPoint)
+      let insertAt
+      if (isManualRouting) {
+        const firstManualSegmentIndex = 1
+        const lastManualSegmentIndex = controlPoints.length + 1
+        if (insertSegmentIndex <= firstManualSegmentIndex) {
+          insertAt = 0
+        } else if (insertSegmentIndex >= lastManualSegmentIndex) {
+          insertAt = controlPoints.length
+        } else {
+          insertAt = insertSegmentIndex - 1
+        }
+      } else {
+        insertAt = Math.max(
+          0,
+          Math.min(controlPoints.length, insertSegmentIndex),
+        )
+      }
+      const nextControlPoints = [...controlPoints]
+      nextControlPoints.splice(insertAt, 0, { x: flowPoint.x, y: flowPoint.y })
+      onUpdateAssociationControlPoints(edge.id, nextControlPoints)
+    },
+    [
+      normalizedActiveView,
+      onUpdateAssociationControlPoints,
+      reactFlowInstance,
+    ],
   )
 
   const onToggleAssociationComposition = useCallback(
@@ -2160,6 +2421,23 @@ export function useModelState({
         visibleClassIds.has(edge.source) && visibleClassIds.has(edge.target)
       )
     })
+    const interactiveAssociationEdges = visibleAssociationEdges.map((edge) => {
+      if (
+        edge.type !== ASSOCIATION_EDGE_TYPE &&
+        edge.type !== COMPOSITION_EDGE_TYPE
+      ) {
+        return edge
+      }
+
+      return {
+        ...edge,
+        data: {
+          ...(edge.data ?? {}),
+          onMoveControlPoint: onMoveAssociationControlPoint,
+          onDeleteControlPoint: onDeleteAssociationControlPoint,
+        },
+      }
+    })
     const visibleAssociationIds = new Set(
       visibleAssociationEdges.map((edge) => edge.id),
     )
@@ -2191,10 +2469,12 @@ export function useModelState({
       return visibleAssociationIds.has(baseAssociationId)
     })
 
-    return [...visibleAssociationEdges, ...visibleAssociativeEdges]
+    return [...interactiveAssociationEdges, ...visibleAssociativeEdges]
   }, [
     edges,
     normalizedActiveView,
+    onDeleteAssociationControlPoint,
+    onMoveAssociationControlPoint,
     showCompositionAggregation,
     visibleAttributeIds,
     visibleClassIds,
@@ -2293,7 +2573,9 @@ export function useModelState({
     onUpdateAssociationRole,
     onUpdateAssociationComment,
     onUpdateAssociationLineStyle,
+    onResetAssociationRouting,
     onToggleAssociationComposition,
+    onEdgeDoubleClick,
     onHighlightAssociation,
     onHighlightNote,
     onHighlightArea,

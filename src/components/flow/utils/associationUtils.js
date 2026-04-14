@@ -1,38 +1,57 @@
 import { Position, getSmoothStepPath, getStraightPath } from 'reactflow'
 import {
+  ASSOCIATION_LINE_STYLE_MANUAL,
   ASSOCIATION_LINE_STYLE_STRAIGHT,
 } from '../../../model/constants.js'
 
 const PARALLEL_OFFSET_SPACING = 25
 const STEP_SHIFT_SPACING = -20
 const SNAP_AXIS_THRESHOLD = 10
+const MANUAL_STUB_LENGTH = 18
 
-function getNodeIntersection(intersectionNode, targetNode) {
-  const intersectionMeasured = intersectionNode.measured ?? {
-    width: intersectionNode.width ?? 0,
-    height: intersectionNode.height ?? 0,
+function normalizeControlPoints(value) {
+  if (!Array.isArray(value)) {
+    return []
   }
-  const targetMeasured = targetNode.measured ?? {
-    width: targetNode.width ?? 0,
-    height: targetNode.height ?? 0,
+
+  return value
+    .map((entry) => ({
+      x: Number(entry?.x),
+      y: Number(entry?.y),
+    }))
+    .filter((entry) => Number.isFinite(entry.x) && Number.isFinite(entry.y))
+}
+
+function getNodePosition(node) {
+  return node.internals?.positionAbsolute ?? node.position ?? { x: 0, y: 0 }
+}
+
+function getNodeMeasured(node) {
+  return node.measured ?? {
+    width: node.width ?? 0,
+    height: node.height ?? 0,
   }
-  const intersectionNodePosition =
-    intersectionNode.internals?.positionAbsolute ??
-    intersectionNode.position ?? { x: 0, y: 0 }
-  const targetPosition =
-    targetNode.internals?.positionAbsolute ?? targetNode.position ?? { x: 0, y: 0 }
+}
+
+function getNodeIntersectionByPoint(intersectionNode, targetPoint) {
+  const intersectionMeasured = getNodeMeasured(intersectionNode)
+  const intersectionNodePosition = getNodePosition(intersectionNode)
 
   const w = Math.max(intersectionMeasured.width, 1) / 2
   const h = Math.max(intersectionMeasured.height, 1) / 2
 
   const x2 = intersectionNodePosition.x + w
   const y2 = intersectionNodePosition.y + h
-  const x1 = targetPosition.x + Math.max(targetMeasured.width, 1) / 2
-  const y1 = targetPosition.y + Math.max(targetMeasured.height, 1) / 2
+  const x1 = Number.isFinite(targetPoint?.x) ? targetPoint.x : x2
+  const y1 = Number.isFinite(targetPoint?.y) ? targetPoint.y : y2
 
   const xx1 = (x1 - x2) / (2 * w) - (y1 - y2) / (2 * h)
   const yy1 = (x1 - x2) / (2 * w) + (y1 - y2) / (2 * h)
-  const a = 1 / (Math.abs(xx1) + Math.abs(yy1))
+  const denominator = Math.abs(xx1) + Math.abs(yy1)
+  if (denominator === 0) {
+    return { x: x2, y: y2 }
+  }
+  const a = 1 / denominator
   const xx3 = a * xx1
   const yy3 = a * yy1
   const x = w * (xx3 + yy3) + x2
@@ -42,13 +61,9 @@ function getNodeIntersection(intersectionNode, targetNode) {
 }
 
 function getEdgePosition(node, intersectionPoint) {
-  const basePosition =
-    node.internals?.positionAbsolute ?? node.position ?? { x: 0, y: 0 }
+  const basePosition = getNodePosition(node)
   const n = { ...basePosition, ...node }
-  const measured = node.measured ?? {
-    width: node.width ?? 0,
-    height: node.height ?? 0,
-  }
+  const measured = getNodeMeasured(node)
   const width = Math.max(measured.width, 1)
   const height = Math.max(measured.height, 1)
   const nx = Math.round(n.x)
@@ -73,8 +88,30 @@ function getEdgePosition(node, intersectionPoint) {
 }
 
 function getEdgeParams(source, target) {
-  const sourceIntersectionPoint = getNodeIntersection(source, target)
-  const targetIntersectionPoint = getNodeIntersection(target, source)
+  const sourceCenter = getNodeCenter(target)
+  const targetCenter = getNodeCenter(source)
+  const sourceIntersectionPoint = getNodeIntersectionByPoint(source, sourceCenter)
+  const targetIntersectionPoint = getNodeIntersectionByPoint(target, targetCenter)
+
+  const sourcePos = getEdgePosition(source, sourceIntersectionPoint)
+  const targetPos = getEdgePosition(target, targetIntersectionPoint)
+
+  return {
+    sx: sourceIntersectionPoint.x,
+    sy: sourceIntersectionPoint.y,
+    tx: targetIntersectionPoint.x,
+    ty: targetIntersectionPoint.y,
+    sourcePos,
+    targetPos,
+  }
+}
+
+function getManualEdgeParams(source, target, controlPoints) {
+  const sourceAimPoint = controlPoints[0] ?? getNodeCenter(target)
+  const targetAimPoint =
+    controlPoints[controlPoints.length - 1] ?? getNodeCenter(source)
+  const sourceIntersectionPoint = getNodeIntersectionByPoint(source, sourceAimPoint)
+  const targetIntersectionPoint = getNodeIntersectionByPoint(target, targetAimPoint)
 
   const sourcePos = getEdgePosition(source, sourceIntersectionPoint)
   const targetPos = getEdgePosition(target, targetIntersectionPoint)
@@ -90,10 +127,10 @@ function getEdgeParams(source, target) {
 }
 
 function getNodeCenter(node) {
-  const width = node?.measured?.width ?? node?.width ?? 0
-  const height = node?.measured?.height ?? node?.height ?? 0
-  const position =
-    node?.internals?.positionAbsolute ?? node?.position ?? { x: 0, y: 0 }
+  const measured = getNodeMeasured(node ?? {})
+  const width = measured.width ?? 0
+  const height = measured.height ?? 0
+  const position = getNodePosition(node ?? {})
 
   return { x: position.x + width / 2, y: position.y + height / 2 }
 }
@@ -144,9 +181,166 @@ function getPositionSign(sourceCenter, targetCenter, isHorizontal) {
   return Math.sign(secondaryDelta) || 1
 }
 
+function getPerpendicularDirection(position) {
+  switch (position) {
+    case Position.Left:
+      return { x: -1, y: 0 }
+    case Position.Right:
+      return { x: 1, y: 0 }
+    case Position.Top:
+      return { x: 0, y: -1 }
+    case Position.Bottom:
+      return { x: 0, y: 1 }
+    default:
+      return { x: 0, y: 0 }
+  }
+}
+
+function getStubPoint(anchor, position, length) {
+  const direction = getPerpendicularDirection(position)
+  return {
+    x: anchor.x + direction.x * length,
+    y: anchor.y + direction.y * length,
+  }
+}
+
+function getClampedStubLength(anchor, referencePoint) {
+  const distance = Math.hypot(
+    referencePoint.x - anchor.x,
+    referencePoint.y - anchor.y,
+  )
+  return Math.min(MANUAL_STUB_LENGTH, distance / 2)
+}
+
+function dedupeConsecutivePoints(points) {
+  return points.filter((point, index) => {
+    if (index === 0) {
+      return true
+    }
+
+    const previous = points[index - 1]
+    return previous.x !== point.x || previous.y !== point.y
+  })
+}
+
+function getPolylinePath(points) {
+  if (!Array.isArray(points) || points.length === 0) {
+    return ''
+  }
+  return points.reduce((result, point, index) => {
+    if (index === 0) {
+      return `M ${point.x} ${point.y}`
+    }
+    return `${result} L ${point.x} ${point.y}`
+  }, '')
+}
+
+function getPolylineMidpointByLength(points) {
+  if (!Array.isArray(points) || points.length === 0) {
+    return { x: 0, y: 0 }
+  }
+  if (points.length === 1) {
+    return { x: points[0].x, y: points[0].y }
+  }
+
+  const segmentLengths = []
+  let totalLength = 0
+
+  for (let index = 0; index < points.length - 1; index += 1) {
+    const start = points[index]
+    const end = points[index + 1]
+    const length = Math.hypot(end.x - start.x, end.y - start.y)
+    segmentLengths.push(length)
+    totalLength += length
+  }
+
+  if (totalLength === 0) {
+    return { x: points[0].x, y: points[0].y }
+  }
+
+  const halfLength = totalLength / 2
+  let distance = 0
+  for (let index = 0; index < segmentLengths.length; index += 1) {
+    const segmentLength = segmentLengths[index]
+    if (distance + segmentLength < halfLength) {
+      distance += segmentLength
+      continue
+    }
+
+    const start = points[index]
+    const end = points[index + 1]
+    if (segmentLength === 0) {
+      return { x: start.x, y: start.y }
+    }
+
+    const t = (halfLength - distance) / segmentLength
+    return {
+      x: start.x + (end.x - start.x) * t,
+      y: start.y + (end.y - start.y) * t,
+    }
+  }
+
+  const lastPoint = points[points.length - 1]
+  return { x: lastPoint.x, y: lastPoint.y }
+}
+
 export function getAssociationLayout(sourceNode, targetNode, data) {
   if (!sourceNode || !targetNode) {
     return null
+  }
+
+  const controlPoints = normalizeControlPoints(data?.controlPoints)
+  const isManualLineStyle = data?.lineStyle === ASSOCIATION_LINE_STYLE_MANUAL
+  const isManualRouting = isManualLineStyle || controlPoints.length > 0
+
+  if (isManualRouting) {
+    const { sx, sy, tx, ty, sourcePos, targetPos } = getManualEdgeParams(
+      sourceNode,
+      targetNode,
+      controlPoints,
+    )
+    const sourceAnchor = { x: sx, y: sy }
+    const targetAnchor = { x: tx, y: ty }
+    const sourceReferencePoint = controlPoints[0] ?? targetAnchor
+    const targetReferencePoint =
+      controlPoints[controlPoints.length - 1] ?? sourceAnchor
+    const sourceStub = getStubPoint(
+      sourceAnchor,
+      sourcePos,
+      getClampedStubLength(sourceAnchor, sourceReferencePoint),
+    )
+    const targetStub = getStubPoint(
+      targetAnchor,
+      targetPos,
+      getClampedStubLength(targetAnchor, targetReferencePoint),
+    )
+    const pathPoints = dedupeConsecutivePoints([
+      sourceAnchor,
+      sourceStub,
+      ...controlPoints,
+      targetStub,
+      targetAnchor,
+    ])
+    const midpoint = getPolylineMidpointByLength(pathPoints)
+    const pointBeforeTarget = pathPoints[pathPoints.length - 2] ?? pathPoints[0]
+    const incomingDx = tx - pointBeforeTarget.x
+    const incomingDy = ty - pointBeforeTarget.y
+
+    return {
+      edgePath: getPolylinePath(pathPoints),
+      labelX: midpoint.x,
+      labelY: midpoint.y,
+      sourcePos,
+      targetPos,
+      sourceX: sx,
+      sourceY: sy,
+      targetX: tx,
+      targetY: ty,
+      pathPoints,
+      incomingDx,
+      incomingDy,
+      isManualRouting: true,
+    }
   }
 
   const { sx, sy, tx, ty, sourcePos, targetPos } = getEdgeParams(
@@ -231,6 +425,11 @@ export function getAssociationLayout(sourceNode, targetNode, data) {
       : rawLabelY
   }
 
+  const pathPoints = [
+    { x: sourceXOffset, y: sourceYOffset },
+    { x: targetXOffset, y: targetYOffset },
+  ]
+
   return {
     edgePath,
     labelX,
@@ -241,5 +440,9 @@ export function getAssociationLayout(sourceNode, targetNode, data) {
     sourceY: sourceYOffset,
     targetX: targetXOffset,
     targetY: targetYOffset,
+    pathPoints,
+    incomingDx: targetXOffset - sourceXOffset,
+    incomingDy: targetYOffset - sourceYOffset,
+    isManualRouting: false,
   }
 }

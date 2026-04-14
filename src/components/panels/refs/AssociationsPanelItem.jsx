@@ -1,10 +1,12 @@
 import { useEffect, useRef, useState } from 'react'
 import * as Accordion from '@radix-ui/react-accordion'
+import * as Tooltip from '@radix-ui/react-tooltip'
 import SelectField from '../../ui/Select.jsx'
 import Input from '../../ui/Input.jsx'
 import CheckboxInput from '../../ui/Checkbox.jsx'
 import {
   ASSOCIATION_LINE_STYLE_ORTHOGONAL,
+  ASSOCIATION_LINE_STYLE_MANUAL,
   ASSOCIATION_LINE_STYLE_STRAIGHT,
 } from '../../../model/constants.js'
 
@@ -16,6 +18,8 @@ const MULTIPLICITY_OPTIONS = [
   { value: '0..*', label: '0..*' },
   { value: '1..*', label: '1..*' },
 ]
+const TOOLTIP_CONTENT_CLASS =
+  'rounded-md border border-base-content/10 bg-base-100 px-2 py-1 text-xs text-base-content shadow-lg'
 
 export default function AssociationsPanelItem({
   edge,
@@ -29,6 +33,7 @@ export default function AssociationsPanelItem({
   onUpdateAssociationRole,
   onUpdateAssociationComment,
   onUpdateAssociationLineStyle,
+  onResetAssociationRouting,
   showCompositionAggregation = false,
   onToggleAssociationComposition,
   onHighlightAssociation,
@@ -59,11 +64,36 @@ export default function AssociationsPanelItem({
   const lineStyle =
     edge.data?.lineStyle === ASSOCIATION_LINE_STYLE_STRAIGHT
       ? ASSOCIATION_LINE_STYLE_STRAIGHT
-      : ASSOCIATION_LINE_STYLE_ORTHOGONAL
+      : edge.data?.lineStyle === ASSOCIATION_LINE_STYLE_MANUAL
+        ? ASSOCIATION_LINE_STYLE_MANUAL
+        : ASSOCIATION_LINE_STYLE_ORTHOGONAL
+  const controlPoints = Array.isArray(edge.data?.controlPoints)
+    ? edge.data.controlPoints
+    : []
+  const hasManualControlPoints = canEditLineStyle && controlPoints.length > 0
+  const isManualLineStyle =
+    canEditLineStyle && lineStyle === ASSOCIATION_LINE_STYLE_MANUAL
+  const isManualRouting = isManualLineStyle || hasManualControlPoints
+  const applyAutoStyle = (nextStyle) => {
+    if (hasManualControlPoints) {
+      onResetAssociationRouting?.(edge.id)
+    }
+    onUpdateAssociationLineStyle?.(edge.id, nextStyle)
+  }
+  const applyManualStyle = () => {
+    onResetAssociationRouting?.(edge.id)
+    onUpdateAssociationLineStyle?.(edge.id, ASSOCIATION_LINE_STYLE_MANUAL)
+  }
   const [isEditing, setIsEditing] = useState(false)
   const [draft, setDraft] = useState(label)
   const inputRef = useRef(null)
   const originalLabelRef = useRef(label)
+  const isMac =
+    typeof navigator !== 'undefined' &&
+    /Mac|iPhone|iPad|iPod/.test(navigator.platform)
+  const manualDeleteModifierLabel = isMac
+    ? 'Option (Alt) + click a handle: remove it'
+    : 'Alt + click a handle: remove it'
   const normalizeMultiplicity = (value) =>
     MULTIPLICITY_OPTIONS.some((option) => option.value === value)
       ? value
@@ -471,7 +501,7 @@ export default function AssociationsPanelItem({
                     Style
                   </div>
                   <div
-                    className="grid grid-cols-2 gap-2"
+                    className="grid grid-cols-3 gap-2"
                     role="radiogroup"
                     aria-label="Association style"
                   >
@@ -480,18 +510,14 @@ export default function AssociationsPanelItem({
                       role="radio"
                       aria-checked={
                         lineStyle === ASSOCIATION_LINE_STYLE_STRAIGHT
+                        && !isManualRouting
                       }
                       className={`inline-flex items-center justify-center gap-1 rounded-md border px-2 py-1.5 text-xs transition-colors ${
-                        lineStyle === ASSOCIATION_LINE_STYLE_STRAIGHT
+                        lineStyle === ASSOCIATION_LINE_STYLE_STRAIGHT && !isManualRouting
                           ? 'border-primary bg-primary/15 text-base-content'
                           : 'border-base-content/20 hover:bg-base-200'
                       }`}
-                      onClick={() =>
-                        onUpdateAssociationLineStyle?.(
-                          edge.id,
-                          ASSOCIATION_LINE_STYLE_STRAIGHT,
-                        )
-                      }
+                      onClick={() => applyAutoStyle(ASSOCIATION_LINE_STYLE_STRAIGHT)}
                     >
                       <svg
                         xmlns="http://www.w3.org/2000/svg"
@@ -515,18 +541,14 @@ export default function AssociationsPanelItem({
                       role="radio"
                       aria-checked={
                         lineStyle === ASSOCIATION_LINE_STYLE_ORTHOGONAL
+                        && !isManualRouting
                       }
                       className={`inline-flex items-center justify-center gap-1 rounded-md border px-2 py-1.5 text-xs transition-colors ${
-                        lineStyle === ASSOCIATION_LINE_STYLE_ORTHOGONAL
+                        lineStyle === ASSOCIATION_LINE_STYLE_ORTHOGONAL && !isManualRouting
                           ? 'border-primary bg-primary/15 text-base-content'
                           : 'border-base-content/20 hover:bg-base-200'
                       }`}
-                      onClick={() =>
-                        onUpdateAssociationLineStyle?.(
-                          edge.id,
-                          ASSOCIATION_LINE_STYLE_ORTHOGONAL,
-                        )
-                      }
+                      onClick={() => applyAutoStyle(ASSOCIATION_LINE_STYLE_ORTHOGONAL)}
                     >
                       <svg
                         xmlns="http://www.w3.org/2000/svg"
@@ -545,6 +567,52 @@ export default function AssociationsPanelItem({
                       </svg>
                       <span>Orthogonal</span>
                     </button>
+                    <Tooltip.Provider delayDuration={100}>
+                      <Tooltip.Root>
+                        <Tooltip.Trigger asChild>
+                          <button
+                            type="button"
+                            role="radio"
+                            aria-checked={isManualRouting}
+                            className={`inline-flex items-center justify-center gap-1 rounded-md border px-2 py-1.5 text-xs transition-colors ${
+                              isManualRouting
+                                ? 'border-primary bg-primary/15 text-base-content'
+                                : 'border-base-content/20 hover:bg-base-200'
+                            }`}
+                            onClick={applyManualStyle}
+                          >
+                            <svg
+                              xmlns="http://www.w3.org/2000/svg"
+                              viewBox="0 0 20 20"
+                              fill="none"
+                              stroke="currentColor"
+                              strokeWidth="1.75"
+                              strokeLinecap="butt"
+                              strokeLinejoin="miter"
+                              className="h-4 w-4"
+                              aria-hidden="true"
+                            >
+                              <polyline points="6,14 6,8 14,14 14,6" />
+                              <rect x="2" y="14" width="4" height="4" />
+                              <rect x="14" y="2" width="4" height="4" />
+                            </svg>
+                            <span>Manual</span>
+                          </button>
+                        </Tooltip.Trigger>
+                        <Tooltip.Portal>
+                          <Tooltip.Content
+                            side="bottom"
+                            align="center"
+                            sideOffset={8}
+                            className={TOOLTIP_CONTENT_CLASS}
+                          >
+                            <div>Double-click a segment: add a handle</div>
+                            <div>{manualDeleteModifierLabel}</div>
+                            <Tooltip.Arrow className="fill-base-100" />
+                          </Tooltip.Content>
+                        </Tooltip.Portal>
+                      </Tooltip.Root>
+                    </Tooltip.Provider>
                   </div>
                 </div>
               ) : null}

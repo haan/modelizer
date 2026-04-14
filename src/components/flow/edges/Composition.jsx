@@ -3,6 +3,7 @@ import { AssociationLabel } from '../labels/AssociationLabel.jsx'
 import { MultiplicityLabel } from '../labels/MultiplicityLabel.jsx'
 import { getAssociationLayout } from '../utils/associationUtils.js'
 import { ASSOCIATION_LINE_STYLE_STRAIGHT } from '../../../model/constants.js'
+import { EdgeControlPoints } from './EdgeControlPoints.jsx'
 
 function getEndpointLabelTransform(position, x, y) {
   const offset = 0
@@ -45,6 +46,9 @@ export function Composition({
   const multiplicityA = data?.multiplicityA ?? ''
   const multiplicityB = data?.multiplicityB ?? ''
   const name = data?.name ?? ''
+  const controlPoints = Array.isArray(data?.controlPoints) ? data.controlPoints : []
+  const onMoveControlPoint = data?.onMoveControlPoint
+  const onDeleteControlPoint = data?.onDeleteControlPoint
   const strokeClass = selected ? 'text-primary' : 'text-base-content/70'
   const diamondClass = selected ? 'text-primary' : 'text-base-content'
   const {
@@ -57,18 +61,32 @@ export function Composition({
     sourceY,
     targetX,
     targetY,
+    incomingDx,
+    incomingDy,
+    isManualRouting,
   } = layout
   const isStraightLine = data?.lineStyle === ASSOCIATION_LINE_STYLE_STRAIGHT
   const isHorizontal =
     targetPos === 'left' || targetPos === 'right'
-  const diamondWidth = isStraightLine ? 14 : isHorizontal ? 14 : 10
-  const diamondHeight = isStraightLine ? 10 : isHorizontal ? 10 : 14
+  const diamondWidth =
+    isManualRouting || isStraightLine ? 14 : isHorizontal ? 14 : 10
+  const diamondHeight =
+    isManualRouting || isStraightLine ? 10 : isHorizontal ? 10 : 14
   const diamondHalfWidth = diamondWidth / 2
   const diamondHalfHeight = diamondHeight / 2
-  const diamondOffset = isStraightLine ? diamondWidth / 2 : 7
+  const diamondOffset =
+    isManualRouting || isStraightLine ? diamondWidth / 2 : 7
   let diamondX = targetX
   let diamondY = targetY
-  if (isStraightLine) {
+  if (isManualRouting) {
+    const dx = incomingDx
+    const dy = incomingDy
+    const length = Math.hypot(dx, dy) || 1
+    const ux = dx / length
+    const uy = dy / length
+    diamondX = targetX - ux * diamondOffset
+    diamondY = targetY - uy * diamondOffset
+  } else if (isStraightLine) {
     const dx = targetX - sourceX
     const dy = targetY - sourceY
     const length = Math.hypot(dx, dy) || 1
@@ -102,12 +120,12 @@ export function Composition({
     }
   }
   const diamondRotationDeg = (() => {
-    if (!isStraightLine) {
+    if (!isManualRouting && !isStraightLine) {
       return 0
     }
 
-    const dx = targetX - sourceX
-    const dy = targetY - sourceY
+    const dx = isManualRouting ? incomingDx : targetX - sourceX
+    const dy = isManualRouting ? incomingDy : targetY - sourceY
     if (dx === 0 && dy === 0) {
       return 0
     }
@@ -126,6 +144,13 @@ export function Composition({
         style={style}
       />
       <path className="react-flow__edge-interaction" d={edgePath} fill="none" />
+      <EdgeControlPoints
+        edgeId={id}
+        controlPoints={controlPoints}
+        selected={selected}
+        onMoveControlPoint={onMoveControlPoint}
+        onDeleteControlPoint={onDeleteControlPoint}
+      />
       <EdgeLabelRenderer>
         {multiplicityA ? (
           <MultiplicityLabel

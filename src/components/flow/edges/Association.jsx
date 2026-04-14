@@ -3,6 +3,7 @@ import { AssociationLabel } from '../labels/AssociationLabel.jsx'
 import { MultiplicityLabel } from '../labels/MultiplicityLabel.jsx'
 import { RoleLabel } from '../labels/RoleLabel.jsx'
 import { getAssociationLayout } from '../utils/associationUtils.js'
+import { EdgeControlPoints } from './EdgeControlPoints.jsx'
 
 function getEndpointLabelTransform(position, x, y) {
   const offset = 0
@@ -60,6 +61,9 @@ export function Association({
   const roleA = data?.roleA ?? ''
   const roleB = data?.roleB ?? ''
   const name = data?.name ?? ''
+  const controlPoints = Array.isArray(data?.controlPoints) ? data.controlPoints : []
+  const onMoveControlPoint = data?.onMoveControlPoint
+  const onDeleteControlPoint = data?.onDeleteControlPoint
   const strokeClass = selected ? 'text-primary' : 'text-base-content/70'
   const {
     edgePath,
@@ -87,6 +91,13 @@ export function Association({
         className="react-flow__edge-interaction"
         d={edgePath}
         fill="none"
+      />
+      <EdgeControlPoints
+        edgeId={id}
+        controlPoints={controlPoints}
+        selected={selected}
+        onMoveControlPoint={onMoveControlPoint}
+        onDeleteControlPoint={onDeleteControlPoint}
       />
       <EdgeLabelRenderer>
         {multiplicityA ? (

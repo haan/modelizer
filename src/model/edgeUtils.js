@@ -1,10 +1,24 @@
 import {
   ASSOCIATION_LINE_STYLE_ORTHOGONAL,
+  ASSOCIATION_LINE_STYLE_MANUAL,
   ASSOCIATION_LINE_STYLE_STRAIGHT,
   ASSOCIATION_EDGE_TYPE,
   COMPOSITION_EDGE_TYPE,
   REFLEXIVE_EDGE_TYPE,
 } from './constants.js'
+
+function normalizeControlPoints(value) {
+  if (!Array.isArray(value)) {
+    return []
+  }
+
+  return value
+    .map((entry) => ({
+      x: Number(entry?.x),
+      y: Number(entry?.y),
+    }))
+    .filter((entry) => Number.isFinite(entry.x) && Number.isFinite(entry.y))
+}
 
 function normalizeAssociationEdgeLineStyle(edge) {
   if (
@@ -18,9 +32,19 @@ function normalizeAssociationEdgeLineStyle(edge) {
   const normalizedLineStyle =
     currentData.lineStyle === ASSOCIATION_LINE_STYLE_STRAIGHT
       ? ASSOCIATION_LINE_STYLE_STRAIGHT
-      : ASSOCIATION_LINE_STYLE_ORTHOGONAL
+      : currentData.lineStyle === ASSOCIATION_LINE_STYLE_MANUAL
+        ? ASSOCIATION_LINE_STYLE_MANUAL
+        : ASSOCIATION_LINE_STYLE_ORTHOGONAL
+  const normalizedControlPoints = normalizeControlPoints(currentData.controlPoints)
+  const hasSameControlPoints =
+    Array.isArray(currentData.controlPoints) &&
+    currentData.controlPoints.length === normalizedControlPoints.length &&
+    currentData.controlPoints.every((entry, index) => {
+      const nextEntry = normalizedControlPoints[index]
+      return entry?.x === nextEntry.x && entry?.y === nextEntry.y
+    })
 
-  if (currentData.lineStyle === normalizedLineStyle) {
+  if (currentData.lineStyle === normalizedLineStyle && hasSameControlPoints) {
     return edge
   }
 
@@ -29,6 +53,7 @@ function normalizeAssociationEdgeLineStyle(edge) {
     data: {
       ...currentData,
       lineStyle: normalizedLineStyle,
+      controlPoints: normalizedControlPoints,
     },
   }
 }

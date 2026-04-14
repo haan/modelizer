@@ -335,6 +335,7 @@ function App() {
     onConnect,
     onConnectStart,
     onConnectEnd,
+    onEdgeDoubleClick,
     isValidConnection,
     onAddClass: addClass,
     onAddNote,
@@ -351,6 +352,7 @@ function App() {
     onUpdateAssociationRole,
     onUpdateAssociationComment,
     onUpdateAssociationLineStyle,
+    onResetAssociationRouting,
     onToggleAssociationComposition,
     onHighlightAssociation,
     onHighlightNote,
@@ -897,6 +899,7 @@ function App() {
                 onUpdateAssociationRole={onUpdateAssociationRole}
                 onUpdateAssociationComment={onUpdateAssociationComment}
                 onUpdateAssociationLineStyle={onUpdateAssociationLineStyle}
+                onResetAssociationRouting={onResetAssociationRouting}
                 showCompositionAggregation={showCompositionAggregation}
                 onToggleAssociationComposition={onToggleAssociationComposition}
                 onHighlightAssociation={onHighlightAssociation}
@@ -929,6 +932,7 @@ function App() {
                   onConnect={onConnect}
                   onConnectStart={onConnectStart}
                   onConnectEnd={onConnectEnd}
+                  onEdgeDoubleClick={onEdgeDoubleClick}
                   onNodeClick={onFlowNodeClick}
                   onEdgeClick={onFlowEdgeClick}
                   onPaneClick={onPaneClick}
