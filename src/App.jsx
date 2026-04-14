@@ -350,6 +350,7 @@ function App() {
     onUpdateAssociationMultiplicity,
     onUpdateAssociationRole,
     onUpdateAssociationComment,
+    onUpdateAssociationLineStyle,
     onToggleAssociationComposition,
     onHighlightAssociation,
     onHighlightNote,
@@ -895,6 +896,7 @@ function App() {
                 onUpdateAssociationMultiplicity={onUpdateAssociationMultiplicity}
                 onUpdateAssociationRole={onUpdateAssociationRole}
                 onUpdateAssociationComment={onUpdateAssociationComment}
+                onUpdateAssociationLineStyle={onUpdateAssociationLineStyle}
                 showCompositionAggregation={showCompositionAggregation}
                 onToggleAssociationComposition={onToggleAssociationComposition}
                 onHighlightAssociation={onHighlightAssociation}

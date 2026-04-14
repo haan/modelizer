@@ -1,4 +1,7 @@
-import { Position, getSmoothStepPath } from 'reactflow'
+import { Position, getSmoothStepPath, getStraightPath } from 'reactflow'
+import {
+  ASSOCIATION_LINE_STYLE_STRAIGHT,
+} from '../../../model/constants.js'
 
 const PARALLEL_OFFSET_SPACING = 25
 const STEP_SHIFT_SPACING = -20
@@ -192,23 +195,41 @@ export function getAssociationLayout(sourceNode, targetNode, data) {
     (sourceYOffset + targetYOffset) / 2 +
     (isHorizontal ? 0 : stepShift) +
     (snapHorizontal ? sourceCenter.y - targetCenter.y : 0)
-  const [edgePath, rawLabelX, rawLabelY] = getSmoothStepPath({
-    sourceX: sourceXOffset,
-    sourceY: sourceYOffset,
-    sourcePosition: sourcePos,
-    targetPosition: targetPos,
-    targetX: targetXOffset,
-    targetY: targetYOffset,
-    centerX,
-    centerY,
-    offset: 0,
-  })
-  const labelX = snapHorizontal || snapVertical
-    ? (sourceXOffset + targetXOffset) / 2
-    : rawLabelX
-  const labelY = snapHorizontal || snapVertical
-    ? (sourceYOffset + targetYOffset) / 2
-    : rawLabelY
+  const isStraightLine = data?.lineStyle === ASSOCIATION_LINE_STYLE_STRAIGHT
+  let edgePath
+  let labelX
+  let labelY
+
+  if (isStraightLine) {
+    const [straightEdgePath] = getStraightPath({
+      sourceX: sourceXOffset,
+      sourceY: sourceYOffset,
+      targetX: targetXOffset,
+      targetY: targetYOffset,
+    })
+    edgePath = straightEdgePath
+    labelX = (sourceXOffset + targetXOffset) / 2
+    labelY = (sourceYOffset + targetYOffset) / 2
+  } else {
+    const [orthogonalEdgePath, rawLabelX, rawLabelY] = getSmoothStepPath({
+      sourceX: sourceXOffset,
+      sourceY: sourceYOffset,
+      sourcePosition: sourcePos,
+      targetPosition: targetPos,
+      targetX: targetXOffset,
+      targetY: targetYOffset,
+      centerX,
+      centerY,
+      offset: 0,
+    })
+    edgePath = orthogonalEdgePath
+    labelX = snapHorizontal || snapVertical
+      ? (sourceXOffset + targetXOffset) / 2
+      : rawLabelX
+    labelY = snapHorizontal || snapVertical
+      ? (sourceYOffset + targetYOffset) / 2
+      : rawLabelY
+  }
 
   return {
     edgePath,

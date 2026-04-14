@@ -18,6 +18,7 @@ export default function AssociationsPanel({
   onUpdateAssociationMultiplicity,
   onUpdateAssociationRole,
   onUpdateAssociationComment,
+  onUpdateAssociationLineStyle,
   onToggleAssociationComposition,
   onHighlightAssociation,
   openAssociationId: controlledOpenAssociationId,
@@ -113,6 +114,7 @@ export default function AssociationsPanel({
               onUpdateAssociationMultiplicity={onUpdateAssociationMultiplicity}
               onUpdateAssociationRole={onUpdateAssociationRole}
               onUpdateAssociationComment={onUpdateAssociationComment}
+              onUpdateAssociationLineStyle={onUpdateAssociationLineStyle}
               showCompositionAggregation={showCompositionAggregation}
               onToggleAssociationComposition={onToggleAssociationComposition}
               onHighlightAssociation={onHighlightAssociation}

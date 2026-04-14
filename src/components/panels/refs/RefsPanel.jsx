@@ -16,6 +16,7 @@ export default function RefsPanel({
   onUpdateAssociationMultiplicity,
   onUpdateAssociationRole,
   onUpdateAssociationComment,
+  onUpdateAssociationLineStyle,
   onToggleAssociationComposition,
   onHighlightAssociation,
   openAssociationId,
@@ -38,6 +39,7 @@ export default function RefsPanel({
           onUpdateAssociationMultiplicity={onUpdateAssociationMultiplicity}
           onUpdateAssociationRole={onUpdateAssociationRole}
           onUpdateAssociationComment={onUpdateAssociationComment}
+          onUpdateAssociationLineStyle={onUpdateAssociationLineStyle}
           onToggleAssociationComposition={onToggleAssociationComposition}
           onHighlightAssociation={onHighlightAssociation}
           openAssociationId={openAssociationId}

@@ -2,6 +2,7 @@ import { EdgeLabelRenderer, useStore } from 'reactflow'
 import { AssociationLabel } from '../labels/AssociationLabel.jsx'
 import { MultiplicityLabel } from '../labels/MultiplicityLabel.jsx'
 import { getAssociationLayout } from '../utils/associationUtils.js'
+import { ASSOCIATION_LINE_STYLE_STRAIGHT } from '../../../model/constants.js'
 
 function getEndpointLabelTransform(position, x, y) {
   const offset = 0
@@ -20,8 +21,8 @@ function getEndpointLabelTransform(position, x, y) {
   }
 }
 
-function getDiamondTransform(x, y) {
-  return `translate(-50%, -50%) translate(${x}px, ${y}px)`
+function getDiamondTransform(x, y, rotationDeg = 0) {
+  return `translate(-50%, -50%) translate(${x}px, ${y}px) rotate(${rotationDeg}deg)`
 }
 
 export function Composition({
@@ -57,39 +58,62 @@ export function Composition({
     targetX,
     targetY,
   } = layout
+  const isStraightLine = data?.lineStyle === ASSOCIATION_LINE_STYLE_STRAIGHT
   const isHorizontal =
     targetPos === 'left' || targetPos === 'right'
-  const diamondWidth = isHorizontal ? 14 : 10
-  const diamondHeight = isHorizontal ? 10 : 14
+  const diamondWidth = isStraightLine ? 14 : isHorizontal ? 14 : 10
+  const diamondHeight = isStraightLine ? 10 : isHorizontal ? 10 : 14
   const diamondHalfWidth = diamondWidth / 2
   const diamondHalfHeight = diamondHeight / 2
-  const diamondOffset = 7
+  const diamondOffset = isStraightLine ? diamondWidth / 2 : 7
   let diamondX = targetX
   let diamondY = targetY
-
-  switch (targetPos) {
-    case 'left':
-      diamondX = targetX - diamondOffset
-      break
-    case 'right':
-      diamondX = targetX + diamondOffset
-      break
-    case 'top':
-      diamondY = targetY - diamondOffset
-      break
-    case 'bottom':
-      diamondY = targetY + diamondOffset
-      break
-    default: {
-      const diamondVectorX = sourceX - targetX
-      const diamondVectorY = sourceY - targetY
-      const diamondLength = Math.hypot(diamondVectorX, diamondVectorY) || 1
-      diamondX =
-        targetX + (diamondVectorX / diamondLength) * diamondOffset
-      diamondY =
-        targetY + (diamondVectorY / diamondLength) * diamondOffset
+  if (isStraightLine) {
+    const dx = targetX - sourceX
+    const dy = targetY - sourceY
+    const length = Math.hypot(dx, dy) || 1
+    const ux = dx / length
+    const uy = dy / length
+    diamondX = targetX - ux * diamondOffset
+    diamondY = targetY - uy * diamondOffset
+  } else {
+    switch (targetPos) {
+      case 'left':
+        diamondX = targetX - diamondOffset
+        break
+      case 'right':
+        diamondX = targetX + diamondOffset
+        break
+      case 'top':
+        diamondY = targetY - diamondOffset
+        break
+      case 'bottom':
+        diamondY = targetY + diamondOffset
+        break
+      default: {
+        const diamondVectorX = sourceX - targetX
+        const diamondVectorY = sourceY - targetY
+        const diamondLength = Math.hypot(diamondVectorX, diamondVectorY) || 1
+        diamondX =
+          targetX + (diamondVectorX / diamondLength) * diamondOffset
+        diamondY =
+          targetY + (diamondVectorY / diamondLength) * diamondOffset
+      }
     }
   }
+  const diamondRotationDeg = (() => {
+    if (!isStraightLine) {
+      return 0
+    }
+
+    const dx = targetX - sourceX
+    const dy = targetY - sourceY
+    if (dx === 0 && dy === 0) {
+      return 0
+    }
+
+    return (Math.atan2(dy, dx) * 180) / Math.PI
+  })()
 
   return (
     <>
@@ -130,7 +154,13 @@ export function Composition({
           />
         ) : null}
         <div
-          style={{ transform: getDiamondTransform(diamondX, diamondY) }}
+          style={{
+            transform: getDiamondTransform(
+              diamondX,
+              diamondY,
+              diamondRotationDeg,
+            ),
+          }}
           className={`nodrag nopan absolute ${diamondClass}`}
         >
           <svg

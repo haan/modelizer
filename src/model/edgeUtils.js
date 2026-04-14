@@ -1,8 +1,37 @@
 import {
+  ASSOCIATION_LINE_STYLE_ORTHOGONAL,
+  ASSOCIATION_LINE_STYLE_STRAIGHT,
   ASSOCIATION_EDGE_TYPE,
   COMPOSITION_EDGE_TYPE,
   REFLEXIVE_EDGE_TYPE,
 } from './constants.js'
+
+function normalizeAssociationEdgeLineStyle(edge) {
+  if (
+    edge.type !== ASSOCIATION_EDGE_TYPE &&
+    edge.type !== COMPOSITION_EDGE_TYPE
+  ) {
+    return edge
+  }
+
+  const currentData = edge.data ?? {}
+  const normalizedLineStyle =
+    currentData.lineStyle === ASSOCIATION_LINE_STYLE_STRAIGHT
+      ? ASSOCIATION_LINE_STYLE_STRAIGHT
+      : ASSOCIATION_LINE_STYLE_ORTHOGONAL
+
+  if (currentData.lineStyle === normalizedLineStyle) {
+    return edge
+  }
+
+  return {
+    ...edge,
+    data: {
+      ...currentData,
+      lineStyle: normalizedLineStyle,
+    },
+  }
+}
 
 function getFloatingGroupKey(edge) {
   if (!edge.source || !edge.target) {
@@ -87,7 +116,8 @@ function recomputeFloatingEdgeParallels(edges) {
 }
 
 export function normalizeEdges(edges) {
-  const withParallels = recomputeFloatingEdgeParallels(edges)
+  const withLineStyles = edges.map(normalizeAssociationEdgeLineStyle)
+  const withParallels = recomputeFloatingEdgeParallels(withLineStyles)
   return recomputeReflexiveEdgeIndices(withParallels)
 }
 

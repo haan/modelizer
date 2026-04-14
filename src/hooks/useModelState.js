@@ -12,6 +12,8 @@ import { getAssociationLayout } from '../components/flow/utils/associationUtils.
 import { normalizeEdges } from '../model/edgeUtils.js'
 import {
   ASSOCIATION_EDGE_TYPE,
+  ASSOCIATION_LINE_STYLE_ORTHOGONAL,
+  ASSOCIATION_LINE_STYLE_STRAIGHT,
   ASSOCIATION_HELPER_NODE_TYPE,
   ASSOCIATION_NODE_SIZE,
   ASSOCIATIVE_EDGE_TYPE,
@@ -749,6 +751,16 @@ export function useModelState({
               ? { name: classLabel, type: typeData, autoName: true }
               : nextType === RELATIONSHIP_EDGE_TYPE
                 ? { type: typeData }
+                : nextType === ASSOCIATION_EDGE_TYPE
+                  ? {
+                      multiplicityA: '',
+                      multiplicityB: '',
+                      name: '',
+                      type: typeData,
+                      roleA: '',
+                      roleB: '',
+                      lineStyle: ASSOCIATION_LINE_STYLE_ORTHOGONAL,
+                    }
                 : {
                     multiplicityA: '',
                     multiplicityB: '',
@@ -1437,6 +1449,42 @@ export function useModelState({
             data: {
               ...(edge.data ?? {}),
               comment: nextValue,
+            },
+          }
+        }),
+      )
+    },
+    [updateEdgesAndPanel],
+  )
+
+  const onUpdateAssociationLineStyle = useCallback(
+    (edgeId, nextValue) => {
+      const nextLineStyle =
+        nextValue === ASSOCIATION_LINE_STYLE_STRAIGHT
+          ? ASSOCIATION_LINE_STYLE_STRAIGHT
+          : ASSOCIATION_LINE_STYLE_ORTHOGONAL
+      updateEdgesAndPanel((current) =>
+        current.map((edge) => {
+          if (edge.id !== edgeId) {
+            return edge
+          }
+
+          if (
+            edge.type !== ASSOCIATION_EDGE_TYPE &&
+            edge.type !== COMPOSITION_EDGE_TYPE
+          ) {
+            return edge
+          }
+
+          if (edge.data?.lineStyle === nextLineStyle) {
+            return edge
+          }
+
+          return {
+            ...edge,
+            data: {
+              ...(edge.data ?? {}),
+              lineStyle: nextLineStyle,
             },
           }
         }),
@@ -2244,6 +2292,7 @@ export function useModelState({
     onUpdateAssociationMultiplicity,
     onUpdateAssociationRole,
     onUpdateAssociationComment,
+    onUpdateAssociationLineStyle,
     onToggleAssociationComposition,
     onHighlightAssociation,
     onHighlightNote,

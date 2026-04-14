@@ -3,6 +3,10 @@ import * as Accordion from '@radix-ui/react-accordion'
 import SelectField from '../../ui/Select.jsx'
 import Input from '../../ui/Input.jsx'
 import CheckboxInput from '../../ui/Checkbox.jsx'
+import {
+  ASSOCIATION_LINE_STYLE_ORTHOGONAL,
+  ASSOCIATION_LINE_STYLE_STRAIGHT,
+} from '../../../model/constants.js'
 
 const UNDEFINED_MULTIPLICITY_VALUE = '__undefined__'
 const MULTIPLICITY_OPTIONS = [
@@ -24,6 +28,7 @@ export default function AssociationsPanelItem({
   onUpdateAssociationMultiplicity,
   onUpdateAssociationRole,
   onUpdateAssociationComment,
+  onUpdateAssociationLineStyle,
   showCompositionAggregation = false,
   onToggleAssociationComposition,
   onHighlightAssociation,
@@ -37,6 +42,8 @@ export default function AssociationsPanelItem({
   const canToggleComposition =
     showCompositionAggregation &&
     (edge.type === 'association' || edge.type === 'composition')
+  const canEditLineStyle =
+    edge.type === 'association' || edge.type === 'composition'
   const canComment =
     edge.type === 'association' ||
     edge.type === 'reflexiveAssociation' ||
@@ -49,6 +56,10 @@ export default function AssociationsPanelItem({
   const roleA = edge.data?.roleA ?? ''
   const roleB = edge.data?.roleB ?? ''
   const comment = edge.data?.comment ?? ''
+  const lineStyle =
+    edge.data?.lineStyle === ASSOCIATION_LINE_STYLE_STRAIGHT
+      ? ASSOCIATION_LINE_STYLE_STRAIGHT
+      : ASSOCIATION_LINE_STYLE_ORTHOGONAL
   const [isEditing, setIsEditing] = useState(false)
   const [draft, setDraft] = useState(label)
   const inputRef = useRef(null)
@@ -452,6 +463,89 @@ export default function AssociationsPanelItem({
                     />
                     <span>Composite aggregation</span>
                   </label>
+                </div>
+              ) : null}
+              {canEditLineStyle ? (
+                <div className="mt-2">
+                  <div className="text-xs font-semibold uppercase tracking-wide opacity-60 py-1">
+                    Style
+                  </div>
+                  <div
+                    className="grid grid-cols-2 gap-2"
+                    role="radiogroup"
+                    aria-label="Association style"
+                  >
+                    <button
+                      type="button"
+                      role="radio"
+                      aria-checked={
+                        lineStyle === ASSOCIATION_LINE_STYLE_STRAIGHT
+                      }
+                      className={`inline-flex items-center justify-center gap-1 rounded-md border px-2 py-1.5 text-xs transition-colors ${
+                        lineStyle === ASSOCIATION_LINE_STYLE_STRAIGHT
+                          ? 'border-primary bg-primary/15 text-base-content'
+                          : 'border-base-content/20 hover:bg-base-200'
+                      }`}
+                      onClick={() =>
+                        onUpdateAssociationLineStyle?.(
+                          edge.id,
+                          ASSOCIATION_LINE_STYLE_STRAIGHT,
+                        )
+                      }
+                    >
+                      <svg
+                        xmlns="http://www.w3.org/2000/svg"
+                        viewBox="0 0 20 20"
+                        fill="none"
+                        stroke="currentColor"
+                        strokeWidth="1.75"
+                        strokeLinecap="butt"
+                        strokeLinejoin="miter"
+                        className="h-4 w-4"
+                        aria-hidden="true"
+                      >
+                        <line x1="6" y1="14" x2="14" y2="6" />
+                        <rect x="2" y="14" width="4" height="4" />
+                        <rect x="14" y="2" width="4" height="4" />
+                      </svg>
+                      <span>Straight</span>
+                    </button>
+                    <button
+                      type="button"
+                      role="radio"
+                      aria-checked={
+                        lineStyle === ASSOCIATION_LINE_STYLE_ORTHOGONAL
+                      }
+                      className={`inline-flex items-center justify-center gap-1 rounded-md border px-2 py-1.5 text-xs transition-colors ${
+                        lineStyle === ASSOCIATION_LINE_STYLE_ORTHOGONAL
+                          ? 'border-primary bg-primary/15 text-base-content'
+                          : 'border-base-content/20 hover:bg-base-200'
+                      }`}
+                      onClick={() =>
+                        onUpdateAssociationLineStyle?.(
+                          edge.id,
+                          ASSOCIATION_LINE_STYLE_ORTHOGONAL,
+                        )
+                      }
+                    >
+                      <svg
+                        xmlns="http://www.w3.org/2000/svg"
+                        viewBox="0 0 20 20"
+                        fill="none"
+                        stroke="currentColor"
+                        strokeWidth="1.75"
+                        strokeLinecap="butt"
+                        strokeLinejoin="miter"
+                        className="h-4 w-4"
+                        aria-hidden="true"
+                      >
+                        <polyline points="6,14 6,10 14,10 14,6" />
+                        <rect x="2" y="14" width="4" height="4" />
+                        <rect x="14" y="2" width="4" height="4" />
+                      </svg>
+                      <span>Orthogonal</span>
+                    </button>
+                  </div>
                 </div>
               ) : null}
               {canComment ? (
