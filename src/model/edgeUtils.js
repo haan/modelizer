@@ -7,6 +7,9 @@ import {
   REFLEXIVE_EDGE_TYPE,
 } from './constants.js'
 
+const REFLEXIVE_SIDE_LEFT = 'left'
+const REFLEXIVE_SIDE_RIGHT = 'right'
+
 function normalizeControlPoints(value) {
   if (!Array.isArray(value)) {
     return []
@@ -18,6 +21,82 @@ function normalizeControlPoints(value) {
       y: Number(entry?.y),
     }))
     .filter((entry) => Number.isFinite(entry.x) && Number.isFinite(entry.y))
+}
+
+function normalizePositiveNumber(value) {
+  const numeric = Number(value)
+  return Number.isFinite(numeric) && numeric > 0 ? numeric : undefined
+}
+
+function normalizeReflexiveSide(value) {
+  if (value === REFLEXIVE_SIDE_RIGHT) {
+    return REFLEXIVE_SIDE_RIGHT
+  }
+  if (value === REFLEXIVE_SIDE_LEFT) {
+    return REFLEXIVE_SIDE_LEFT
+  }
+  return null
+}
+
+function getOppositeReflexiveSide(side) {
+  return side === REFLEXIVE_SIDE_RIGHT
+    ? REFLEXIVE_SIDE_LEFT
+    : REFLEXIVE_SIDE_RIGHT
+}
+
+function getLegacyReflexiveSide(edge, fallbackIndex = 0) {
+  const rawIndex = Number.isFinite(edge?.data?.reflexiveIndex)
+    ? Number(edge.data.reflexiveIndex)
+    : Number(fallbackIndex)
+  return Math.abs(rawIndex % 2) === 1
+    ? REFLEXIVE_SIDE_RIGHT
+    : REFLEXIVE_SIDE_LEFT
+}
+
+function assignReflexiveSides(orderedEdges) {
+  const sideById = new Map()
+  const usedSides = new Set()
+
+  orderedEdges.forEach((edge) => {
+    const side = normalizeReflexiveSide(edge.data?.reflexiveSide)
+    if (!side || usedSides.has(side)) {
+      return
+    }
+
+    sideById.set(edge.id, side)
+    usedSides.add(side)
+  })
+
+  orderedEdges.forEach((edge, index) => {
+    if (sideById.has(edge.id)) {
+      return
+    }
+
+    const preferredSide = getLegacyReflexiveSide(edge, index)
+    if (usedSides.has(preferredSide)) {
+      return
+    }
+
+    sideById.set(edge.id, preferredSide)
+    usedSides.add(preferredSide)
+  })
+
+  orderedEdges.forEach((edge, index) => {
+    if (sideById.has(edge.id)) {
+      return
+    }
+
+    const preferredSide = getLegacyReflexiveSide(edge, index)
+    const oppositeSide = getOppositeReflexiveSide(preferredSide)
+    const resolvedSide = usedSides.has(preferredSide) && !usedSides.has(oppositeSide)
+      ? oppositeSide
+      : preferredSide
+
+    sideById.set(edge.id, resolvedSide)
+    usedSides.add(resolvedSide)
+  })
+
+  return sideById
 }
 
 function normalizeAssociationEdgeLineStyle(edge) {
@@ -181,11 +260,13 @@ function recomputeReflexiveEdgeIndices(edges) {
 
       return String(a.id).localeCompare(String(b.id))
     })
+    const sideById = assignReflexiveSides(ordered)
 
     ordered.forEach((edge, index) => {
       metaById.set(edge.id, {
         reflexiveIndex: index,
         reflexiveCount: ordered.length,
+        reflexiveSide: sideById.get(edge.id) ?? getLegacyReflexiveSide(edge, index),
       })
     })
   })
@@ -203,20 +284,55 @@ function recomputeReflexiveEdgeIndices(edges) {
 
     const currentIndex = edge.data?.reflexiveIndex
     const currentCount = edge.data?.reflexiveCount
+    const currentSide = edge.data?.reflexiveSide
+    const currentHasLoopWidth =
+      edge.data != null &&
+      Object.prototype.hasOwnProperty.call(edge.data, 'loopWidth')
+    const currentHasLoopHeight =
+      edge.data != null &&
+      Object.prototype.hasOwnProperty.call(edge.data, 'loopHeight')
+    const nextLoopWidth = normalizePositiveNumber(edge.data?.loopWidth)
+    const nextLoopHeight = normalizePositiveNumber(edge.data?.loopHeight)
+    const loopWidthChanged =
+      currentHasLoopWidth !== (nextLoopWidth !== undefined) ||
+      (nextLoopWidth !== undefined && edge.data?.loopWidth !== nextLoopWidth)
+    const loopHeightChanged =
+      currentHasLoopHeight !== (nextLoopHeight !== undefined) ||
+      (nextLoopHeight !== undefined && edge.data?.loopHeight !== nextLoopHeight)
     if (
       currentIndex !== meta.reflexiveIndex ||
-      currentCount !== meta.reflexiveCount
+      currentCount !== meta.reflexiveCount ||
+      currentSide !== meta.reflexiveSide ||
+      loopWidthChanged ||
+      loopHeightChanged
     ) {
       didChange = true
     }
 
+    const {
+      reflexiveIndex: _reflexiveIndex,
+      reflexiveCount: _reflexiveCount,
+      reflexiveSide: _reflexiveSide,
+      loopWidth: _loopWidth,
+      loopHeight: _loopHeight,
+      ...restData
+    } = edge.data ?? {}
+    const nextData = {
+      ...restData,
+      reflexiveIndex: meta.reflexiveIndex,
+      reflexiveCount: meta.reflexiveCount,
+      reflexiveSide: meta.reflexiveSide,
+    }
+    if (nextLoopWidth !== undefined) {
+      nextData.loopWidth = nextLoopWidth
+    }
+    if (nextLoopHeight !== undefined) {
+      nextData.loopHeight = nextLoopHeight
+    }
+
     return {
       ...edge,
-      data: {
-        ...(edge.data ?? {}),
-        reflexiveIndex: meta.reflexiveIndex,
-        reflexiveCount: meta.reflexiveCount,
-      },
+      data: nextData,
     }
   })
 

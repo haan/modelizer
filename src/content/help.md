@@ -82,6 +82,20 @@ Supported:
 - associative association (class connected to an association)
 - composition (when enabled in Settings)
 
+Association and composition edges support these styles in **Refs > Style**:
+- **Straight**: direct line between endpoints.
+- **Orthogonal**: auto-routed right-angle line.
+- **Manual**: user-routed polyline with rounded bends and endpoint stubs.
+
+Manual routing interactions:
+- Double-click an edge segment: add a handle.
+- Drag a handle: move that routing point.
+- `Alt + click` a handle (`Option + click` on macOS): remove it.
+
+Reflexive associations can be resized when selected:
+- horizontal handle: adjusts loop width
+- vertical handle: adjusts loop height
+
 ### Composition
 - Enable via `Settings > Enable composite aggregation`.
 - Created by toggling **Composite aggregation** in an association item in Refs.

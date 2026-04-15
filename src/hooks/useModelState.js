@@ -9,6 +9,10 @@ import {
 import { CLASS_COLOR_PALETTE, getRandomPaletteColor } from '../classPalette.js'
 import { createAttribute, normalizeAttributes } from '../attributes.js'
 import { getAssociationLayout } from '../components/flow/utils/associationUtils.js'
+import {
+  getReflexiveAssociationLayout,
+  getReflexiveSide,
+} from '../components/flow/utils/reflexiveAssociationUtils.js'
 import { normalizeEdges } from '../model/edgeUtils.js'
 import {
   ASSOCIATION_EDGE_TYPE,
@@ -201,6 +205,27 @@ const getSnappedCoordinate = (value, neighbors, axis) => {
   })
 
   return snappedValue
+}
+
+const roundLoopMetric = (value) => Math.round(value * 100) / 100
+
+const resolveNewReflexiveSide = (edges, classId) => {
+  if (!classId) {
+    return 'left'
+  }
+
+  const usedSides = new Set(
+    edges
+      .filter(
+        (edge) =>
+          edge.type === REFLEXIVE_EDGE_TYPE &&
+          edge.source === classId &&
+          edge.target === classId,
+      )
+      .map((edge) => getReflexiveSide(edge.data)),
+  )
+
+  return usedSides.has('left') ? 'right' : 'left'
 }
 
 export function useModelState({
@@ -830,6 +855,10 @@ export function useModelState({
           return current
         }
 
+        const reflexiveSide =
+          nextType === REFLEXIVE_EDGE_TYPE
+            ? resolveNewReflexiveSide(current, params.source)
+            : null
         const baseEdge = {
           ...params,
           type: nextType,
@@ -849,6 +878,16 @@ export function useModelState({
                       lineStyle: ASSOCIATION_LINE_STYLE_ORTHOGONAL,
                       controlPoints: [],
                     }
+                  : nextType === REFLEXIVE_EDGE_TYPE
+                    ? {
+                        multiplicityA: '',
+                        multiplicityB: '',
+                        name: '',
+                        type: typeData,
+                        roleA: '',
+                        roleB: '',
+                        reflexiveSide,
+                      }
                 : {
                     multiplicityA: '',
                     multiplicityB: '',
@@ -1666,6 +1705,73 @@ export function useModelState({
     [updateEdgesAndPanel],
   )
 
+  const onMoveReflexiveHandle = useCallback(
+    (edgeId, handleKey, nextPoint) => {
+      if (
+        !edgeId ||
+        (handleKey !== 'width' && handleKey !== 'height') ||
+        !Number.isFinite(nextPoint?.x) ||
+        !Number.isFinite(nextPoint?.y)
+      ) {
+        return
+      }
+
+      updateEdgesAndPanel((current) =>
+        current.map((edge) => {
+          if (edge.id !== edgeId || edge.type !== REFLEXIVE_EDGE_TYPE) {
+            return edge
+          }
+
+          const sourceNode =
+            reactFlowInstance?.getNode(edge.source) ??
+            nodesRef.current.find((node) => node.id === edge.source)
+          const layout = getReflexiveAssociationLayout(sourceNode, edge.data)
+          if (!layout) {
+            return edge
+          }
+
+          if (handleKey === 'width') {
+            const rawWidth =
+              layout.side === 'right'
+                ? nextPoint.x - layout.startAnchor.x
+                : layout.startAnchor.x - nextPoint.x
+            const nextLoopWidth = roundLoopMetric(
+              Math.max(layout.minLoopWidth, rawWidth),
+            )
+            if (edge.data?.loopWidth === nextLoopWidth) {
+              return edge
+            }
+
+            return {
+              ...edge,
+              data: {
+                ...(edge.data ?? {}),
+                loopWidth: nextLoopWidth,
+              },
+            }
+          }
+
+          const rawHeight = layout.startAnchor.y - nextPoint.y
+          const nextLoopHeight = roundLoopMetric(
+            Math.max(layout.minLoopHeight, rawHeight),
+          )
+          if (edge.data?.loopHeight === nextLoopHeight) {
+            return edge
+          }
+
+          return {
+            ...edge,
+            data: {
+              ...(edge.data ?? {}),
+              loopHeight: nextLoopHeight,
+            },
+          }
+        }),
+      )
+    },
+    [reactFlowInstance, updateEdgesAndPanel],
+  )
+
   const onDeleteAssociationControlPoint = useCallback(
     (edgeId, controlPointIndex) => {
       if (!Number.isFinite(controlPointIndex)) {
@@ -2291,21 +2397,6 @@ export function useModelState({
     const nodeMap = new Map(nodes.map((node) => [node.id, node]))
     const getNode = (nodeId) =>
       reactFlowInstance?.getNode(nodeId) ?? nodeMap.get(nodeId)
-    const getNodeRect = (node) => {
-      const width = node?.measured?.width ?? node?.width ?? 0
-      const height = node?.measured?.height ?? node?.height ?? 0
-      const position =
-        node?.internals?.positionAbsolute ??
-        node?.positionAbsolute ??
-        node?.position ??
-        null
-
-      if (!position || !width || !height) {
-        return null
-      }
-
-      return { x: position.x, y: position.y, width, height }
-    }
 
     return edges
       .filter(
@@ -2326,22 +2417,20 @@ export function useModelState({
             return null
           }
 
-          const rect = getNodeRect(sourceNode)
-          if (!rect) {
+          const reflexiveLayout = getReflexiveAssociationLayout(
+            sourceNode,
+            edge.data,
+          )
+          if (!reflexiveLayout) {
             return null
           }
-
-          const heightStep = Math.min(40, rect.height / 4)
-          const startX = rect.x
-          const startY = rect.y + heightStep
-          const upY = startY - heightStep * 2
 
           return {
             id: `assoc-edge-${edge.id}`,
             type: ASSOCIATION_HELPER_NODE_TYPE,
             position: {
-              x: startX - ASSOCIATION_NODE_SIZE / 2,
-              y: upY - ASSOCIATION_NODE_SIZE / 2,
+              x: reflexiveLayout.helperAnchor.x - ASSOCIATION_NODE_SIZE / 2,
+              y: reflexiveLayout.helperAnchor.y - ASSOCIATION_NODE_SIZE / 2,
             },
             width: ASSOCIATION_NODE_SIZE,
             height: ASSOCIATION_NODE_SIZE,
@@ -2454,6 +2543,16 @@ export function useModelState({
       )
     })
     const interactiveAssociationEdges = visibleAssociationEdges.map((edge) => {
+      if (edge.type === REFLEXIVE_EDGE_TYPE) {
+        return {
+          ...edge,
+          data: {
+            ...(edge.data ?? {}),
+            onMoveReflexiveHandle,
+          },
+        }
+      }
+
       if (
         edge.type !== ASSOCIATION_EDGE_TYPE &&
         edge.type !== COMPOSITION_EDGE_TYPE
@@ -2507,6 +2606,7 @@ export function useModelState({
     normalizedActiveView,
     onDeleteAssociationControlPoint,
     onMoveAssociationControlPoint,
+    onMoveReflexiveHandle,
     showCompositionAggregation,
     visibleAttributeIds,
     visibleClassIds,

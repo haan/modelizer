@@ -2,62 +2,28 @@ import { EdgeLabelRenderer, useStore } from 'reactflow'
 import { AssociationLabel } from '../labels/AssociationLabel.jsx'
 import { MultiplicityLabel } from '../labels/MultiplicityLabel.jsx'
 import { RoleLabel } from '../labels/RoleLabel.jsx'
+import { getReflexiveAssociationLayout } from '../utils/reflexiveAssociationUtils.js'
+import { ReflexiveResizeHandles } from './ReflexiveResizeHandles.jsx'
 
-function distance(a, b) {
-  return Math.sqrt((b.x - a.x) ** 2 + (b.y - a.y) ** 2)
+function getStartMultiplicityTransform(side, x, y) {
+  if (side === 'right') {
+    return `translate(0%, -100%) translate(${x}px, ${y - 1}px)`
+  }
+  return `translate(-100%, -100%) translate(${x}px, ${y - 1}px)`
 }
 
-function getBend(a, b, c, size) {
-  const bendSize = Math.min(distance(a, b) / 2, distance(b, c) / 2, size)
-  const { x, y } = b
-
-  if ((a.x === x && x === c.x) || (a.y === y && y === c.y)) {
-    return `L${x} ${y}`
+function getEndMultiplicityTransform(side, x, y) {
+  if (side === 'right') {
+    return `translate(0%, -100%) translate(${x + 1}px, ${y}px)`
   }
-
-  if (a.y === y) {
-    const xDir = a.x < c.x ? -1 : 1
-    const yDir = a.y < c.y ? 1 : -1
-    return `L ${x + bendSize * xDir},${y} Q ${x},${y} ${x},${
-      y + bendSize * yDir
-    }`
-  }
-
-  const xDir = a.x < c.x ? 1 : -1
-  const yDir = a.y < c.y ? -1 : 1
-  return `L ${x},${y + bendSize * yDir} Q ${x},${y} ${
-    x + bendSize * xDir
-  },${y}`
+  return `translate(-100%, -100%) translate(${x - 1}px, ${y}px)`
 }
 
-function getSmoothPath(points, borderRadius = 5) {
-  return points.reduce((res, point, index) => {
-    if (index === 0) {
-      return `M${point.x} ${point.y}`
-    }
-
-    if (index < points.length - 1) {
-      return res + getBend(points[index - 1], point, points[index + 1], borderRadius)
-    }
-
-    return res + `L${point.x} ${point.y}`
-  }, '')
-}
-
-function getNodeRect(node) {
-  const width = node?.measured?.width ?? node?.width ?? 0
-  const height = node?.measured?.height ?? node?.height ?? 0
-  const position =
-    node?.internals?.positionAbsolute ??
-    node?.positionAbsolute ??
-    node?.position ??
-    null
-
-  if (!position || !width || !height) {
-    return null
+function getStartRoleTransform(side, x, y) {
+  if (side === 'right') {
+    return `translate(0%, 0%) translate(${x}px, ${y + 1}px)`
   }
-
-  return { x: position.x, y: position.y, width, height }
+  return `translate(-100%, 0%) translate(${x}px, ${y + 1}px)`
 }
 
 export function ReflexiveAssociation({
@@ -69,45 +35,30 @@ export function ReflexiveAssociation({
   selected,
 }) {
   const node = useStore((state) => state.nodeInternals.get(source))
-  const rect = getNodeRect(node)
-
-  if (!rect) {
+  const layout = getReflexiveAssociationLayout(node, data)
+  if (!layout) {
     return null
   }
 
-  const reflexiveIndex = Math.min(data?.reflexiveIndex ?? 0, 1)
-  const isRight = reflexiveIndex === 1
-  const isBottom = false
-
-  const widthStep = Math.min(40, rect.width / 4)
-  const heightStep = Math.min(40, rect.height / 4)
-  const startX = isRight ? rect.x + rect.width : rect.x
-  const startY = isBottom
-    ? rect.y + rect.height - heightStep
-    : rect.y + heightStep
-  const outerX = isRight ? startX + widthStep : startX - widthStep
-  const verticalExtremeY = startY - heightStep * 2
-  const innerX = isRight ? outerX - widthStep * 2 : outerX + widthStep * 2
-  const endY = verticalExtremeY + heightStep
-
-  const points = [
-    { x: startX, y: startY },
-    { x: outerX, y: startY },
-    { x: outerX, y: verticalExtremeY },
-    { x: innerX, y: verticalExtremeY },
-    { x: innerX, y: endY },
-  ]
-  const edgePath = getSmoothPath(points)
-  const topLabelX = (outerX + innerX) / 2
-  const topLabelY = verticalExtremeY - 10
-  const verticalCenterY = (startY + verticalExtremeY) / 2
-  const associationNameX = isRight ? outerX + 4 : outerX - 4
+  const side = layout.side
+  const isRight = side === 'right'
+  const startX = layout.startAnchor.x
+  const startY = layout.startAnchor.y
+  const endX = layout.endAnchor.x
+  const endY = layout.endAnchor.y
+  const roleBX = layout.topSegmentCenter.x
+  const roleBY = layout.topSegmentCenter.y
+  const associationNameX = isRight
+    ? layout.outerSegmentCenter.x + 4
+    : layout.outerSegmentCenter.x - 4
+  const associationNameY = layout.outerSegmentCenter.y
 
   const multiplicityA = data?.multiplicityA ?? ''
   const multiplicityB = data?.multiplicityB ?? ''
   const roleA = data?.roleA ?? ''
   const roleB = data?.roleB ?? ''
   const name = data?.name ?? ''
+  const onMoveReflexiveHandle = data?.onMoveReflexiveHandle
   const strokeClass = selected ? 'text-primary' : 'text-base-content/70'
 
   return (
@@ -115,50 +66,44 @@ export function ReflexiveAssociation({
       <path
         id={id}
         className={`react-flow__edge-path fill-none ${strokeClass}`}
-        d={edgePath}
+        d={layout.edgePath}
         markerEnd={markerEnd}
         stroke="currentColor"
         style={style}
       />
       <path
         className="react-flow__edge-interaction"
-        d={edgePath}
+        d={layout.edgePath}
         fill="none"
+      />
+      <ReflexiveResizeHandles
+        edgeId={id}
+        selected={selected}
+        handles={layout.resizeHandles}
+        onMoveHandle={onMoveReflexiveHandle}
       />
       <EdgeLabelRenderer>
         {multiplicityA ? (
           <MultiplicityLabel
-            transform={
-              isRight
-                ? `translate(0%, -100%) translate(${startX}px, ${startY - 1}px)`
-                : `translate(-100%, -100%) translate(${startX}px, ${startY - 1}px)`
-            }
+            transform={getStartMultiplicityTransform(side, startX, startY)}
             label={multiplicityA}
           />
         ) : null}
         {multiplicityB ? (
           <MultiplicityLabel
-            transform={
-              isRight
-                ? `translate(0%, -100%) translate(${innerX + 1}px, ${endY}px)`
-                : `translate(-100%, -100%) translate(${innerX - 1}px, ${endY}px)`
-            }
+            transform={getEndMultiplicityTransform(side, endX, endY)}
             label={multiplicityB}
           />
         ) : null}
         {roleA ? (
           <RoleLabel
-            transform={
-              isRight
-                ? `translate(0%, 0%) translate(${startX}px, ${startY + 1}px)`
-                : `translate(-100%, 0%) translate(${startX}px, ${startY + 1}px)`
-            }
+            transform={getStartRoleTransform(side, startX, startY)}
             label={roleA}
           />
         ) : null}
         {roleB ? (
           <RoleLabel
-            transform={`translate(-50%, -50%) translate(${topLabelX}px, ${topLabelY}px)`}
+            transform={`translate(-50%, -100%) translate(${roleBX}px, ${roleBY - 2}px)`}
             label={roleB}
           />
         ) : null}
@@ -166,8 +111,8 @@ export function ReflexiveAssociation({
           <AssociationLabel
             transform={
               isRight
-                ? `translate(0%, -50%) translate(${associationNameX}px, ${verticalCenterY}px)`
-                : `translate(-100%, -50%) translate(${associationNameX}px, ${verticalCenterY}px)`
+                ? `translate(0%, -50%) translate(${associationNameX}px, ${associationNameY}px)`
+                : `translate(-100%, -50%) translate(${associationNameX}px, ${associationNameY}px)`
             }
             className={isRight ? 'text-left' : 'text-right'}
             label={name}
