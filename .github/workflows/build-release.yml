@@ -2,19 +2,24 @@ name: Build modelizer bundle
 
 on:
   workflow_dispatch:
+    inputs:
+      version:
+        description: "Version label for the artifact (e.g. v1.2.3)"
+        required: false
+        default: "dev"
   push:
     tags:
       - "v*.*.*" # e.g. v1.2.3
 
 permissions:
-  contents: write
+  contents: read
 
 env:
   # Change miniserve version here (only once)
   MINISERVE_VERSION: "0.35.0"
 
-  # Final zip name (tag: modelizer-v1.0.0.zip)
-  ZIP_NAME: "modelizer-${{ github.ref_name }}.zip"
+  # Final zip name (e.g. modelizer-v1.0.0.zip)
+  ZIP_NAME: "modelizer-${{ github.event_name == 'workflow_dispatch' && inputs.version || github.ref_name }}.zip"
 
 jobs:
   build:
@@ -34,7 +39,7 @@ jobs:
         run: npm ci
 
       - name: Build (Vite)
-        run: npm run build
+        run: npm run build:ci
 
       # Layout produced in the zip:
       # modelizer/
@@ -43,138 +48,161 @@ jobs:
       #   app/
       #     miniserve.exe
       #     dist/...
-      - name: Prepare package folders
-        shell: bash
-        run: |
-          set -euo pipefail
-          rm -rf package
-          mkdir -p package/modelizer/app/dist
+      - name: Cache miniserve
+        id: cache_miniserve
+        uses: actions/cache@v4
+        with:
+          path: .miniserve
+          key: miniserve-${{ env.MINISERVE_VERSION }}
 
-      - name: Copy modelizer.bat into modelizer/ root
-        shell: bash
-        run: |
-          set -euo pipefail
-          # Adjust if your bat lives somewhere else; this assumes bundle/modelizer.bat in repo
-          cp bundle/modelizer.bat package/modelizer/modelizer.bat
-
-          # Optional: include a plain-text README for end users (if present)
-          if [ -f bundle/README.txt ]; then
-            cp bundle/README.txt package/modelizer/README.txt
-          fi
-
-      - name: Copy Vite dist into modelizer/app/dist
-        shell: bash
-        run: |
-          set -euo pipefail
-          cp -R dist/* package/modelizer/app/dist/
-
-      - name: Download miniserve (pinned, Windows x64) into modelizer/app
-        shell: bash
-        run: |
-          set -euo pipefail
-
-          MINISERVE_TAG="v${MINISERVE_VERSION}"
-          MINISERVE_ASSET_WIN_X64="miniserve-${MINISERVE_VERSION}-x86_64-pc-windows-msvc.exe"
-
-          gh release download "${MINISERVE_TAG}" \
-            --repo svenstaro/miniserve \
-            --pattern "${MINISERVE_ASSET_WIN_X64}" \
-            --dir package/modelizer/app
-
-          mv "package/modelizer/app/${MINISERVE_ASSET_WIN_X64}" package/modelizer/app/miniserve.exe
+      - name: Download miniserve (if not cached)
+        if: steps.cache_miniserve.outputs.cache-hit != 'true'
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-
-      - name: Create zip (top-level folder is modelizer/)
-        shell: bash
         run: |
           set -euo pipefail
-          cd package
-          zip -r "../${ZIP_NAME}" modelizer
+          mkdir -p .miniserve
+          MINISERVE_ASSET="miniserve-${MINISERVE_VERSION}-x86_64-pc-windows-msvc.exe"
+          gh release download "v${MINISERVE_VERSION}" \
+            --repo svenstaro/miniserve \
+            --pattern "${MINISERVE_ASSET}" \
+            --dir .miniserve
+          mv ".miniserve/${MINISERVE_ASSET}" .miniserve/miniserve.exe
 
-      - name: Upload zip as workflow artifact (manual runs)
-        if: ${{ github.event_name == 'workflow_dispatch' }}
+      - name: Package and zip
+        run: |
+          set -euo pipefail
+
+          # Assemble folder structure
+          rm -rf package
+          mkdir -p package/modelizer/app/dist
+          cp bundle/modelizer.bat package/modelizer/modelizer.bat
+          [ -f bundle/README.txt ] && cp bundle/README.txt package/modelizer/README.txt || true
+          cp -R dist/* package/modelizer/app/dist/
+          cp .miniserve/miniserve.exe package/modelizer/app/miniserve.exe
+
+          # Zip
+          cd package && zip -r "../${ZIP_NAME}" modelizer
+
+      - name: Upload zip artifact
         uses: actions/upload-artifact@v7
         with:
           name: ${{ env.ZIP_NAME }}
           path: ${{ env.ZIP_NAME }}
 
-      - name: Set up Docker Buildx
+      - name: Upload dist artifact
         if: startsWith(github.ref, 'refs/tags/')
+        uses: actions/upload-artifact@v7
+        with:
+          name: dist
+          path: dist/
+          retention-days: 1
+
+  docker:
+    runs-on: ubuntu-latest
+    needs: build
+    if: startsWith(github.ref, 'refs/tags/')
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v6
+
+      - name: Derive Docker image version from tag
+        id: image_vars
+        run: echo "version=${GITHUB_REF_NAME#v}" >> "$GITHUB_OUTPUT"
+
+      - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v3
 
       - name: Log in to Docker Hub
-        if: startsWith(github.ref, 'refs/tags/')
         uses: docker/login-action@v4
         with:
           username: ${{ secrets.DOCKERHUB_USERNAME }}
           password: ${{ secrets.DOCKERHUB_TOKEN }}
 
-      - name: Derive Docker image version from tag
-        id: image_vars
-        if: startsWith(github.ref, 'refs/tags/')
-        shell: bash
-        run: |
-          set -euo pipefail
-          echo "version=${GITHUB_REF_NAME#v}" >> "$GITHUB_OUTPUT"
-
       - name: Build and push Docker image
-        if: startsWith(github.ref, 'refs/tags/')
         uses: docker/build-push-action@v7
         with:
           context: .
-          file: ./Dockerfile
           push: true
           tags: |
             haanlaurent/modelizer:${{ steps.image_vars.outputs.version }}
             haanlaurent/modelizer:latest
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
 
-      - name: Deploy dist to personal webserver (SFTP)
-        if: startsWith(github.ref, 'refs/tags/')
+  sftp:
+    runs-on: ubuntu-latest
+    needs: build
+    if: startsWith(github.ref, 'refs/tags/')
+
+    steps:
+      - name: Download dist artifact
+        uses: actions/download-artifact@v7
+        with:
+          name: dist
+          path: dist/
+
+      - name: Check SFTP secrets
+        id: sftp_check
+        env:
+          SFTP_HOST: ${{ secrets.SFTP_HOST }}
+          SFTP_USER: ${{ secrets.SFTP_USER }}
+          SFTP_TARGET_PATH: ${{ secrets.SFTP_TARGET_PATH }}
+          SFTP_PRIVATE_KEY: ${{ secrets.SFTP_PRIVATE_KEY }}
+          SFTP_KNOWN_HOSTS: ${{ secrets.SFTP_KNOWN_HOSTS }}
+        run: |
+          set -euo pipefail
+          if [ -z "${SFTP_HOST}" ] || [ -z "${SFTP_USER}" ] || [ -z "${SFTP_TARGET_PATH}" ]; then
+            echo "configured=false" >> "$GITHUB_OUTPUT"
+            echo "SFTP secrets not fully configured (host/user/target path). Skipping deploy."
+          elif [ -z "${SFTP_PRIVATE_KEY}" ]; then
+            echo "configured=false" >> "$GITHUB_OUTPUT"
+            echo "SFTP_PRIVATE_KEY not configured. Skipping deploy."
+          elif [ -z "${SFTP_KNOWN_HOSTS}" ]; then
+            echo "configured=false" >> "$GITHUB_OUTPUT"
+            echo "SFTP_KNOWN_HOSTS not configured. Skipping deploy."
+          else
+            echo "configured=true" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Deploy dist to personal webserver
+        if: steps.sftp_check.outputs.configured == 'true'
         env:
           SFTP_HOST: ${{ secrets.SFTP_HOST }}
           SFTP_PORT: ${{ secrets.SFTP_PORT }}
           SFTP_USER: ${{ secrets.SFTP_USER }}
-          SFTP_PASSWORD: ${{ secrets.SFTP_PASSWORD }}
           SFTP_PRIVATE_KEY: ${{ secrets.SFTP_PRIVATE_KEY }}
+          SFTP_KNOWN_HOSTS: ${{ secrets.SFTP_KNOWN_HOSTS }}
           SFTP_TARGET_PATH: ${{ secrets.SFTP_TARGET_PATH }}
-        shell: bash
         run: |
           set -euo pipefail
+          mkdir -p ~/.ssh
+          chmod 700 ~/.ssh
+          printf '%s\n' "${SFTP_PRIVATE_KEY}" > ~/.ssh/id_deploy
+          chmod 600 ~/.ssh/id_deploy
+          printf '%s\n' "${SFTP_KNOWN_HOSTS}" > ~/.ssh/known_hosts
+          chmod 644 ~/.ssh/known_hosts
 
-          if [ -z "${SFTP_HOST:-}" ] || [ -z "${SFTP_USER:-}" ] || [ -z "${SFTP_TARGET_PATH:-}" ]; then
-            echo "SFTP secrets not fully configured (host/user/target path). Skipping deploy."
-            exit 0
-          fi
+          rsync -avz --delete \
+            -e "ssh -i ~/.ssh/id_deploy -p ${SFTP_PORT:-22} -o StrictHostKeyChecking=yes" \
+            dist/ \
+            "${SFTP_USER}@${SFTP_HOST}:${SFTP_TARGET_PATH}"
 
-          if [ -z "${SFTP_PASSWORD:-}" ] && [ -z "${SFTP_PRIVATE_KEY:-}" ]; then
-            echo "No SFTP auth secret configured (password or private key). Skipping deploy."
-            exit 0
-          fi
+  release:
+    runs-on: ubuntu-latest
+    needs: [build, docker]
+    if: startsWith(github.ref, 'refs/tags/')
+    permissions:
+      contents: write
 
-          sudo apt-get update
-          sudo apt-get install -y lftp
+    steps:
+      - name: Download zip artifact
+        uses: actions/download-artifact@v7
+        with:
+          name: ${{ env.ZIP_NAME }}
 
-          CONNECT_COMMAND=""
-          if [ -n "${SFTP_PRIVATE_KEY:-}" ]; then
-            mkdir -p ~/.ssh
-            chmod 700 ~/.ssh
-            printf '%s\n' "${SFTP_PRIVATE_KEY}" > ~/.ssh/id_sftp_deploy
-            chmod 600 ~/.ssh/id_sftp_deploy
-            CONNECT_COMMAND='set sftp:connect-program "ssh -a -x -i ~/.ssh/id_sftp_deploy -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null";'
-          fi
-
-          lftp <<EOF
-          set net:max-retries 2
-          set sftp:auto-confirm yes
-          ${CONNECT_COMMAND}
-          open -u "${SFTP_USER}","${SFTP_PASSWORD:-}" sftp://${SFTP_HOST}:${SFTP_PORT:-22}
-          mirror -R --delete --verbose dist "${SFTP_TARGET_PATH}"
-          bye
-          EOF
-
-      - name: Create GitHub Release and upload asset (tag runs)
-        if: startsWith(github.ref, 'refs/tags/')
+      - name: Create GitHub Release and upload asset
         uses: softprops/action-gh-release@v2
         with:
           files: ${{ env.ZIP_NAME }}
