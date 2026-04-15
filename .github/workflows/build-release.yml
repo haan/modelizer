@@ -177,6 +177,9 @@ jobs:
           SFTP_TARGET_PATH: ${{ secrets.SFTP_TARGET_PATH }}
         run: |
           set -euo pipefail
+          sudo apt-get update -qq
+          sudo apt-get install -y -qq lftp
+
           mkdir -p ~/.ssh
           chmod 700 ~/.ssh
           printf '%s\n' "${SFTP_PRIVATE_KEY}" > ~/.ssh/id_deploy
@@ -184,10 +187,13 @@ jobs:
           printf '%s\n' "${SFTP_KNOWN_HOSTS}" > ~/.ssh/known_hosts
           chmod 644 ~/.ssh/known_hosts
 
-          rsync -avz --delete \
-            -e "ssh -i ~/.ssh/id_deploy -p ${SFTP_PORT:-22} -o StrictHostKeyChecking=yes" \
-            dist/ \
-            "${SFTP_USER}@${SFTP_HOST}:${SFTP_TARGET_PATH}"
+          lftp -c "
+            set sftp:connect-program 'ssh -a -x -i ~/.ssh/id_deploy -o StrictHostKeyChecking=yes -o UserKnownHostsFile=~/.ssh/known_hosts';
+            set net:max-retries 2;
+            open -u ${SFTP_USER}, sftp://${SFTP_HOST}:${SFTP_PORT:-22};
+            mirror -R --delete --verbose dist/ ${SFTP_TARGET_PATH};
+            bye
+          "
 
   release:
     runs-on: ubuntu-latest
