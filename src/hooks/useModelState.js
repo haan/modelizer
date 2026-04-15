@@ -177,6 +177,32 @@ const getClosestSegmentIndex = (pathPoints, point) => {
   return bestIndex
 }
 
+const CONTROL_POINT_SNAP_THRESHOLD = 10
+
+const getSnappedCoordinate = (value, neighbors, axis) => {
+  if (!Number.isFinite(value) || !Array.isArray(neighbors) || neighbors.length === 0) {
+    return value
+  }
+
+  let snappedValue = value
+  let bestDistance = CONTROL_POINT_SNAP_THRESHOLD + 1
+
+  neighbors.forEach((neighbor) => {
+    const neighborValue = axis === 'x' ? neighbor?.x : neighbor?.y
+    if (!Number.isFinite(neighborValue)) {
+      return
+    }
+
+    const distance = Math.abs(value - neighborValue)
+    if (distance <= CONTROL_POINT_SNAP_THRESHOLD && distance < bestDistance) {
+      snappedValue = neighborValue
+      bestDistance = distance
+    }
+  })
+
+  return snappedValue
+}
+
 export function useModelState({
   reactFlowInstance,
   reactFlowWrapper,
@@ -1616,9 +1642,15 @@ export function useModelState({
           }
 
           const nextControlPoints = [...controlPoints]
+          const neighbors = [
+            controlPoints[controlPointIndex - 1],
+            controlPoints[controlPointIndex + 1],
+          ].filter(Boolean)
+          const snappedX = getSnappedCoordinate(nextPoint.x, neighbors, 'x')
+          const snappedY = getSnappedCoordinate(nextPoint.y, neighbors, 'y')
           nextControlPoints[controlPointIndex] = {
-            x: nextPoint.x,
-            y: nextPoint.y,
+            x: snappedX,
+            y: snappedY,
           }
 
           return {

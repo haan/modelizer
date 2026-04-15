@@ -8,6 +8,7 @@ const PARALLEL_OFFSET_SPACING = 25
 const STEP_SHIFT_SPACING = -20
 const SNAP_AXIS_THRESHOLD = 10
 const MANUAL_STUB_LENGTH = 18
+const MANUAL_CORNER_RADIUS = 5
 
 function normalizeControlPoints(value) {
   if (!Array.isArray(value)) {
@@ -31,6 +32,10 @@ function getNodeMeasured(node) {
     width: node.width ?? 0,
     height: node.height ?? 0,
   }
+}
+
+function clamp(value, min, max) {
+  return Math.max(min, Math.min(max, value))
 }
 
 function getNodeIntersectionByPoint(intersectionNode, targetPoint) {
@@ -110,19 +115,46 @@ function getManualEdgeParams(source, target, controlPoints) {
   const sourceAimPoint = controlPoints[0] ?? getNodeCenter(target)
   const targetAimPoint =
     controlPoints[controlPoints.length - 1] ?? getNodeCenter(source)
-  const sourceIntersectionPoint = getNodeIntersectionByPoint(source, sourceAimPoint)
-  const targetIntersectionPoint = getNodeIntersectionByPoint(target, targetAimPoint)
 
-  const sourcePos = getEdgePosition(source, sourceIntersectionPoint)
-  const targetPos = getEdgePosition(target, targetIntersectionPoint)
+  const getManualAnchorByPoint = (node, point) => {
+    const measured = getNodeMeasured(node)
+    const width = Math.max(measured.width, 1)
+    const height = Math.max(measured.height, 1)
+    const position = getNodePosition(node)
+    const centerX = position.x + width / 2
+    const centerY = position.y + height / 2
+    const pointX = Number.isFinite(point?.x) ? point.x : centerX
+    const pointY = Number.isFinite(point?.y) ? point.y : centerY
+    const dx = pointX - centerX
+    const dy = pointY - centerY
+
+    if (Math.abs(dx) >= Math.abs(dy)) {
+      const isRightSide = dx >= 0
+      return {
+        x: isRightSide ? position.x + width : position.x,
+        y: clamp(pointY, position.y, position.y + height),
+        position: isRightSide ? Position.Right : Position.Left,
+      }
+    }
+
+    const isBottomSide = dy >= 0
+    return {
+      x: clamp(pointX, position.x, position.x + width),
+      y: isBottomSide ? position.y + height : position.y,
+      position: isBottomSide ? Position.Bottom : Position.Top,
+    }
+  }
+
+  const sourceAnchor = getManualAnchorByPoint(source, sourceAimPoint)
+  const targetAnchor = getManualAnchorByPoint(target, targetAimPoint)
 
   return {
-    sx: sourceIntersectionPoint.x,
-    sy: sourceIntersectionPoint.y,
-    tx: targetIntersectionPoint.x,
-    ty: targetIntersectionPoint.y,
-    sourcePos,
-    targetPos,
+    sx: sourceAnchor.x,
+    sy: sourceAnchor.y,
+    tx: targetAnchor.x,
+    ty: targetAnchor.y,
+    sourcePos: sourceAnchor.position,
+    targetPos: targetAnchor.position,
   }
 }
 
@@ -223,16 +255,61 @@ function dedupeConsecutivePoints(points) {
   })
 }
 
-function getPolylinePath(points) {
+function getRoundedPolylinePath(points, cornerRadius = 0) {
   if (!Array.isArray(points) || points.length === 0) {
     return ''
   }
-  return points.reduce((result, point, index) => {
-    if (index === 0) {
-      return `M ${point.x} ${point.y}`
+  if (points.length === 1) {
+    return `M ${points[0].x} ${points[0].y}`
+  }
+
+  const radius = Math.max(0, Number(cornerRadius) || 0)
+  if (radius === 0) {
+    return points.reduce((result, point, index) => {
+      if (index === 0) {
+        return `M ${point.x} ${point.y}`
+      }
+      return `${result} L ${point.x} ${point.y}`
+    }, '')
+  }
+
+  let path = `M ${points[0].x} ${points[0].y}`
+
+  for (let index = 1; index < points.length - 1; index += 1) {
+    const prev = points[index - 1]
+    const current = points[index]
+    const next = points[index + 1]
+
+    const incomingDx = prev.x - current.x
+    const incomingDy = prev.y - current.y
+    const outgoingDx = next.x - current.x
+    const outgoingDy = next.y - current.y
+    const incomingLength = Math.hypot(incomingDx, incomingDy)
+    const outgoingLength = Math.hypot(outgoingDx, outgoingDy)
+
+    if (incomingLength === 0 || outgoingLength === 0) {
+      path = `${path} L ${current.x} ${current.y}`
+      continue
     }
-    return `${result} L ${point.x} ${point.y}`
-  }, '')
+
+    const cornerClamp = Math.min(radius, incomingLength / 2, outgoingLength / 2)
+    if (cornerClamp <= 0) {
+      path = `${path} L ${current.x} ${current.y}`
+      continue
+    }
+
+    const entryX = current.x + (incomingDx / incomingLength) * cornerClamp
+    const entryY = current.y + (incomingDy / incomingLength) * cornerClamp
+    const exitX = current.x + (outgoingDx / outgoingLength) * cornerClamp
+    const exitY = current.y + (outgoingDy / outgoingLength) * cornerClamp
+
+    path = `${path} L ${entryX} ${entryY}`
+    path = `${path} Q ${current.x} ${current.y} ${exitX} ${exitY}`
+  }
+
+  const last = points[points.length - 1]
+  path = `${path} L ${last.x} ${last.y}`
+  return path
 }
 
 function getPolylineMidpointByLength(points) {
@@ -327,7 +404,7 @@ export function getAssociationLayout(sourceNode, targetNode, data) {
     const incomingDy = ty - pointBeforeTarget.y
 
     return {
-      edgePath: getPolylinePath(pathPoints),
+      edgePath: getRoundedPolylinePath(pathPoints, MANUAL_CORNER_RADIUS),
       labelX: midpoint.x,
       labelY: midpoint.y,
       sourcePos,
