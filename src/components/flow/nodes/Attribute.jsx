@@ -49,8 +49,8 @@ function Attribute({
   const constraintLabel = constraints.length > 0 ? constraints.join(', ') : ''
   const useGridLayout = Boolean(columnTemplate)
   const rowClassName = useGridLayout
-    ? 'grid w-full items-center gap-2'
-    : 'flex w-full items-center gap-2'
+    ? 'grid w-full items-baseline gap-2'
+    : 'flex w-full items-baseline gap-2'
   const rowStyle = useGridLayout ? { gridTemplateColumns: columnTemplate } : undefined
 
   return (
