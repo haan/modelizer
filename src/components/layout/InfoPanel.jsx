@@ -49,6 +49,8 @@ function InfoPanel({
   onUpdateAssociationComment,
   onUpdateAssociationLineStyle,
   onResetAssociationRouting,
+  onUpdateRelationshipLineStyle,
+  onResetRelationshipRouting,
   showCompositionAggregation,
   onToggleAssociationComposition,
   onHighlightAssociation,
@@ -158,6 +160,8 @@ function InfoPanel({
               onUpdateAssociationComment={onUpdateAssociationComment}
               onUpdateAssociationLineStyle={onUpdateAssociationLineStyle}
               onResetAssociationRouting={onResetAssociationRouting}
+              onUpdateRelationshipLineStyle={onUpdateRelationshipLineStyle}
+              onResetRelationshipRouting={onResetRelationshipRouting}
               onToggleAssociationComposition={onToggleAssociationComposition}
               onHighlightAssociation={onHighlightAssociation}
               openAssociationId={openAssociationId}

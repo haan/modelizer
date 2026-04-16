@@ -46,9 +46,11 @@ export function EdgeControlPoints({
         <div
           key={`${edgeId}-cp-${index}`}
           data-no-export="true"
-          className="nodrag nopan absolute h-3.5 w-3.5 touch-none cursor-grab rounded-full border border-primary bg-base-100 shadow-sm active:cursor-grabbing"
+          className="nodrag nopan absolute touch-none cursor-grab rounded-full border border-primary bg-base-100 shadow-sm active:cursor-grabbing"
           style={{
             transform: `translate(-50%, -50%) translate(${point.x}px, ${point.y}px)`,
+            width: '10px',
+            height: '10px',
             pointerEvents: 'all',
             zIndex: 20,
           }}

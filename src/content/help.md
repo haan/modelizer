@@ -106,6 +106,14 @@ Reflexive associations can be resized when selected:
 - Create relationships by connecting attribute handles.
 - Duplicate relationships between the same two attributes are blocked (direction ignored).
 - While moving classes in logical/physical, relationship handles auto-switch sides to keep routing coherent.
+- Relationship edges support these styles in **Refs > Style**:
+  - **Straight**: direct line between endpoints.
+  - **Orthogonal**: auto-routed right-angle line.
+  - **Manual**: user-routed polyline with rounded bends and endpoint stubs.
+- Manual routing interactions:
+  - Double-click an edge segment: add a handle.
+  - Drag a handle: move that routing point.
+  - `Alt + click` a handle (`Option + click` on macOS): remove it.
 
 ## Notes and Areas
 

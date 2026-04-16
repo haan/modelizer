@@ -9,6 +9,7 @@ import {
 import { CLASS_COLOR_PALETTE, getRandomPaletteColor } from '../classPalette.js'
 import { createAttribute, normalizeAttributes } from '../attributes.js'
 import { getAssociationLayout } from '../components/flow/utils/associationUtils.js'
+import { getRelationshipLayoutFromNodes } from '../components/flow/utils/relationshipUtils.js'
 import {
   getReflexiveAssociationLayout,
   getReflexiveSide,
@@ -29,7 +30,6 @@ import {
   HIGHLIGHT_ZOOM,
   NOTE_NODE_TYPE,
   REFLEXIVE_EDGE_TYPE,
-  RELATIONSHIP_EDGE_STUB_DISTANCE,
   RELATIONSHIP_EDGE_TYPE,
   VIEW_CONCEPTUAL,
   VIEW_LOGICAL,
@@ -134,6 +134,72 @@ const normalizeControlPoints = (value) => {
     .filter((entry) => Number.isFinite(entry.x) && Number.isFinite(entry.y))
 }
 
+const RELATIONSHIP_SIDE_LEFT = 'left'
+const RELATIONSHIP_SIDE_RIGHT = 'right'
+
+const getRelationshipHandleSide = (handleId) => {
+  if (typeof handleId !== 'string') {
+    return null
+  }
+
+  if (handleId.startsWith(`${RELATIONSHIP_SIDE_LEFT}-`)) {
+    return RELATIONSHIP_SIDE_LEFT
+  }
+  if (handleId.startsWith(`${RELATIONSHIP_SIDE_RIGHT}-`)) {
+    return RELATIONSHIP_SIDE_RIGHT
+  }
+
+  return null
+}
+
+const resolveRelationshipSideByAimX = (position, aimX, currentSide) => {
+  if (
+    !position ||
+    !Number.isFinite(position.leftX) ||
+    !Number.isFinite(position.rightX)
+  ) {
+    return currentSide ?? RELATIONSHIP_SIDE_RIGHT
+  }
+  if (!Number.isFinite(aimX)) {
+    return currentSide ?? RELATIONSHIP_SIDE_RIGHT
+  }
+
+  const leftDistance = Math.abs(aimX - position.leftX)
+  const rightDistance = Math.abs(aimX - position.rightX)
+  if (leftDistance === rightDistance) {
+    if (
+      currentSide === RELATIONSHIP_SIDE_LEFT ||
+      currentSide === RELATIONSHIP_SIDE_RIGHT
+    ) {
+      return currentSide
+    }
+
+    return Number.isFinite(position.centerX) && aimX >= position.centerX
+      ? RELATIONSHIP_SIDE_RIGHT
+      : RELATIONSHIP_SIDE_LEFT
+  }
+
+  return rightDistance < leftDistance
+    ? RELATIONSHIP_SIDE_RIGHT
+    : RELATIONSHIP_SIDE_LEFT
+}
+
+const getRelationshipEndpointAimX = (edge, sourcePosition, targetPosition) => {
+  const controlPoints = normalizeControlPoints(edge.data?.controlPoints)
+
+  if (controlPoints.length > 0) {
+    return {
+      sourceAimX: controlPoints[0].x,
+      targetAimX: controlPoints[controlPoints.length - 1].x,
+    }
+  }
+
+  return {
+    sourceAimX: targetPosition.centerX,
+    targetAimX: sourcePosition.centerX,
+  }
+}
+
 const getDistanceSquaredToSegment = (point, segmentStart, segmentEnd) => {
   const vx = segmentEnd.x - segmentStart.x
   const vy = segmentEnd.y - segmentStart.y
@@ -205,6 +271,33 @@ const getSnappedCoordinate = (value, neighbors, axis) => {
   })
 
   return snappedValue
+}
+
+const getControlPointSnapNeighbors = ({
+  controlPoints,
+  controlPointIndex,
+  sourceAnchor,
+  targetAnchor,
+}) => {
+  const axisNeighbors = [
+    controlPoints[controlPointIndex - 1],
+    controlPoints[controlPointIndex + 1],
+  ].filter(Boolean)
+  const yNeighbors = [...axisNeighbors]
+  const isFirstControlPoint = controlPointIndex === 0
+  const isLastControlPoint = controlPointIndex === controlPoints.length - 1
+
+  if (isFirstControlPoint && sourceAnchor) {
+    yNeighbors.push(sourceAnchor)
+  }
+  if (isLastControlPoint && targetAnchor) {
+    yNeighbors.push(targetAnchor)
+  }
+
+  return {
+    xNeighbors: axisNeighbors,
+    yNeighbors,
+  }
 }
 
 const roundLoopMetric = (value) => Math.round(value * 100) / 100
@@ -378,22 +471,23 @@ export function useModelState({
                 return edge
               }
 
-              const deltaX = targetPosition.centerX - sourcePosition.centerX
-              if (deltaX === 0) {
-                return edge
-              }
-
-              const nextSourceSide = deltaX > 0 ? 'right' : 'left'
-              const xOverlap =
-                Math.min(sourcePosition.rightX, targetPosition.rightX) -
-                Math.max(sourcePosition.leftX, targetPosition.leftX)
-
-              const nextTargetSide =
-                xOverlap > -3 * RELATIONSHIP_EDGE_STUB_DISTANCE
-                  ? nextSourceSide
-                  : deltaX > 0
-                    ? 'left'
-                    : 'right'
+              const { sourceAimX, targetAimX } = getRelationshipEndpointAimX(
+                edge,
+                sourcePosition,
+                targetPosition,
+              )
+              const currentSourceSide = getRelationshipHandleSide(edge.sourceHandle)
+              const currentTargetSide = getRelationshipHandleSide(edge.targetHandle)
+              const nextSourceSide = resolveRelationshipSideByAimX(
+                sourcePosition,
+                sourceAimX,
+                currentSourceSide,
+              )
+              const nextTargetSide = resolveRelationshipSideByAimX(
+                targetPosition,
+                targetAimX,
+                currentTargetSide,
+              )
               const nextSourceHandle = `${nextSourceSide}-${sourceAttributeId}-source`
               const nextTargetHandle = `${nextTargetSide}-${targetAttributeId}-target`
 
@@ -866,7 +960,11 @@ export function useModelState({
             nextType === ASSOCIATIVE_EDGE_TYPE
               ? { name: classLabel, type: typeData, autoName: true }
               : nextType === RELATIONSHIP_EDGE_TYPE
-                ? { type: typeData }
+                ? {
+                    type: typeData,
+                    lineStyle: ASSOCIATION_LINE_STYLE_ORTHOGONAL,
+                    controlPoints: [],
+                  }
                 : nextType === ASSOCIATION_EDGE_TYPE
                   ? {
                       multiplicityA: '',
@@ -1651,6 +1749,64 @@ export function useModelState({
     [updateEdgesAndPanel],
   )
 
+  const onUpdateRelationshipLineStyle = useCallback(
+    (edgeId, nextValue) => {
+      const nextLineStyle =
+        nextValue === ASSOCIATION_LINE_STYLE_STRAIGHT
+          ? ASSOCIATION_LINE_STYLE_STRAIGHT
+          : nextValue === ASSOCIATION_LINE_STYLE_MANUAL
+            ? ASSOCIATION_LINE_STYLE_MANUAL
+            : ASSOCIATION_LINE_STYLE_ORTHOGONAL
+      updateEdgesAndPanel((current) =>
+        current.map((edge) => {
+          if (edge.id !== edgeId) {
+            return edge
+          }
+          if (edge.type !== RELATIONSHIP_EDGE_TYPE) {
+            return edge
+          }
+          if (edge.data?.lineStyle === nextLineStyle) {
+            return edge
+          }
+
+          return {
+            ...edge,
+            data: {
+              ...(edge.data ?? {}),
+              lineStyle: nextLineStyle,
+            },
+          }
+        }),
+      )
+    },
+    [updateEdgesAndPanel],
+  )
+
+  const onUpdateRelationshipControlPoints = useCallback(
+    (edgeId, nextPoints) => {
+      const normalizedPoints = normalizeControlPoints(nextPoints)
+      updateEdgesAndPanel((current) =>
+        current.map((edge) => {
+          if (edge.id !== edgeId) {
+            return edge
+          }
+          if (edge.type !== RELATIONSHIP_EDGE_TYPE) {
+            return edge
+          }
+
+          return {
+            ...edge,
+            data: {
+              ...(edge.data ?? {}),
+              controlPoints: normalizedPoints,
+            },
+          }
+        }),
+      )
+    },
+    [updateEdgesAndPanel],
+  )
+
   const onMoveAssociationControlPoint = useCallback(
     (edgeId, controlPointIndex, nextPoint) => {
       if (!Number.isFinite(controlPointIndex)) {
@@ -1703,6 +1859,110 @@ export function useModelState({
       )
     },
     [updateEdgesAndPanel],
+  )
+
+  const onMoveRelationshipControlPoint = useCallback(
+    (edgeId, controlPointIndex, nextPoint, anchorPoints = null) => {
+      if (!Number.isFinite(controlPointIndex)) {
+        return
+      }
+
+      updateEdgesAndPanel((current) =>
+        current.map((edge) => {
+          if (edge.id !== edgeId) {
+            return edge
+          }
+          if (edge.type !== RELATIONSHIP_EDGE_TYPE) {
+            return edge
+          }
+
+          const controlPoints = normalizeControlPoints(edge.data?.controlPoints)
+          if (
+            controlPointIndex < 0 ||
+            controlPointIndex >= controlPoints.length ||
+            !Number.isFinite(nextPoint?.x) ||
+            !Number.isFinite(nextPoint?.y)
+          ) {
+            return edge
+          }
+
+          const nextControlPoints = [...controlPoints]
+          const isFirstOrLastControlPoint =
+            controlPointIndex === 0 ||
+            controlPointIndex === controlPoints.length - 1
+          let sourceAnchor = null
+          let targetAnchor = null
+          if (isFirstOrLastControlPoint) {
+            const runtimeSourceAnchor = anchorPoints?.sourceAnchor
+            const runtimeTargetAnchor = anchorPoints?.targetAnchor
+            const hasRuntimeSourceAnchor =
+              Number.isFinite(runtimeSourceAnchor?.x) &&
+              Number.isFinite(runtimeSourceAnchor?.y)
+            const hasRuntimeTargetAnchor =
+              Number.isFinite(runtimeTargetAnchor?.x) &&
+              Number.isFinite(runtimeTargetAnchor?.y)
+            if (hasRuntimeSourceAnchor) {
+              sourceAnchor = {
+                x: runtimeSourceAnchor.x,
+                y: runtimeSourceAnchor.y,
+              }
+            }
+            if (hasRuntimeTargetAnchor) {
+              targetAnchor = {
+                x: runtimeTargetAnchor.x,
+                y: runtimeTargetAnchor.y,
+              }
+            }
+
+            if (!sourceAnchor || !targetAnchor) {
+              const sourceNode =
+                reactFlowInstance?.getNode(edge.source) ??
+                nodesRef.current.find((node) => node.id === edge.source)
+              const targetNode =
+                reactFlowInstance?.getNode(edge.target) ??
+                nodesRef.current.find((node) => node.id === edge.target)
+              const layout = getRelationshipLayoutFromNodes(
+                edge,
+                sourceNode,
+                targetNode,
+                { allowFallback: false },
+              )
+              if (layout) {
+                sourceAnchor = sourceAnchor ?? {
+                  x: layout.sourceX,
+                  y: layout.sourceY,
+                }
+                targetAnchor = targetAnchor ?? {
+                  x: layout.targetX,
+                  y: layout.targetY,
+                }
+              }
+            }
+          }
+          const { xNeighbors, yNeighbors } = getControlPointSnapNeighbors({
+            controlPoints,
+            controlPointIndex,
+            sourceAnchor,
+            targetAnchor,
+          })
+          const snappedX = getSnappedCoordinate(nextPoint.x, xNeighbors, 'x')
+          const snappedY = getSnappedCoordinate(nextPoint.y, yNeighbors, 'y')
+          nextControlPoints[controlPointIndex] = {
+            x: snappedX,
+            y: snappedY,
+          }
+
+          return {
+            ...edge,
+            data: {
+              ...(edge.data ?? {}),
+              controlPoints: nextControlPoints,
+            },
+          }
+        }),
+      )
+    },
+    [reactFlowInstance, updateEdgesAndPanel],
   )
 
   const onMoveReflexiveHandle = useCallback(
@@ -1816,6 +2076,46 @@ export function useModelState({
     [updateEdgesAndPanel],
   )
 
+  const onDeleteRelationshipControlPoint = useCallback(
+    (edgeId, controlPointIndex) => {
+      if (!Number.isFinite(controlPointIndex)) {
+        return
+      }
+
+      updateEdgesAndPanel((current) =>
+        current.map((edge) => {
+          if (edge.id !== edgeId) {
+            return edge
+          }
+          if (edge.type !== RELATIONSHIP_EDGE_TYPE) {
+            return edge
+          }
+
+          const controlPoints = normalizeControlPoints(edge.data?.controlPoints)
+          if (
+            controlPointIndex < 0 ||
+            controlPointIndex >= controlPoints.length
+          ) {
+            return edge
+          }
+
+          const nextControlPoints = controlPoints.filter(
+            (_entry, index) => index !== controlPointIndex,
+          )
+
+          return {
+            ...edge,
+            data: {
+              ...(edge.data ?? {}),
+              controlPoints: nextControlPoints,
+            },
+          }
+        }),
+      )
+    },
+    [updateEdgesAndPanel],
+  )
+
   const onResetAssociationRouting = useCallback(
     (edgeId) => {
       onUpdateAssociationControlPoints(edgeId, [])
@@ -1823,14 +2123,16 @@ export function useModelState({
     [onUpdateAssociationControlPoints],
   )
 
+  const onResetRelationshipRouting = useCallback(
+    (edgeId) => {
+      onUpdateRelationshipControlPoints(edgeId, [])
+    },
+    [onUpdateRelationshipControlPoints],
+  )
+
   const onEdgeDoubleClick = useCallback(
     (event, edge) => {
-      if (
-        !edge ||
-        normalizedActiveView !== VIEW_CONCEPTUAL ||
-        (edge.type !== ASSOCIATION_EDGE_TYPE &&
-          edge.type !== COMPOSITION_EDGE_TYPE)
-      ) {
+      if (!edge) {
         return
       }
 
@@ -1841,6 +2143,45 @@ export function useModelState({
           })
         : null
       if (!flowPoint) {
+        return
+      }
+
+      if (normalizedActiveView !== VIEW_CONCEPTUAL) {
+        if (edge.type !== RELATIONSHIP_EDGE_TYPE) {
+          return
+        }
+
+        const sourceNode =
+          reactFlowInstance?.getNode(edge.source) ??
+          nodesRef.current.find((node) => node.id === edge.source)
+        const targetNode =
+          reactFlowInstance?.getNode(edge.target) ??
+          nodesRef.current.find((node) => node.id === edge.target)
+        const layout = getRelationshipLayoutFromNodes(edge, sourceNode, targetNode)
+        if (!layout) {
+          return
+        }
+
+        const controlPoints = normalizeControlPoints(edge.data?.controlPoints)
+        const basePathPoints = layout.pathPoints ?? [
+          { x: layout.sourceX, y: layout.sourceY },
+          { x: layout.targetX, y: layout.targetY },
+        ]
+        const insertSegmentIndex = getClosestSegmentIndex(basePathPoints, flowPoint)
+        const insertAt = Math.max(
+          0,
+          Math.min(controlPoints.length, insertSegmentIndex),
+        )
+        const nextControlPoints = [...controlPoints]
+        nextControlPoints.splice(insertAt, 0, { x: flowPoint.x, y: flowPoint.y })
+        onUpdateRelationshipControlPoints(edge.id, nextControlPoints)
+        return
+      }
+
+      if (
+        edge.type !== ASSOCIATION_EDGE_TYPE &&
+        edge.type !== COMPOSITION_EDGE_TYPE
+      ) {
         return
       }
 
@@ -1888,6 +2229,7 @@ export function useModelState({
     [
       normalizedActiveView,
       onUpdateAssociationControlPoints,
+      onUpdateRelationshipControlPoints,
       reactFlowInstance,
     ],
   )
@@ -2495,31 +2837,40 @@ export function useModelState({
 
   const flowEdges = useMemo(() => {
     if (normalizedActiveView !== VIEW_CONCEPTUAL) {
-      return edges.filter((edge) => {
-        if (edge.type !== RELATIONSHIP_EDGE_TYPE) {
-          return false
-        }
+      return edges
+        .filter((edge) => {
+          if (edge.type !== RELATIONSHIP_EDGE_TYPE) {
+            return false
+          }
 
-        if (!visibleClassIds.has(edge.source) || !visibleClassIds.has(edge.target)) {
-          return false
-        }
+          if (!visibleClassIds.has(edge.source) || !visibleClassIds.has(edge.target)) {
+            return false
+          }
 
-        const sourceAttributeId = getAttributeIdFromHandle(edge.sourceHandle)
-        const targetAttributeId = getAttributeIdFromHandle(edge.targetHandle)
-        if (!sourceAttributeId || !targetAttributeId) {
-          return false
-        }
+          const sourceAttributeId = getAttributeIdFromHandle(edge.sourceHandle)
+          const targetAttributeId = getAttributeIdFromHandle(edge.targetHandle)
+          if (!sourceAttributeId || !targetAttributeId) {
+            return false
+          }
 
-        if (!visibleAttributeIds.has(`${edge.source}:${sourceAttributeId}`)) {
-          return false
-        }
+          if (!visibleAttributeIds.has(`${edge.source}:${sourceAttributeId}`)) {
+            return false
+          }
 
-        if (!visibleAttributeIds.has(`${edge.target}:${targetAttributeId}`)) {
-          return false
-        }
+          if (!visibleAttributeIds.has(`${edge.target}:${targetAttributeId}`)) {
+            return false
+          }
 
-        return true
-      })
+          return true
+        })
+        .map((edge) => ({
+          ...edge,
+          data: {
+            ...(edge.data ?? {}),
+            onMoveControlPoint: onMoveRelationshipControlPoint,
+            onDeleteControlPoint: onDeleteRelationshipControlPoint,
+          },
+        }))
     }
 
     const visibleAssociationEdges = edges.filter((edge) => {
@@ -2605,7 +2956,9 @@ export function useModelState({
     edges,
     normalizedActiveView,
     onDeleteAssociationControlPoint,
+    onDeleteRelationshipControlPoint,
     onMoveAssociationControlPoint,
+    onMoveRelationshipControlPoint,
     onMoveReflexiveHandle,
     showCompositionAggregation,
     visibleAttributeIds,
@@ -2706,6 +3059,8 @@ export function useModelState({
     onUpdateAssociationComment,
     onUpdateAssociationLineStyle,
     onResetAssociationRouting,
+    onUpdateRelationshipLineStyle,
+    onResetRelationshipRouting,
     onToggleAssociationComposition,
     onEdgeDoubleClick,
     onHighlightAssociation,

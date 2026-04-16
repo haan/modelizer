@@ -5,6 +5,7 @@ import {
   ASSOCIATION_EDGE_TYPE,
   COMPOSITION_EDGE_TYPE,
   REFLEXIVE_EDGE_TYPE,
+  RELATIONSHIP_EDGE_TYPE,
 } from './constants.js'
 
 const REFLEXIVE_SIDE_LEFT = 'left'
@@ -102,7 +103,8 @@ function assignReflexiveSides(orderedEdges) {
 function normalizeAssociationEdgeLineStyle(edge) {
   if (
     edge.type !== ASSOCIATION_EDGE_TYPE &&
-    edge.type !== COMPOSITION_EDGE_TYPE
+    edge.type !== COMPOSITION_EDGE_TYPE &&
+    edge.type !== RELATIONSHIP_EDGE_TYPE
   ) {
     return edge
   }

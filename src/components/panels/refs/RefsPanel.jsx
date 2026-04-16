@@ -18,6 +18,8 @@ export default function RefsPanel({
   onUpdateAssociationComment,
   onUpdateAssociationLineStyle,
   onResetAssociationRouting,
+  onUpdateRelationshipLineStyle,
+  onResetRelationshipRouting,
   onToggleAssociationComposition,
   onHighlightAssociation,
   openAssociationId,
@@ -54,6 +56,8 @@ export default function RefsPanel({
           nodes={nodes}
           onDeleteAssociation={onDeleteAssociation}
           onHighlightAssociation={onHighlightAssociation}
+          onUpdateRelationshipLineStyle={onUpdateRelationshipLineStyle}
+          onResetRelationshipRouting={onResetRelationshipRouting}
           openRelationshipId={openRelationshipId}
           onOpenRelationshipIdChange={onOpenRelationshipIdChange}
         />

@@ -31,6 +31,8 @@ export default function RelationshipsPanel({
   nodes,
   onDeleteAssociation,
   onHighlightAssociation,
+  onUpdateRelationshipLineStyle,
+  onResetRelationshipRouting,
   openRelationshipId: controlledOpenRelationshipId,
   onOpenRelationshipIdChange,
 }) {
@@ -115,6 +117,8 @@ export default function RelationshipsPanel({
             onToggleOpen={setOpenRelationshipId}
             onDeleteAssociation={onDeleteAssociation}
             onHighlightAssociation={onHighlightAssociation}
+            onUpdateRelationshipLineStyle={onUpdateRelationshipLineStyle}
+            onResetRelationshipRouting={onResetRelationshipRouting}
           />
         ))}
       </Accordion.Root>

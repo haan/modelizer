@@ -1,5 +1,6 @@
-import { getSmoothStepPath, Position } from 'reactflow'
-import { RELATIONSHIP_EDGE_STUB_DISTANCE } from '../../../model/constants.js'
+import { Position } from 'reactflow'
+import { EdgeControlPoints } from './EdgeControlPoints.jsx'
+import { getRelationshipLayout } from '../utils/relationshipUtils.js'
 
 export function Relationship({
   id,
@@ -10,39 +11,73 @@ export function Relationship({
   sourcePosition,
   targetPosition,
   style,
+  data,
   selected,
 }) {
-  const [edgePath] = getSmoothStepPath({
+  const layout = getRelationshipLayout({
     sourceX,
     sourceY,
-    sourcePosition,
     targetX,
     targetY,
+    sourcePosition,
     targetPosition,
-    offset: RELATIONSHIP_EDGE_STUB_DISTANCE,
+    data,
   })
+  if (!layout) {
+    return null
+  }
+
+  const controlPoints = layout.controlPoints
+  const onMoveControlPoint = data?.onMoveControlPoint
+  const onDeleteControlPoint = data?.onDeleteControlPoint
+  const onMoveControlPointWithAnchors = (
+    edgeId,
+    controlPointIndex,
+    nextPoint,
+  ) =>
+    onMoveControlPoint?.(edgeId, controlPointIndex, nextPoint, {
+      sourceAnchor: { x: layout.sourceX, y: layout.sourceY },
+      targetAnchor: { x: layout.targetX, y: layout.targetY },
+    })
   const strokeClass = selected ? 'text-primary' : 'text-base-content/70'
   const arrowSize = 10
   const arrowWidth = 6
+  const {
+    edgePath,
+    targetX: layoutTargetX,
+    targetY: layoutTargetY,
+    targetPosition: layoutTargetPosition,
+    incomingDx,
+    incomingDy,
+  } = layout
+  const hasIncomingVector =
+    Number.isFinite(incomingDx) &&
+    Number.isFinite(incomingDy) &&
+    (incomingDx !== 0 || incomingDy !== 0)
   const direction =
-    targetPosition === Position.Left
+    hasIncomingVector
+      ? (() => {
+          const length = Math.hypot(incomingDx, incomingDy) || 1
+          return { x: incomingDx / length, y: incomingDy / length }
+        })()
+      : layoutTargetPosition === Position.Left
       ? { x: 1, y: 0 }
-      : targetPosition === Position.Right
+      : layoutTargetPosition === Position.Right
         ? { x: -1, y: 0 }
-        : targetPosition === Position.Top
+        : layoutTargetPosition === Position.Top
           ? { x: 0, y: 1 }
-          : targetPosition === Position.Bottom
+          : layoutTargetPosition === Position.Bottom
             ? { x: 0, y: -1 }
             : (() => {
-                const dx = targetX - sourceX
-                const dy = targetY - sourceY
+                const dx = layoutTargetX - sourceX
+                const dy = layoutTargetY - sourceY
                 const length = Math.hypot(dx, dy) || 1
                 return { x: dx / length, y: dy / length }
               })()
   const perp = { x: -direction.y, y: direction.x }
   const base = {
-    x: targetX - direction.x * arrowSize,
-    y: targetY - direction.y * arrowSize,
+    x: layoutTargetX - direction.x * arrowSize,
+    y: layoutTargetY - direction.y * arrowSize,
   }
   const left = {
     x: base.x + perp.x * arrowWidth,
@@ -52,7 +87,7 @@ export function Relationship({
     x: base.x - perp.x * arrowWidth,
     y: base.y - perp.y * arrowWidth,
   }
-  const arrowPath = `M ${left.x} ${left.y} L ${targetX} ${targetY} L ${right.x} ${right.y}`
+  const arrowPath = `M ${left.x} ${left.y} L ${layoutTargetX} ${layoutTargetY} L ${right.x} ${right.y}`
 
   return (
     <>
@@ -75,6 +110,13 @@ export function Relationship({
         className="react-flow__edge-interaction"
         d={edgePath}
         fill="none"
+      />
+      <EdgeControlPoints
+        edgeId={id}
+        controlPoints={controlPoints}
+        selected={selected}
+        onMoveControlPoint={onMoveControlPointWithAnchors}
+        onDeleteControlPoint={onDeleteControlPoint}
       />
     </>
   )
