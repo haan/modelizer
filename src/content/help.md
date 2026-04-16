@@ -109,7 +109,7 @@ Reflexive associations can be resized when selected:
 - Relationship edges support these styles in **Refs > Style**:
   - **Straight**: direct line between endpoints.
   - **Orthogonal**: auto-routed right-angle line.
-  - **Manual**: user-routed polyline with rounded bends and endpoint stubs.
+  - **Manual**: user-routed polyline with rounded bends and direct endpoint segments (no stubs).
 - Manual routing interactions:
   - Double-click an edge segment: add a handle.
   - Drag a handle: move that routing point.
