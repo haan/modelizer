@@ -59,9 +59,11 @@ export function ReflexiveResizeHandles({
           <div
             key={`${edgeId}-reflexive-${handle.key ?? handle.axis}`}
             data-no-export="true"
-            className={`nodrag nopan absolute h-3.5 w-3.5 touch-none rounded-full border border-primary bg-base-100 shadow-sm ${cursorClass}`}
+            className={`nodrag nopan absolute touch-none rounded-full border border-primary bg-base-100 shadow-sm ${cursorClass}`}
             style={{
               transform: `translate(-50%, -50%) translate(${handle.x}px, ${handle.y}px)`,
+              width: '10px',
+              height: '10px',
               pointerEvents: 'all',
               zIndex: 20,
             }}
