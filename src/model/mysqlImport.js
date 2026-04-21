@@ -32,7 +32,7 @@ const deriveModelName = (fileName) => {
   return safeName.replace(/\.[^/.]+$/, '') || 'Imported model'
 }
 
-const parseEnumValues = (expr) => {
+export const parseEnumValues = (expr) => {
   if (expr?.type !== 'expr_list') {
     return []
   }
@@ -46,7 +46,7 @@ const parseEnumValues = (expr) => {
     .filter(Boolean)
 }
 
-const parseDefaultValue = (defaultVal) => {
+export const parseDefaultValue = (defaultVal) => {
   if (!defaultVal) {
     return ''
   }
@@ -71,7 +71,7 @@ const parseDefaultValue = (defaultVal) => {
   return ''
 }
 
-const mapMySqlDatatype = (definition) => {
+export const mapMySqlDatatype = (definition) => {
   const typeParams = { ...ATTRIBUTE_TYPE_PARAMS_DEFAULT }
   const dataType = normalizeText(definition?.dataType).toLowerCase()
 
@@ -154,7 +154,7 @@ const mapMySqlDatatype = (definition) => {
   return { type: '', typeParams, isFallback: true }
 }
 
-const buildGridPositions = (count) => {
+export const buildGridPositions = (count) => {
   const columns = Math.max(1, Math.ceil(Math.sqrt(count)))
   return Array.from({ length: count }, (_, index) => {
     const col = index % columns
@@ -166,7 +166,7 @@ const buildGridPositions = (count) => {
   })
 }
 
-const extractColumnNames = (definition) => {
+export const extractColumnNames = (definition) => {
   if (!Array.isArray(definition)) {
     return []
   }
@@ -175,7 +175,7 @@ const extractColumnNames = (definition) => {
     .filter(Boolean)
 }
 
-const getForeignKeyDefinition = (constraint) => {
+export const getForeignKeyDefinition = (constraint) => {
   const columns = extractColumnNames(constraint?.definition)
   const references = extractColumnNames(constraint?.reference_definition?.definition)
   const targetTable = normalizeText(constraint?.reference_definition?.table?.[0]?.table)
@@ -189,7 +189,7 @@ const getForeignKeyDefinition = (constraint) => {
   }
 }
 
-const getRelationshipHandles = (sourcePos, targetPos, sourceAttrId, targetAttrId) => {
+export const getRelationshipHandles = (sourcePos, targetPos, sourceAttrId, targetAttrId) => {
   const isTargetToRight = targetPos.x >= sourcePos.x
   return {
     sourceHandle: `${isTargetToRight ? 'right' : 'left'}-${sourceAttrId}-source`,

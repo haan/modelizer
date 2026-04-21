@@ -25,7 +25,7 @@ const normalizeBoolean = (value, fallback = true) =>
 const normalizeNumber = (value) =>
   typeof value === 'number' && Number.isFinite(value) ? value : null
 
-const parseDob = (value) => {
+export const parseDob = (value) => {
   const trimmed = normalizeText(value)
   if (!trimmed) {
     return { table: null, field: null }
@@ -40,7 +40,7 @@ const parseDob = (value) => {
   }
 }
 
-const deriveModelName = (fileName) => {
+export const deriveModelName = (fileName) => {
   const safeName = normalizeText(fileName)
   if (!safeName) {
     return 'Imported model'
@@ -58,7 +58,7 @@ const normalizeParams = (params) => {
     .filter(Boolean)
 }
 
-const mapDatatype = (raw) => {
+export const mapDatatype = (raw) => {
   const value = normalizeText(raw).toLowerCase()
   if (!value) {
     return {
