@@ -34,7 +34,7 @@ function getNodeMeasured(node) {
   }
 }
 
-function clamp(value, min, max) {
+export function clamp(value, min, max) {
   return Math.max(min, Math.min(max, value))
 }
 
@@ -167,7 +167,7 @@ function getNodeCenter(node) {
   return { x: position.x + width / 2, y: position.y + height / 2 }
 }
 
-function getParallelMeta(data) {
+export function getParallelMeta(data) {
   const parallelCount = data?.parallelCount ?? 1
   const parallelIndex = data?.parallelIndex ?? 0
   const parallelOffset =
@@ -244,7 +244,7 @@ function getClampedStubLength(anchor, referencePoint) {
   return Math.min(MANUAL_STUB_LENGTH, distance / 2)
 }
 
-function dedupeConsecutivePoints(points) {
+export function dedupeConsecutivePoints(points) {
   return points.filter((point, index) => {
     if (index === 0) {
       return true
@@ -255,7 +255,7 @@ function dedupeConsecutivePoints(points) {
   })
 }
 
-function getRoundedPolylinePath(points, cornerRadius = 0) {
+export function getRoundedPolylinePath(points, cornerRadius = 0) {
   if (!Array.isArray(points) || points.length === 0) {
     return ''
   }
@@ -312,7 +312,7 @@ function getRoundedPolylinePath(points, cornerRadius = 0) {
   return path
 }
 
-function getPolylineMidpointByLength(points) {
+export function getPolylineMidpointByLength(points) {
   if (!Array.isArray(points) || points.length === 0) {
     return { x: 0, y: 0 }
   }

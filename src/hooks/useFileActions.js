@@ -21,7 +21,7 @@ import {
   normalizeViewSizes,
 } from '../model/viewUtils.js'
 
-const buildHashPayload = (payload) => ({
+export const buildHashPayload = (payload) => ({
   version: payload?.version ?? MODEL_VERSION,
   modelName:
     typeof payload?.modelName === 'string' && payload.modelName.trim()
@@ -31,10 +31,10 @@ const buildHashPayload = (payload) => ({
   edges: Array.isArray(payload?.edges) ? payload.edges : [],
 })
 
-const isSamePosition = (a, b) =>
+export const isSamePosition = (a, b) =>
   a?.x === b?.x && a?.y === b?.y
 
-const isSameNode = (prev, next) => {
+export const isSameNode = (prev, next) => {
   if (!prev || !next) {
     return false
   }
@@ -56,7 +56,7 @@ const isSameNode = (prev, next) => {
   return true
 }
 
-const isSameEdge = (prev, next) => {
+export const isSameEdge = (prev, next) => {
   if (!prev || !next) {
     return false
   }
@@ -87,7 +87,7 @@ const isSameEdge = (prev, next) => {
   return true
 }
 
-const hasMeaningfulNodeChange = (prevNodes, nextNodes) => {
+export const hasMeaningfulNodeChange = (prevNodes, nextNodes) => {
   if (prevNodes.length !== nextNodes.length) {
     return true
   }
@@ -95,7 +95,7 @@ const hasMeaningfulNodeChange = (prevNodes, nextNodes) => {
   return nextNodes.some((node) => !isSameNode(prevById.get(node.id), node))
 }
 
-const hasMeaningfulEdgeChange = (prevEdges, nextEdges) => {
+export const hasMeaningfulEdgeChange = (prevEdges, nextEdges) => {
   if (prevEdges.length !== nextEdges.length) {
     return true
   }

@@ -11,7 +11,7 @@ import {
 const REFLEXIVE_SIDE_LEFT = 'left'
 const REFLEXIVE_SIDE_RIGHT = 'right'
 
-function normalizeControlPoints(value) {
+export function normalizeControlPoints(value) {
   if (!Array.isArray(value)) {
     return []
   }
@@ -24,12 +24,12 @@ function normalizeControlPoints(value) {
     .filter((entry) => Number.isFinite(entry.x) && Number.isFinite(entry.y))
 }
 
-function normalizePositiveNumber(value) {
+export function normalizePositiveNumber(value) {
   const numeric = Number(value)
   return Number.isFinite(numeric) && numeric > 0 ? numeric : undefined
 }
 
-function normalizeReflexiveSide(value) {
+export function normalizeReflexiveSide(value) {
   if (value === REFLEXIVE_SIDE_RIGHT) {
     return REFLEXIVE_SIDE_RIGHT
   }
@@ -39,7 +39,7 @@ function normalizeReflexiveSide(value) {
   return null
 }
 
-function getOppositeReflexiveSide(side) {
+export function getOppositeReflexiveSide(side) {
   return side === REFLEXIVE_SIDE_RIGHT
     ? REFLEXIVE_SIDE_LEFT
     : REFLEXIVE_SIDE_RIGHT

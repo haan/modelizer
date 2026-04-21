@@ -24,7 +24,7 @@ function normalizePositive(value) {
   return Number.isFinite(numeric) && numeric > 0 ? numeric : null
 }
 
-function getRoundedPolylinePath(points, cornerRadius = 0) {
+export function getRoundedPolylinePath(points, cornerRadius = 0) {
   if (!Array.isArray(points) || points.length === 0) {
     return ''
   }

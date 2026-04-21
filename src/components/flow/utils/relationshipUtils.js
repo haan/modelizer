@@ -8,7 +8,7 @@ import {
 
 const MANUAL_CORNER_RADIUS = 5
 
-function normalizeLineStyle(value) {
+export function normalizeLineStyle(value) {
   return value === ASSOCIATION_LINE_STYLE_STRAIGHT
     ? ASSOCIATION_LINE_STYLE_STRAIGHT
     : value === ASSOCIATION_LINE_STYLE_MANUAL
@@ -46,7 +46,7 @@ function normalizePosition(value, fallback = null) {
   return fallback
 }
 
-function getOrthogonalIncomingDirection(
+export function getOrthogonalIncomingDirection(
   sourceX,
   sourceY,
   targetX,
@@ -73,7 +73,7 @@ function getOrthogonalIncomingDirection(
   return { x: dx / length, y: dy / length }
 }
 
-function dedupeConsecutivePoints(points) {
+export function dedupeConsecutivePoints(points) {
   return points.filter((point, index) => {
     if (index === 0) {
       return true
@@ -84,7 +84,7 @@ function dedupeConsecutivePoints(points) {
   })
 }
 
-function getRoundedPolylinePath(points, cornerRadius = 0) {
+export function getRoundedPolylinePath(points, cornerRadius = 0) {
   if (!Array.isArray(points) || points.length === 0) {
     return ''
   }
