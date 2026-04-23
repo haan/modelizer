@@ -603,7 +603,7 @@ export function useModelState({
         })
       })
     },
-    [normalizedActiveView, setEdges, setNodes],
+    [normalizedActiveView, setEdges, setNodes, isRestoringRef, pushHistory],
   )
 
   useEffect(() => {
@@ -2833,6 +2833,8 @@ export function useModelState({
   }, [
     edges,
     normalizedActiveView,
+    onControlPointDragEnd,
+    onControlPointDragStart,
     onDeleteAssociationControlPoint,
     onDeleteRelationshipControlPoint,
     onMoveAssociationControlPoint,
