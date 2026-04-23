@@ -380,6 +380,7 @@ function App() {
     canUndo,
     canRedo,
     onNodeDragStart,
+    onNodeDragStop,
   } = useModelState({
     reactFlowInstance,
     reactFlowWrapper,
@@ -952,6 +953,7 @@ function App() {
                   onEdgeClick={onFlowEdgeClick}
                   onPaneClick={onPaneClick}
                   onNodeDragStart={onNodeDragStart}
+                  onNodeDragStop={onNodeDragStop}
                   onInit={setReactFlowInstance}
                   nodeTypes={nodeTypes}
                   edgeTypes={edgeTypes}

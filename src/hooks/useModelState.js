@@ -226,10 +226,27 @@ export function useModelState({
     [setEdges],
   )
 
+  const preDragSnapshotRef = useRef(null)
+
   const onNodeDragStart = useCallback(() => {
     if (!isRestoringRef.current) {
-      pushHistory({ nodes: nodesRef.current, edges: edgesRef.current })
+      preDragSnapshotRef.current = { nodes: nodesRef.current, edges: edgesRef.current }
     }
+  }, [isRestoringRef])
+
+  const onNodeDragStop = useCallback((_event, node) => {
+    const snapshot = preDragSnapshotRef.current
+    preDragSnapshotRef.current = null
+    if (!snapshot || isRestoringRef.current) return
+    const preDragNode = snapshot.nodes.find((n) => n.id === node.id)
+    if (
+      preDragNode &&
+      preDragNode.position.x === node.position.x &&
+      preDragNode.position.y === node.position.y
+    ) {
+      return
+    }
+    pushHistory(snapshot)
   }, [pushHistory, isRestoringRef])
 
   const onControlPointDragStart = useCallback(() => {
@@ -2968,5 +2985,6 @@ export function useModelState({
     canUndo,
     canRedo,
     onNodeDragStart,
+    onNodeDragStop,
   }
 }
