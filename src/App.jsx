@@ -375,6 +375,11 @@ function App() {
     onPaneClick,
     flowNodes,
     flowEdges,
+    onUndo,
+    onRedo,
+    canUndo,
+    canRedo,
+    onNodeDragStart,
   } = useModelState({
     reactFlowInstance,
     reactFlowWrapper,
@@ -666,6 +671,8 @@ function App() {
     onOpenModel,
     onRequestNewModel,
     onSaveModel,
+    onUndo,
+    onRedo,
   })
 
   const onExportPng = useCallback(async () => {
@@ -850,6 +857,10 @@ function App() {
             includeAccentColorsInExport={includeAccentColorsInExport}
             onToggleIncludeAccentColorsInExport={setIncludeAccentColorsInExport}
             isDirty={isDirty}
+            onUndo={onUndo}
+            onRedo={onRedo}
+            canUndo={canUndo}
+            canRedo={canRedo}
           />
           <div className="flex flex-1 min-h-0">
             {!showFullscreen ? (
@@ -940,6 +951,7 @@ function App() {
                   onNodeClick={onFlowNodeClick}
                   onEdgeClick={onFlowEdgeClick}
                   onPaneClick={onPaneClick}
+                  onNodeDragStart={onNodeDragStart}
                   onInit={setReactFlowInstance}
                   nodeTypes={nodeTypes}
                   edgeTypes={edgeTypes}

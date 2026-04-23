@@ -76,6 +76,7 @@ export default function ClassesPanelItem({
     originalLabelRef.current = label
     setDraft(label)
     setIsEditing(true)
+    window.dispatchEvent(new CustomEvent('model-text-edit-start'))
   }, [label])
 
   useEffect(() => {
@@ -87,6 +88,7 @@ export default function ClassesPanelItem({
 
   const commit = () => {
     setIsEditing(false)
+    window.dispatchEvent(new CustomEvent('model-text-edit-end'))
   }
 
   const toggleOpen = () => {
@@ -188,6 +190,7 @@ export default function ClassesPanelItem({
                       setIsEditing(false)
                       setDraft(originalLabel)
                       onRename?.(node.id, originalLabel)
+                      window.dispatchEvent(new CustomEvent('model-text-edit-end'))
                     }
                   }}
                 />

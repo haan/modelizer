@@ -18,6 +18,8 @@ export function ReflexiveResizeHandles({
   selected,
   handles,
   onMoveHandle,
+  onDragStart,
+  onDragEnd,
 }) {
   const reactFlow = useReactFlow()
   const dragStateRef = useRef(null)
@@ -77,6 +79,7 @@ export function ReflexiveResizeHandles({
               event.preventDefault()
               event.stopPropagation()
               event.currentTarget.setPointerCapture?.(event.pointerId)
+              onDragStart?.()
 
               const onPointerMove = (moveEvent) => {
                 moveEvent.preventDefault()
@@ -99,6 +102,7 @@ export function ReflexiveResizeHandles({
                 )
                 window.removeEventListener('pointerup', activeDragState.onPointerUp)
                 dragStateRef.current = null
+                onDragEnd?.()
               }
 
               dragStateRef.current = { onPointerMove, onPointerUp }

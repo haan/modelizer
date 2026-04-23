@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
+import { useHistory } from './useHistory.js'
 import {
   addEdge,
   applyEdgeChanges,
@@ -126,28 +127,47 @@ export function useModelState({
   const [isConnecting, setIsConnecting] = useState(false)
   const nodesRef = useRef(nodes)
   const edgesRef = useRef(edges)
+  const isResizingRef = useRef(new Set())
+  const isDraggingControlPointRef = useRef(false)
+  const isTextEditingRef = useRef(false)
+
+  const {
+    pushHistory,
+    undo: historyUndo,
+    redo: historyRedo,
+    canUndo,
+    canRedo,
+    isRestoringRef,
+    clearHistory,
+  } = useHistory({ limit: 50 })
 
   const updateNodesAndPanel = useCallback(
     (updater) => {
+      if (!isDraggingControlPointRef.current && !isTextEditingRef.current) {
+        pushHistory({ nodes: nodesRef.current, edges: edgesRef.current })
+      }
       const nextNodes = updater(nodesRef.current)
       nodesRef.current = nextNodes
       setNodes(nextNodes)
       setPanelNodes(nextNodes)
     },
-    [setNodes, setPanelNodes],
+    [setNodes, setPanelNodes, pushHistory],
   )
 
   const updateEdgesAndPanel = useCallback(
     (updater) => {
+      if (!isDraggingControlPointRef.current && !isTextEditingRef.current) {
+        pushHistory({ nodes: nodesRef.current, edges: edgesRef.current })
+      }
       const nextEdges = normalizeEdges(updater(edgesRef.current))
       edgesRef.current = nextEdges
       setEdges(nextEdges)
       setPanelEdges(nextEdges)
     },
-    [setEdges, setPanelEdges],
+    [setEdges, setPanelEdges, pushHistory],
   )
 
-  const setModel = useCallback(
+  const restoreModel = useCallback(
     (nextNodes, nextEdges) => {
       nodesRef.current = nextNodes
       edgesRef.current = nextEdges
@@ -158,6 +178,28 @@ export function useModelState({
     },
     [setEdges, setNodes, setPanelEdges, setPanelNodes],
   )
+
+  const setModel = useCallback(
+    (nextNodes, nextEdges) => {
+      clearHistory()
+      restoreModel(nextNodes, nextEdges)
+    },
+    [clearHistory, restoreModel],
+  )
+
+  const onUndo = useCallback(() => {
+    historyUndo(
+      { nodes: nodesRef.current, edges: edgesRef.current },
+      ({ nodes: n, edges: e }) => restoreModel(n, e),
+    )
+  }, [historyUndo, restoreModel])
+
+  const onRedo = useCallback(() => {
+    historyRedo(
+      { nodes: nodesRef.current, edges: edgesRef.current },
+      ({ nodes: n, edges: e }) => restoreModel(n, e),
+    )
+  }, [historyRedo, restoreModel])
 
   const normalizedActiveView =
     activeView === VIEW_LOGICAL || activeView === VIEW_PHYSICAL
@@ -184,10 +226,45 @@ export function useModelState({
     [setEdges],
   )
 
+  const onNodeDragStart = useCallback(() => {
+    if (!isRestoringRef.current) {
+      pushHistory({ nodes: nodesRef.current, edges: edgesRef.current })
+    }
+  }, [pushHistory, isRestoringRef])
+
+  const onControlPointDragStart = useCallback(() => {
+    isDraggingControlPointRef.current = true
+    if (!isRestoringRef.current) {
+      pushHistory({ nodes: nodesRef.current, edges: edgesRef.current })
+    }
+  }, [pushHistory, isRestoringRef])
+
+  const onControlPointDragEnd = useCallback(() => {
+    isDraggingControlPointRef.current = false
+  }, [])
+
   useEffect(() => {
     nodesRef.current = nodes
     edgesRef.current = edges
   }, [edges, nodes])
+
+  useEffect(() => {
+    const onTextEditStart = () => {
+      isTextEditingRef.current = true
+      if (!isRestoringRef.current) {
+        pushHistory({ nodes: nodesRef.current, edges: edgesRef.current })
+      }
+    }
+    const onTextEditEnd = () => {
+      isTextEditingRef.current = false
+    }
+    window.addEventListener('model-text-edit-start', onTextEditStart)
+    window.addEventListener('model-text-edit-end', onTextEditEnd)
+    return () => {
+      window.removeEventListener('model-text-edit-start', onTextEditStart)
+      window.removeEventListener('model-text-edit-end', onTextEditEnd)
+    }
+  }, [pushHistory, isRestoringRef])
 
   const onNodesChange = useCallback(
     (changes) => {
@@ -307,6 +384,15 @@ export function useModelState({
           }
           if (change.type === 'dimensions') {
             updatedAreaSizeIds.add(change.id)
+            const node = nextNodes.find((n) => n.id === change.id)
+            if (node?.resizing && !isResizingRef.current.has(change.id)) {
+              isResizingRef.current.add(change.id)
+              if (!isRestoringRef.current) {
+                pushHistory({ nodes: nodesRef.current, edges: edgesRef.current })
+              }
+            } else if (!node?.resizing) {
+              isResizingRef.current.delete(change.id)
+            }
           }
         })
 
@@ -2655,6 +2741,8 @@ export function useModelState({
             ...(edge.data ?? {}),
             onMoveControlPoint: onMoveRelationshipControlPoint,
             onDeleteControlPoint: onDeleteRelationshipControlPoint,
+            onControlPointDragStart,
+            onControlPointDragEnd,
           },
         }))
     }
@@ -2686,6 +2774,8 @@ export function useModelState({
           data: {
             ...(edge.data ?? {}),
             onMoveReflexiveHandle,
+            onControlPointDragStart,
+            onControlPointDragEnd,
           },
         }
       }
@@ -2703,6 +2793,8 @@ export function useModelState({
           ...(edge.data ?? {}),
           onMoveControlPoint: onMoveAssociationControlPoint,
           onDeleteControlPoint: onDeleteAssociationControlPoint,
+          onControlPointDragStart,
+          onControlPointDragEnd,
         },
       }
     })
@@ -2869,5 +2961,10 @@ export function useModelState({
     panelNodes,
     panelEdges,
     setModel,
+    onUndo,
+    onRedo,
+    canUndo,
+    canRedo,
+    onNodeDragStart,
   }
 }

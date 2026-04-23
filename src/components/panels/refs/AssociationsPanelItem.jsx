@@ -114,6 +114,7 @@ export default function AssociationsPanelItem({
 
   const commit = () => {
     setIsEditing(false)
+    window.dispatchEvent(new CustomEvent('model-text-edit-end'))
   }
 
   const startEditing = () => {
@@ -123,6 +124,7 @@ export default function AssociationsPanelItem({
     originalLabelRef.current = label
     setDraft(label)
     setIsEditing(true)
+    window.dispatchEvent(new CustomEvent('model-text-edit-start'))
   }
 
   const toggleOpen = () => {
@@ -187,6 +189,7 @@ export default function AssociationsPanelItem({
                       setIsEditing(false)
                       setDraft(originalLabel)
                       onRenameAssociation?.(edge.id, originalLabel)
+                      window.dispatchEvent(new CustomEvent('model-text-edit-end'))
                     }
                   }}
                 />

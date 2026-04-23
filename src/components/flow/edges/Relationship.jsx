@@ -30,6 +30,8 @@ export function Relationship({
   const controlPoints = layout.controlPoints
   const onMoveControlPoint = data?.onMoveControlPoint
   const onDeleteControlPoint = data?.onDeleteControlPoint
+  const onControlPointDragStart = data?.onControlPointDragStart
+  const onControlPointDragEnd = data?.onControlPointDragEnd
   const onMoveControlPointWithAnchors = (
     edgeId,
     controlPointIndex,
@@ -117,6 +119,8 @@ export function Relationship({
         selected={selected}
         onMoveControlPoint={onMoveControlPointWithAnchors}
         onDeleteControlPoint={onDeleteControlPoint}
+        onControlPointDragStart={onControlPointDragStart}
+        onControlPointDragEnd={onControlPointDragEnd}
       />
     </>
   )

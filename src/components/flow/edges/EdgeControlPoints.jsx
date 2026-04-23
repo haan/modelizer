@@ -19,6 +19,8 @@ export function EdgeControlPoints({
   selected,
   onMoveControlPoint,
   onDeleteControlPoint,
+  onControlPointDragStart,
+  onControlPointDragEnd,
 }) {
   const reactFlow = useReactFlow()
   const dragStateRef = useRef(null)
@@ -77,6 +79,7 @@ export function EdgeControlPoints({
             event.preventDefault()
             event.stopPropagation()
             event.currentTarget.setPointerCapture?.(event.pointerId)
+            onControlPointDragStart?.()
 
             const onPointerMove = (moveEvent) => {
               moveEvent.preventDefault()
@@ -96,6 +99,7 @@ export function EdgeControlPoints({
               window.removeEventListener('pointermove', activeDragState.onPointerMove)
               window.removeEventListener('pointerup', activeDragState.onPointerUp)
               dragStateRef.current = null
+              onControlPointDragEnd?.()
             }
 
             dragStateRef.current = { onPointerMove, onPointerUp }

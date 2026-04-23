@@ -49,6 +49,8 @@ export function Composition({
   const controlPoints = Array.isArray(data?.controlPoints) ? data.controlPoints : []
   const onMoveControlPoint = data?.onMoveControlPoint
   const onDeleteControlPoint = data?.onDeleteControlPoint
+  const onControlPointDragStart = data?.onControlPointDragStart
+  const onControlPointDragEnd = data?.onControlPointDragEnd
   const strokeClass = selected ? 'text-primary' : 'text-base-content/70'
   const diamondClass = selected ? 'text-primary' : 'text-base-content'
   const {
@@ -150,6 +152,8 @@ export function Composition({
         selected={selected}
         onMoveControlPoint={onMoveControlPoint}
         onDeleteControlPoint={onDeleteControlPoint}
+        onControlPointDragStart={onControlPointDragStart}
+        onControlPointDragEnd={onControlPointDragEnd}
       />
       <EdgeLabelRenderer>
         {multiplicityA ? (
