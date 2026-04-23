@@ -369,6 +369,16 @@ export default function AssociationsPanelItem({
                               size="xs"
                               value={roleA}
                               placeholder="Role"
+                              onFocus={() =>
+                                window.dispatchEvent(
+                                  new CustomEvent('model-text-edit-start'),
+                                )
+                              }
+                              onBlur={() =>
+                                window.dispatchEvent(
+                                  new CustomEvent('model-text-edit-end'),
+                                )
+                              }
                               onChange={(event) =>
                                 onUpdateAssociationRole?.(
                                   edge.id,
@@ -461,6 +471,16 @@ export default function AssociationsPanelItem({
                               size="xs"
                               value={roleB}
                               placeholder="Role"
+                              onFocus={() =>
+                                window.dispatchEvent(
+                                  new CustomEvent('model-text-edit-start'),
+                                )
+                              }
+                              onBlur={() =>
+                                window.dispatchEvent(
+                                  new CustomEvent('model-text-edit-end'),
+                                )
+                              }
                               onChange={(event) =>
                                 onUpdateAssociationRole?.(
                                   edge.id,
@@ -628,6 +648,12 @@ export default function AssociationsPanelItem({
                     className="min-h-[96px] w-full rounded-md border border-base-content/20 bg-transparent px-2 py-1 text-xs focus:outline-none focus:ring-1 focus:ring-ring"
                     placeholder="Write your comment..."
                     value={comment}
+                    onFocus={() =>
+                      window.dispatchEvent(new CustomEvent('model-text-edit-start'))
+                    }
+                    onBlur={() =>
+                      window.dispatchEvent(new CustomEvent('model-text-edit-end'))
+                    }
                     onChange={(event) =>
                       onUpdateAssociationComment?.(edge.id, event.target.value)
                     }
