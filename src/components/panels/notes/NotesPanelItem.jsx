@@ -38,12 +38,14 @@ export default function NotesPanelItem({
 
   const commit = () => {
     setIsEditing(false)
+    window.dispatchEvent(new CustomEvent('model-text-edit-end'))
   }
 
   const startEditing = () => {
     originalLabelRef.current = label
     setDraft(label)
     setIsEditing(true)
+    window.dispatchEvent(new CustomEvent('model-text-edit-start'))
   }
 
   const toggleOpen = () => {
@@ -108,6 +110,7 @@ export default function NotesPanelItem({
                       setIsEditing(false)
                       setDraft(originalLabel)
                       onRename?.(note.id, originalLabel)
+                      window.dispatchEvent(new CustomEvent('model-text-edit-end'))
                     }
                   }}
                 />
@@ -213,6 +216,12 @@ export default function NotesPanelItem({
             className="mt-3 min-h-[120px] w-full rounded-md border border-base-content/20 bg-transparent px-2 py-1 text-xs focus:outline-none focus:ring-1 focus:ring-ring"
             placeholder="Write your note..."
             value={text}
+            onFocus={() =>
+              window.dispatchEvent(new CustomEvent('model-text-edit-start'))
+            }
+            onBlur={() =>
+              window.dispatchEvent(new CustomEvent('model-text-edit-end'))
+            }
             onChange={(event) => onUpdateText?.(note.id, event.target.value)}
           />
           <div className="flex flex-1 items-center justify-center pt-2">

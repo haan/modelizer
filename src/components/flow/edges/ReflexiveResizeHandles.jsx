@@ -18,22 +18,31 @@ export function ReflexiveResizeHandles({
   selected,
   handles,
   onMoveHandle,
+  onDragStart,
+  onDragEnd,
 }) {
   const reactFlow = useReactFlow()
   const dragStateRef = useRef(null)
+  const clearActiveDrag = () => {
+    const dragState = dragStateRef.current
+    if (!dragState) {
+      return false
+    }
+
+    window.removeEventListener('pointermove', dragState.onPointerMove)
+    window.removeEventListener('pointerup', dragState.onPointerUp)
+    window.removeEventListener('pointercancel', dragState.onPointerCancel)
+    dragStateRef.current = null
+    return true
+  }
 
   useEffect(() => {
     return () => {
-      const dragState = dragStateRef.current
-      if (!dragState) {
-        return
+      if (clearActiveDrag()) {
+        onDragEnd?.()
       }
-
-      window.removeEventListener('pointermove', dragState.onPointerMove)
-      window.removeEventListener('pointerup', dragState.onPointerUp)
-      dragStateRef.current = null
     }
-  }, [])
+  }, [onDragEnd])
 
   if (!selected || !Array.isArray(handles) || handles.length === 0) {
     return null
@@ -77,6 +86,7 @@ export function ReflexiveResizeHandles({
               event.preventDefault()
               event.stopPropagation()
               event.currentTarget.setPointerCapture?.(event.pointerId)
+              onDragStart?.()
 
               const onPointerMove = (moveEvent) => {
                 moveEvent.preventDefault()
@@ -87,23 +97,18 @@ export function ReflexiveResizeHandles({
                 )
                 onMoveHandle?.(edgeId, handle.key, nextPoint)
               }
-              const onPointerUp = () => {
-                const activeDragState = dragStateRef.current
-                if (!activeDragState) {
-                  return
+              const finishDrag = () => {
+                if (clearActiveDrag()) {
+                  onDragEnd?.()
                 }
-
-                window.removeEventListener(
-                  'pointermove',
-                  activeDragState.onPointerMove,
-                )
-                window.removeEventListener('pointerup', activeDragState.onPointerUp)
-                dragStateRef.current = null
               }
+              const onPointerUp = () => finishDrag()
+              const onPointerCancel = () => finishDrag()
 
-              dragStateRef.current = { onPointerMove, onPointerUp }
+              dragStateRef.current = { onPointerMove, onPointerUp, onPointerCancel }
               window.addEventListener('pointermove', onPointerMove)
               window.addEventListener('pointerup', onPointerUp)
+              window.addEventListener('pointercancel', onPointerCancel)
             }}
           />
         )

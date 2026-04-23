@@ -59,6 +59,8 @@ export function ReflexiveAssociation({
   const roleB = data?.roleB ?? ''
   const name = data?.name ?? ''
   const onMoveReflexiveHandle = data?.onMoveReflexiveHandle
+  const onControlPointDragStart = data?.onControlPointDragStart
+  const onControlPointDragEnd = data?.onControlPointDragEnd
   const strokeClass = selected ? 'text-primary' : 'text-base-content/70'
 
   return (
@@ -81,6 +83,8 @@ export function ReflexiveAssociation({
         selected={selected}
         handles={layout.resizeHandles}
         onMoveHandle={onMoveReflexiveHandle}
+        onDragStart={onControlPointDragStart}
+        onDragEnd={onControlPointDragEnd}
       />
       <EdgeLabelRenderer>
         {multiplicityA ? (

@@ -11,6 +11,8 @@ export function useKeyboardShortcuts({
   onOpenModel,
   onRequestNewModel,
   onSaveModel,
+  onUndo,
+  onRedo,
 }) {
   const nodesRef = useRef(nodes)
   const edgesRef = useRef(edges)
@@ -53,6 +55,14 @@ export function useKeyboardShortcuts({
         if (key === 'n') {
           event.preventDefault()
           onRequestNewModel()
+        }
+        if (key === 'z' && !event.shiftKey) {
+          event.preventDefault()
+          onUndo?.()
+        }
+        if (key === 'y' || (key === 'z' && event.shiftKey)) {
+          event.preventDefault()
+          onRedo?.()
         }
         if (key === 'a') {
           if (!event.ctrlKey || (isMac && event.metaKey)) {
@@ -104,5 +114,7 @@ export function useKeyboardShortcuts({
     onOpenModel,
     onRequestNewModel,
     onSaveModel,
+    onUndo,
+    onRedo,
   ])
 }

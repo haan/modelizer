@@ -176,6 +176,8 @@ export default function ClassesPanelAttributesItem({
                   className="min-w-0 flex-1"
                   value={name ?? ''}
                   placeholder={attributeNameLabel}
+                  onFocus={() => window.dispatchEvent(new CustomEvent('model-text-edit-start'))}
+                  onBlur={() => window.dispatchEvent(new CustomEvent('model-text-edit-end'))}
                   onChange={(event) => onChangeName?.(event.target.value)}
                   onKeyDown={(event) => {
                     if (event.key !== 'Enter') {
@@ -230,6 +232,8 @@ export default function ClassesPanelAttributesItem({
                   size="xs"
                   value={logicalName ?? ''}
                   placeholder="Logical name"
+                  onFocus={() => window.dispatchEvent(new CustomEvent('model-text-edit-start'))}
+                  onBlur={() => window.dispatchEvent(new CustomEvent('model-text-edit-end'))}
                   onChange={(event) =>
                     onChangeLogicalName?.(event.target.value)
                   }

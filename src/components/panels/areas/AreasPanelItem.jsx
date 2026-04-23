@@ -40,12 +40,14 @@ export default function AreasPanelItem({
 
   const commit = () => {
     setIsEditing(false)
+    window.dispatchEvent(new CustomEvent('model-text-edit-end'))
   }
 
   const startEditing = () => {
     originalLabelRef.current = label
     setDraft(label)
     setIsEditing(true)
+    window.dispatchEvent(new CustomEvent('model-text-edit-start'))
   }
 
   const toggleOpen = () => {
@@ -113,6 +115,7 @@ export default function AreasPanelItem({
                       setIsEditing(false)
                       setDraft(originalLabel)
                       onRename?.(area.id, originalLabel)
+                      window.dispatchEvent(new CustomEvent('model-text-edit-end'))
                     }
                   }}
                 />

@@ -37,6 +37,10 @@ export default function Navbar({
   includeAccentColorsInExport,
   onToggleIncludeAccentColorsInExport,
   isDirty,
+  onUndo,
+  onRedo,
+  canUndo,
+  canRedo,
 }) {
   const [isEditing, setIsEditing] = useState(false)
   const [draft, setDraft] = useState('')
@@ -77,7 +81,7 @@ export default function Navbar({
 
   return (
     <nav className="w-full border-b border-base-content/10 bg-base-100">
-      <div className="mx-auto grid max-w-screen-2xl grid-cols-[1fr_auto_1fr] items-center gap-4 px-6 py-4">
+      <div className="relative mx-auto flex max-w-screen-2xl items-center gap-4 px-6 py-4">
         <div className="flex items-center gap-4">
           <img
             src="/images/logo.png"
@@ -174,6 +178,39 @@ export default function Navbar({
                     onSelect={() => onExportPng?.()}
                   >
                     Export as PNG
+                  </Menubar.Item>
+                </Menubar.Content>
+              </Menubar.Portal>
+            </Menubar.Menu>
+            <Menubar.Menu>
+              <Menubar.Trigger className="rounded-sm px-3 py-1 text-sm font-medium text-base-content/80 transition-colors hover:bg-base-200 focus:outline-none">
+                Edit
+              </Menubar.Trigger>
+              <Menubar.Portal>
+                <Menubar.Content
+                  className="z-50 min-w-35 rounded-sm border border-base-content/20 bg-base-100 p-1 shadow-lg"
+                  align="start"
+                  sideOffset={6}
+                >
+                  <Menubar.Item
+                    className="flex cursor-pointer items-center justify-between rounded-sm px-2 py-1 text-xs text-base-content transition-colors hover:bg-base-200 focus:outline-none data-disabled:pointer-events-none data-disabled:opacity-40"
+                    onSelect={() => onUndo?.()}
+                    disabled={!canUndo}
+                  >
+                    <span>Undo</span>
+                    <span className="text-[10px] text-base-content/50">
+                      {shortcutPrefix}+Z
+                    </span>
+                  </Menubar.Item>
+                  <Menubar.Item
+                    className="flex cursor-pointer items-center justify-between rounded-sm px-2 py-1 text-xs text-base-content transition-colors hover:bg-base-200 focus:outline-none data-disabled:pointer-events-none data-disabled:opacity-40"
+                    onSelect={() => onRedo?.()}
+                    disabled={!canRedo}
+                  >
+                    <span>Redo</span>
+                    <span className="text-[10px] text-base-content/50">
+                      {shortcutPrefix}+Y
+                    </span>
                   </Menubar.Item>
                 </Menubar.Content>
               </Menubar.Portal>
@@ -384,7 +421,7 @@ export default function Navbar({
             </Menubar.Menu>
           </Menubar.Root>
         </div>
-        <div className="group flex items-center justify-center gap-2">
+        <div className="group ml-auto flex items-center justify-end gap-2 xl:absolute xl:left-1/2 xl:ml-0 xl:-translate-x-1/2 xl:justify-center">
           {isEditing ? (
             <Input
               ref={inputRef}
@@ -441,7 +478,6 @@ export default function Navbar({
             </>
           )}
         </div>
-        <div className="flex items-center justify-end gap-2" />
       </div>
       <HelpDialog open={isHelpOpen} onOpenChange={setIsHelpOpen} />
     </nav>
