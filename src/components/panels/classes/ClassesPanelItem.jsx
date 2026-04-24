@@ -68,6 +68,7 @@ export default function ClassesPanelItem({
   const [draft, setDraft] = useState(label)
   const inputRef = useRef(null)
   const originalLabelRef = useRef(label)
+  const autoEditStartedRef = useRef(false)
   const style = {
     transform: CSS.Transform.toString(transform),
     transition,
@@ -78,6 +79,30 @@ export default function ClassesPanelItem({
     setIsEditing(true)
     window.dispatchEvent(new CustomEvent('model-text-edit-start'))
   }, [label])
+
+  useEffect(() => {
+    if (!shouldAutoEdit) {
+      autoEditStartedRef.current = false
+      return
+    }
+
+    if (autoEditStartedRef.current) {
+      return
+    }
+
+    autoEditStartedRef.current = true
+    originalLabelRef.current = label
+    window.dispatchEvent(new CustomEvent('model-text-edit-start'))
+
+    const frame = requestAnimationFrame(() => {
+      setDraft(label)
+      setIsEditing(true)
+    })
+
+    return () => {
+      cancelAnimationFrame(frame)
+    }
+  }, [label, shouldAutoEdit])
 
   useEffect(() => {
     if (isEditing) {
