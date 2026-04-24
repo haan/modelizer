@@ -9,8 +9,16 @@ import {
   getClosestSegmentIndex,
   getSnappedCoordinate,
   getControlPointSnapNeighbors,
+  syncNodeViewLayout,
 } from "../modelStateUtils.js";
-import { VIEW_CONCEPTUAL, VIEW_LOGICAL, VIEW_PHYSICAL } from "../constants.js";
+import {
+  AREA_NODE_TYPE,
+  CLASS_NODE_TYPE,
+  NOTE_NODE_TYPE,
+  VIEW_CONCEPTUAL,
+  VIEW_LOGICAL,
+  VIEW_PHYSICAL,
+} from "../constants.js";
 
 // ─── deriveViewPositionsMeta ──────────────────────────────────────────────────
 
@@ -55,6 +63,116 @@ describe("deriveViewPositionsMeta", () => {
     const viewPositions = { [VIEW_CONCEPTUAL]: pos, [VIEW_LOGICAL]: pos, [VIEW_PHYSICAL]: pos };
     const meta = deriveViewPositionsMeta(node, viewPositions);
     expect(meta.conceptual).toBe(true);
+  });
+});
+
+// ─── syncNodeViewLayout ───────────────────────────────────────────────────────
+
+describe("syncNodeViewLayout", () => {
+  it("syncs class position from conceptual to logical", () => {
+    const node = {
+      id: "class-1",
+      type: CLASS_NODE_TYPE,
+      position: { x: 100, y: 120 },
+      data: {
+        viewPositions: {
+          [VIEW_CONCEPTUAL]: { x: 10, y: 20 },
+          [VIEW_LOGICAL]: { x: 100, y: 120 },
+          [VIEW_PHYSICAL]: { x: 300, y: 320 },
+        },
+        viewPositionsMeta: {
+          conceptual: true,
+          logical: true,
+          physical: true,
+        },
+      },
+    };
+
+    const result = syncNodeViewLayout(node, VIEW_LOGICAL);
+
+    expect(result.position).toEqual({ x: 10, y: 20 });
+    expect(result.data.viewPositions[VIEW_LOGICAL]).toEqual({ x: 10, y: 20 });
+    expect(result.data.viewPositions[VIEW_PHYSICAL]).toEqual({ x: 300, y: 320 });
+    expect(result.data.viewPositionsMeta.logical).toBe(true);
+  });
+
+  it("syncs note position from conceptual to logical", () => {
+    const node = {
+      id: "note-1",
+      type: NOTE_NODE_TYPE,
+      position: { x: 140, y: 160 },
+      data: {
+        label: "Note",
+        viewPositions: {
+          [VIEW_CONCEPTUAL]: { x: 20, y: 30 },
+          [VIEW_LOGICAL]: { x: 140, y: 160 },
+          [VIEW_PHYSICAL]: { x: 260, y: 280 },
+        },
+        viewPositionsMeta: {
+          conceptual: true,
+          logical: true,
+          physical: true,
+        },
+      },
+    };
+
+    const result = syncNodeViewLayout(node, VIEW_LOGICAL);
+
+    expect(result.position).toEqual({ x: 20, y: 30 });
+    expect(result.data.viewPositions[VIEW_LOGICAL]).toEqual({ x: 20, y: 30 });
+    expect(result.data.viewPositions[VIEW_PHYSICAL]).toEqual({ x: 260, y: 280 });
+  });
+
+  it("syncs area position and size from logical to physical", () => {
+    const node = {
+      id: "area-1",
+      type: AREA_NODE_TYPE,
+      position: { x: 300, y: 320 },
+      width: 500,
+      height: 350,
+      style: { zIndex: -1, width: 500, height: 350 },
+      data: {
+        label: "Area",
+        viewPositions: {
+          [VIEW_CONCEPTUAL]: { x: 10, y: 20 },
+          [VIEW_LOGICAL]: { x: 100, y: 120 },
+          [VIEW_PHYSICAL]: { x: 300, y: 320 },
+        },
+        viewSizes: {
+          [VIEW_CONCEPTUAL]: { width: 280, height: 180 },
+          [VIEW_LOGICAL]: { width: 400, height: 250 },
+          [VIEW_PHYSICAL]: { width: 500, height: 350 },
+        },
+        viewPositionsMeta: {
+          conceptual: true,
+          logical: true,
+          physical: true,
+        },
+      },
+    };
+
+    const result = syncNodeViewLayout(node, VIEW_PHYSICAL);
+
+    expect(result.position).toEqual({ x: 100, y: 120 });
+    expect(result.width).toBe(400);
+    expect(result.height).toBe(250);
+    expect(result.style).toEqual({ zIndex: -1, width: 400, height: 250 });
+    expect(result.data.viewPositions[VIEW_PHYSICAL]).toEqual({ x: 100, y: 120 });
+    expect(result.data.viewSizes[VIEW_PHYSICAL]).toEqual({ width: 400, height: 250 });
+    expect(result.data.viewPositionsMeta.physical).toBe(true);
+  });
+
+  it("leaves unsupported nodes and conceptual sync unchanged", () => {
+    const unsupported = { id: "other-1", type: "other", position: { x: 1, y: 2 } };
+    const classNode = {
+      id: "class-1",
+      type: CLASS_NODE_TYPE,
+      position: { x: 1, y: 2 },
+      data: {},
+    };
+
+    expect(syncNodeViewLayout(unsupported, VIEW_LOGICAL)).toBe(unsupported);
+    expect(syncNodeViewLayout(classNode, VIEW_CONCEPTUAL)).toBe(classNode);
   });
 });
 

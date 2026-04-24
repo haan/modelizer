@@ -46,6 +46,7 @@ import {
   getClosestSegmentIndex,
   getSnappedCoordinate,
   getControlPointSnapNeighbors,
+  syncNodeViewLayout,
 } from '../model/modelStateUtils.js'
 import {
   DEFAULT_VIEW_VISIBILITY,
@@ -1333,43 +1334,7 @@ export function useModelState({
     }
 
     updateNodesAndPanel((current) =>
-      current.map((node) => {
-        if (node.type !== CLASS_NODE_TYPE) {
-          return node
-        }
-
-        const viewPositions = normalizeViewPositions(
-          node.data?.viewPositions,
-          node.position,
-        )
-        const viewPositionsMeta = deriveViewPositionsMeta(node, viewPositions)
-        const nextViewPositions = { ...viewPositions }
-
-        if (normalizedActiveView === VIEW_LOGICAL) {
-          nextViewPositions[VIEW_LOGICAL] = {
-            ...viewPositions[VIEW_CONCEPTUAL],
-          }
-        } else if (normalizedActiveView === VIEW_PHYSICAL) {
-          nextViewPositions[VIEW_PHYSICAL] = {
-            ...viewPositions[VIEW_LOGICAL],
-          }
-        }
-
-        const nextPosition = nextViewPositions[normalizedActiveView]
-
-        return {
-          ...node,
-          position: { ...nextPosition },
-          data: {
-            ...node.data,
-            viewPositions: nextViewPositions,
-            viewPositionsMeta: {
-              ...viewPositionsMeta,
-              [normalizedActiveView]: true,
-            },
-          },
-        }
-      }),
+      current.map((node) => syncNodeViewLayout(node, normalizedActiveView)),
     )
   }, [normalizedActiveView, updateNodesAndPanel])
 

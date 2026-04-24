@@ -1,8 +1,15 @@
 import {
+  AREA_NODE_TYPE,
+  CLASS_NODE_TYPE,
+  NOTE_NODE_TYPE,
   VIEW_CONCEPTUAL,
   VIEW_LOGICAL,
   VIEW_PHYSICAL,
 } from './constants.js'
+import {
+  normalizeViewPositions,
+  normalizeViewSizes,
+} from './viewUtils.js'
 
 const samePosition = (a, b) => a?.x === b?.x && a?.y === b?.y
 
@@ -36,6 +43,81 @@ export function deriveViewPositionsMeta(node, viewPositions) {
         viewPositions[VIEW_PHYSICAL],
         viewPositions[VIEW_LOGICAL],
       ),
+  }
+}
+
+const SYNC_SOURCE_BY_VIEW = {
+  [VIEW_LOGICAL]: VIEW_CONCEPTUAL,
+  [VIEW_PHYSICAL]: VIEW_LOGICAL,
+}
+
+const getAreaFallbackSize = (node) => ({
+  width: node.width ?? node.style?.width ?? 280,
+  height: node.height ?? node.style?.height ?? 180,
+})
+
+export function syncNodeViewLayout(node, activeView) {
+  const sourceView = SYNC_SOURCE_BY_VIEW[activeView]
+  if (!sourceView) {
+    return node
+  }
+
+  if (
+    node.type !== CLASS_NODE_TYPE &&
+    node.type !== NOTE_NODE_TYPE &&
+    node.type !== AREA_NODE_TYPE
+  ) {
+    return node
+  }
+
+  const viewPositions = normalizeViewPositions(
+    node.data?.viewPositions,
+    node.position,
+  )
+  const viewPositionsMeta = deriveViewPositionsMeta(node, viewPositions)
+  const sourcePosition = viewPositions[sourceView]
+  const nextViewPositions = {
+    ...viewPositions,
+    [activeView]: { ...sourcePosition },
+  }
+  const nextNode = {
+    ...node,
+    position: { ...sourcePosition },
+    data: {
+      ...node.data,
+      viewPositions: nextViewPositions,
+      viewPositionsMeta: {
+        ...viewPositionsMeta,
+        [activeView]: true,
+      },
+    },
+  }
+
+  if (node.type !== AREA_NODE_TYPE) {
+    return nextNode
+  }
+
+  const viewSizes = normalizeViewSizes(
+    node.data?.viewSizes,
+    getAreaFallbackSize(node),
+  )
+  const sourceSize = viewSizes[sourceView]
+  return {
+    ...nextNode,
+    width: sourceSize.width,
+    height: sourceSize.height,
+    style: {
+      ...node.style,
+      width: sourceSize.width,
+      height: sourceSize.height,
+    },
+    data: {
+      ...nextNode.data,
+      viewSizes: {
+        ...viewSizes,
+        [activeView]: { ...sourceSize },
+      },
+    },
   }
 }
 
