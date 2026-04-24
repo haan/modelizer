@@ -21,14 +21,92 @@ import {
   normalizeViewSizes,
 } from '../model/viewUtils.js'
 
+const getNodeFallbackSize = (node, fallback = { width: 0, height: 0 }) => ({
+  width: node?.width ?? node?.style?.width ?? fallback.width,
+  height: node?.height ?? node?.style?.height ?? fallback.height,
+})
+
+const normalizeNodeForPayload = (node) => {
+  if (!node || typeof node !== 'object') {
+    return node
+  }
+
+  const baseNode = {
+    ...node,
+    selected: false,
+  }
+
+  if (
+    node.type !== CLASS_NODE_TYPE &&
+    node.type !== NOTE_NODE_TYPE &&
+    node.type !== AREA_NODE_TYPE
+  ) {
+    return baseNode
+  }
+
+  const viewPositions = normalizeViewPositions(
+    node.data?.viewPositions,
+    node.position,
+  )
+  const conceptualPosition = viewPositions[VIEW_CONCEPTUAL]
+  const nextNode = {
+    ...baseNode,
+    position: { ...conceptualPosition },
+    data: {
+      ...(node.data ?? {}),
+      viewPositions,
+    },
+  }
+
+  if (node.type !== AREA_NODE_TYPE) {
+    return nextNode
+  }
+
+  const viewSizes = normalizeViewSizes(
+    node.data?.viewSizes,
+    getNodeFallbackSize(node, { width: 280, height: 180 }),
+  )
+  const conceptualSize = viewSizes[VIEW_CONCEPTUAL]
+
+  return {
+    ...nextNode,
+    width: conceptualSize.width,
+    height: conceptualSize.height,
+    style: {
+      ...(node.style ?? {}),
+      width: conceptualSize.width,
+      height: conceptualSize.height,
+    },
+    data: {
+      ...nextNode.data,
+      viewSizes,
+    },
+  }
+}
+
+const normalizeEdgeForPayload = (edge) => {
+  if (!edge || typeof edge !== 'object') {
+    return edge
+  }
+
+  return {
+    ...edge,
+    selected: false,
+  }
+}
+
 export const buildHashPayload = (payload) => ({
   version: payload?.version ?? MODEL_VERSION,
   modelName:
     typeof payload?.modelName === 'string' && payload.modelName.trim()
       ? payload.modelName
       : 'Untitled model',
-  nodes: Array.isArray(payload?.nodes) ? payload.nodes : [],
-  edges: Array.isArray(payload?.edges) ? payload.edges : [],
+  nodes: Array.isArray(payload?.nodes)
+    ? payload.nodes.map(normalizeNodeForPayload)
+    : [],
+  edges: Array.isArray(payload?.edges)
+    ? payload.edges.map(normalizeEdgeForPayload)
+    : [],
 })
 
 export const isSamePosition = (a, b) =>
@@ -146,21 +224,12 @@ export function useFileActions({
   const confirmActionRef = useRef(null)
 
   const buildModelPayload = useCallback(() => {
-    const cleanedNodes = nodes.map((node) => ({
-      ...node,
-      selected: false,
-    }))
-    const cleanedEdges = edges.map((edge) => ({
-      ...edge,
-      selected: false,
-    }))
-
-    return {
+    return buildHashPayload({
       version: MODEL_VERSION,
       modelName: modelName || 'Untitled model',
-      nodes: cleanedNodes,
-      edges: cleanedEdges,
-    }
+      nodes,
+      edges,
+    })
   }, [edges, modelName, nodes])
 
   const getSerializedModelForDirty = useCallback(
@@ -276,10 +345,8 @@ export function useFileActions({
             height: viewSizes[normalizedActiveView].height,
             style: {
               ...node?.style,
-              width:
-                node?.style?.width ?? viewSizes[normalizedActiveView].width,
-              height:
-                node?.style?.height ?? viewSizes[normalizedActiveView].height,
+              width: viewSizes[normalizedActiveView].width,
+              height: viewSizes[normalizedActiveView].height,
             },
             data: {
               ...data,
