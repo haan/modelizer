@@ -122,11 +122,12 @@ export function useModelState({
   const [edges, setEdges] = useEdgesState(normalizeEdges(initialEdges))
   const [panelNodes, setPanelNodes] = useState(initialNodes)
   const [panelEdges, setPanelEdges] = useState(normalizeEdges(initialEdges))
-  const [modelName, setModelName] = useState('Untitled model')
+  const [modelName, setModelNameState] = useState('Untitled model')
   const [activeSidebarItem, setActiveSidebarItem] = useState('tables')
   const [isConnecting, setIsConnecting] = useState(false)
   const nodesRef = useRef(nodes)
   const edgesRef = useRef(edges)
+  const modelNameRef = useRef(modelName)
   const isResizingRef = useRef(new Set())
   const isDraggingControlPointRef = useRef(false)
   const isTextEditingRef = useRef(false)
@@ -141,38 +142,75 @@ export function useModelState({
     clearHistory,
   } = useHistory({ limit: 50 })
 
+  const getHistorySnapshot = useCallback(
+    () => ({
+      nodes: nodesRef.current,
+      edges: edgesRef.current,
+      modelName: modelNameRef.current,
+    }),
+    [],
+  )
+
+  const setModelName = useCallback(
+    (nextValue, options = {}) => {
+      const resolvedValue =
+        typeof nextValue === 'function'
+          ? nextValue(modelNameRef.current)
+          : nextValue
+
+      if (Object.is(resolvedValue, modelNameRef.current)) {
+        return
+      }
+
+      if (
+        !options.skipHistory &&
+        !isDraggingControlPointRef.current &&
+        !isTextEditingRef.current &&
+        !isRestoringRef.current
+      ) {
+        pushHistory(getHistorySnapshot())
+      }
+
+      modelNameRef.current = resolvedValue
+      setModelNameState(resolvedValue)
+    },
+    [getHistorySnapshot, isRestoringRef, pushHistory],
+  )
+
   const updateNodesAndPanel = useCallback(
     (updater) => {
       if (!isDraggingControlPointRef.current && !isTextEditingRef.current) {
-        pushHistory({ nodes: nodesRef.current, edges: edgesRef.current })
+        pushHistory(getHistorySnapshot())
       }
       const nextNodes = updater(nodesRef.current)
       nodesRef.current = nextNodes
       setNodes(nextNodes)
       setPanelNodes(nextNodes)
     },
-    [setNodes, setPanelNodes, pushHistory],
+    [getHistorySnapshot, setNodes, setPanelNodes, pushHistory],
   )
 
   const updateEdgesAndPanel = useCallback(
     (updater) => {
       if (!isDraggingControlPointRef.current && !isTextEditingRef.current) {
-        pushHistory({ nodes: nodesRef.current, edges: edgesRef.current })
+        pushHistory(getHistorySnapshot())
       }
       const nextEdges = normalizeEdges(updater(edgesRef.current))
       edgesRef.current = nextEdges
       setEdges(nextEdges)
       setPanelEdges(nextEdges)
     },
-    [setEdges, setPanelEdges, pushHistory],
+    [getHistorySnapshot, setEdges, setPanelEdges, pushHistory],
   )
 
   const restoreModel = useCallback(
-    (nextNodes, nextEdges) => {
+    (nextNodes, nextEdges, nextModelName = modelNameRef.current) => {
       nodesRef.current = nextNodes
       edgesRef.current = nextEdges
+      modelNameRef.current = nextModelName
       setNodes(nextNodes)
       setEdges(nextEdges)
+      setModelNameState(nextModelName)
       setPanelNodes(nextNodes)
       setPanelEdges(nextEdges)
     },
@@ -180,26 +218,26 @@ export function useModelState({
   )
 
   const setModel = useCallback(
-    (nextNodes, nextEdges) => {
+    (nextNodes, nextEdges, nextModelName = modelNameRef.current) => {
       clearHistory()
-      restoreModel(nextNodes, nextEdges)
+      restoreModel(nextNodes, nextEdges, nextModelName)
     },
     [clearHistory, restoreModel],
   )
 
   const onUndo = useCallback(() => {
     historyUndo(
-      { nodes: nodesRef.current, edges: edgesRef.current },
-      ({ nodes: n, edges: e }) => restoreModel(n, e),
+      getHistorySnapshot(),
+      ({ nodes: n, edges: e, modelName: name }) => restoreModel(n, e, name),
     )
-  }, [historyUndo, restoreModel])
+  }, [getHistorySnapshot, historyUndo, restoreModel])
 
   const onRedo = useCallback(() => {
     historyRedo(
-      { nodes: nodesRef.current, edges: edgesRef.current },
-      ({ nodes: n, edges: e }) => restoreModel(n, e),
+      getHistorySnapshot(),
+      ({ nodes: n, edges: e, modelName: name }) => restoreModel(n, e, name),
     )
-  }, [historyRedo, restoreModel])
+  }, [getHistorySnapshot, historyRedo, restoreModel])
 
   const normalizedActiveView =
     activeView === VIEW_LOGICAL || activeView === VIEW_PHYSICAL
@@ -230,9 +268,9 @@ export function useModelState({
 
   const onNodeDragStart = useCallback(() => {
     if (!isRestoringRef.current) {
-      preDragSnapshotRef.current = { nodes: nodesRef.current, edges: edgesRef.current }
+      preDragSnapshotRef.current = getHistorySnapshot()
     }
-  }, [isRestoringRef])
+  }, [getHistorySnapshot, isRestoringRef])
 
   const onNodeDragStop = useCallback((_event, node) => {
     const snapshot = preDragSnapshotRef.current
@@ -252,9 +290,9 @@ export function useModelState({
   const onControlPointDragStart = useCallback(() => {
     isDraggingControlPointRef.current = true
     if (!isRestoringRef.current) {
-      pushHistory({ nodes: nodesRef.current, edges: edgesRef.current })
+      pushHistory(getHistorySnapshot())
     }
-  }, [pushHistory, isRestoringRef])
+  }, [getHistorySnapshot, pushHistory, isRestoringRef])
 
   const onControlPointDragEnd = useCallback(() => {
     isDraggingControlPointRef.current = false
@@ -263,13 +301,14 @@ export function useModelState({
   useEffect(() => {
     nodesRef.current = nodes
     edgesRef.current = edges
-  }, [edges, nodes])
+    modelNameRef.current = modelName
+  }, [edges, modelName, nodes])
 
   useEffect(() => {
     const onTextEditStart = () => {
       isTextEditingRef.current = true
       if (!isRestoringRef.current) {
-        pushHistory({ nodes: nodesRef.current, edges: edgesRef.current })
+        pushHistory(getHistorySnapshot())
       }
     }
     const onTextEditEnd = () => {
@@ -281,7 +320,7 @@ export function useModelState({
       window.removeEventListener('model-text-edit-start', onTextEditStart)
       window.removeEventListener('model-text-edit-end', onTextEditEnd)
     }
-  }, [pushHistory, isRestoringRef])
+  }, [getHistorySnapshot, pushHistory, isRestoringRef])
 
   const onNodesChange = useCallback(
     (changes) => {
@@ -405,7 +444,7 @@ export function useModelState({
             if (node?.resizing && !isResizingRef.current.has(change.id)) {
               isResizingRef.current.add(change.id)
               if (!isRestoringRef.current) {
-                pushHistory({ nodes: nodesRef.current, edges: edgesRef.current })
+                pushHistory(getHistorySnapshot())
               }
             } else if (!node?.resizing) {
               isResizingRef.current.delete(change.id)
@@ -620,7 +659,14 @@ export function useModelState({
         })
       })
     },
-    [normalizedActiveView, setEdges, setNodes, isRestoringRef, pushHistory],
+    [
+      getHistorySnapshot,
+      normalizedActiveView,
+      setEdges,
+      setNodes,
+      isRestoringRef,
+      pushHistory,
+    ],
   )
 
   useEffect(() => {
