@@ -126,6 +126,7 @@ export function useFileActions({
   const fileHandleRef = useRef(null)
   const prevNodesRef = useRef(nodes)
   const prevEdgesRef = useRef(edges)
+  const prevModelNameRef = useRef(modelName)
   const normalizedActiveView =
     activeView === VIEW_LOGICAL || activeView === VIEW_PHYSICAL
       ? activeView
@@ -174,8 +175,16 @@ export function useFileActions({
   useEffect(() => {
     const prevNodes = prevNodesRef.current
     const prevEdges = prevEdgesRef.current
+    const prevModelName = prevModelNameRef.current
     prevNodesRef.current = nodes
     prevEdgesRef.current = edges
+    prevModelNameRef.current = modelName
+
+    const didModelNameChange = prevModelName !== modelName
+    if (didModelNameChange) {
+      setIsDirty(getSerializedModelForDirty() !== lastSavedRef.current)
+      return
+    }
 
     if (isDragging) {
       return
@@ -187,7 +196,7 @@ export function useFileActions({
       return
     }
     setIsDirty(getSerializedModelForDirty() !== lastSavedRef.current)
-  }, [edges, getSerializedModelForDirty, isDragging, nodes])
+  }, [edges, getSerializedModelForDirty, isDragging, modelName, nodes])
 
   const applyLoadedModel = useCallback(
     (payload, handle) => {
@@ -310,12 +319,12 @@ export function useFileActions({
         edges: nextEdges,
       })
       if (setModel) {
-        setModel(nextNodes, nextEdges)
+        setModel(nextNodes, nextEdges, nextModelName)
       } else {
         setNodes(nextNodes)
         setEdges(nextEdges)
+        setModelName(nextModelName, { skipHistory: true })
       }
-      setModelName(nextModelName)
       setActiveSidebarItem('tables')
       fileHandleRef.current = handle ?? null
       lastSavedRef.current = JSON.stringify(nextBasePayload, null, 2)
@@ -385,13 +394,13 @@ export function useFileActions({
 
   const onNewModel = useCallback(() => {
     if (setModel) {
-      setModel([], normalizeEdges([]))
+      setModel([], normalizeEdges([]), 'Untitled model')
     } else {
       setNodes([])
       setEdges(normalizeEdges([]))
+      setModelName('Untitled model', { skipHistory: true })
     }
     setActiveSidebarItem('tables')
-    setModelName('Untitled model')
     fileHandleRef.current = null
     lastSavedRef.current = JSON.stringify(
       {

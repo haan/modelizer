@@ -62,6 +62,7 @@ export default function Navbar({
     originalNameRef.current = modelName ?? ''
     setDraft(modelName ?? '')
     setIsEditing(true)
+    window.dispatchEvent(new CustomEvent('model-text-edit-start'))
     queueMicrotask(() => {
       inputRef.current?.focus()
       inputRef.current?.select()
@@ -71,12 +72,14 @@ export default function Navbar({
   const commit = () => {
     setIsEditing(false)
     setDraft('')
+    window.dispatchEvent(new CustomEvent('model-text-edit-end'))
   }
 
   const cancel = () => {
     setIsEditing(false)
     setDraft('')
     onRenameModel?.(originalNameRef.current)
+    window.dispatchEvent(new CustomEvent('model-text-edit-end'))
   }
 
   return (
