@@ -7,6 +7,13 @@ import {
   hasMeaningfulNodeChange,
   hasMeaningfulEdgeChange,
 } from "../useFileActions.js";
+import {
+  AREA_NODE_TYPE,
+  CLASS_NODE_TYPE,
+  VIEW_CONCEPTUAL,
+  VIEW_LOGICAL,
+  VIEW_PHYSICAL,
+} from "../../model/constants.js";
 
 // ─── buildHashPayload ─────────────────────────────────────────────────────────
 
@@ -37,6 +44,98 @@ describe("buildHashPayload", () => {
   it("falls back to [] for non-array nodes/edges", () => {
     expect(buildHashPayload({ nodes: null, edges: "bad" }))
       .toMatchObject({ nodes: [], edges: [] });
+  });
+
+  it("keeps per-view positions but canonicalizes top-level node position", () => {
+    const viewPositions = {
+      [VIEW_CONCEPTUAL]: { x: 10, y: 20 },
+      [VIEW_LOGICAL]: { x: 110, y: 120 },
+      [VIEW_PHYSICAL]: { x: 210, y: 220 },
+    };
+    const payload = buildHashPayload({
+      nodes: [
+        {
+          id: "class-1",
+          type: CLASS_NODE_TYPE,
+          position: viewPositions[VIEW_LOGICAL],
+          data: { viewPositions },
+        },
+      ],
+    });
+
+    expect(payload.nodes[0].position).toEqual(viewPositions[VIEW_CONCEPTUAL]);
+    expect(payload.nodes[0].data.viewPositions).toEqual(viewPositions);
+  });
+
+  it("keeps per-view area sizes but canonicalizes top-level area size", () => {
+    const viewPositions = {
+      [VIEW_CONCEPTUAL]: { x: 10, y: 20 },
+      [VIEW_LOGICAL]: { x: 110, y: 120 },
+      [VIEW_PHYSICAL]: { x: 210, y: 220 },
+    };
+    const viewSizes = {
+      [VIEW_CONCEPTUAL]: { width: 280, height: 180 },
+      [VIEW_LOGICAL]: { width: 380, height: 280 },
+      [VIEW_PHYSICAL]: { width: 480, height: 380 },
+    };
+    const payload = buildHashPayload({
+      nodes: [
+        {
+          id: "area-1",
+          type: AREA_NODE_TYPE,
+          position: viewPositions[VIEW_LOGICAL],
+          width: viewSizes[VIEW_LOGICAL].width,
+          height: viewSizes[VIEW_LOGICAL].height,
+          style: {
+            zIndex: -1,
+            width: viewSizes[VIEW_LOGICAL].width,
+            height: viewSizes[VIEW_LOGICAL].height,
+          },
+          data: { viewPositions, viewSizes },
+        },
+      ],
+    });
+
+    expect(payload.nodes[0].position).toEqual(viewPositions[VIEW_CONCEPTUAL]);
+    expect(payload.nodes[0].width).toBe(viewSizes[VIEW_CONCEPTUAL].width);
+    expect(payload.nodes[0].height).toBe(viewSizes[VIEW_CONCEPTUAL].height);
+    expect(payload.nodes[0].style.width).toBe(viewSizes[VIEW_CONCEPTUAL].width);
+    expect(payload.nodes[0].style.height).toBe(viewSizes[VIEW_CONCEPTUAL].height);
+    expect(payload.nodes[0].data.viewPositions).toEqual(viewPositions);
+    expect(payload.nodes[0].data.viewSizes).toEqual(viewSizes);
+  });
+
+  it("serializes the same payload regardless of active view projection", () => {
+    const data = {
+      label: "Customer",
+      viewPositions: {
+        [VIEW_CONCEPTUAL]: { x: 10, y: 20 },
+        [VIEW_LOGICAL]: { x: 110, y: 120 },
+        [VIEW_PHYSICAL]: { x: 210, y: 220 },
+      },
+    };
+    const conceptualPayload = buildHashPayload({
+      nodes: [
+        {
+          id: "class-1",
+          type: CLASS_NODE_TYPE,
+          position: data.viewPositions[VIEW_CONCEPTUAL],
+          data,
+        },
+      ],
+    });
+    const logicalPayload = buildHashPayload({
+      nodes: [
+        {
+          id: "class-1",
+          type: CLASS_NODE_TYPE,
+          position: data.viewPositions[VIEW_LOGICAL],
+          data,
+        },
+      ],
+    });
+
+    expect(JSON.stringify(logicalPayload)).toBe(JSON.stringify(conceptualPayload));
   });
 });
 
