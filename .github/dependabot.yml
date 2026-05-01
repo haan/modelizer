@@ -16,6 +16,14 @@ updates:
         patterns:
           - "react"
           - "react-dom"
+      tailwind-toolchain:
+        patterns:
+          - "tailwindcss"
+          - "@tailwindcss/*"
+      vitest-toolchain:
+        patterns:
+          - "vitest"
+          - "@vitest/ui"
 
   - package-ecosystem: "github-actions"
     directory: "/"
