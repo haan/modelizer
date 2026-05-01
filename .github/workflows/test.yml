@@ -27,3 +27,6 @@ jobs:
 
       - name: Frontend unit tests
         run: npm run test:unit
+
+      - name: Build frontend
+        run: npm run build:ci
