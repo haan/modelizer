@@ -10,6 +10,15 @@ import {
 
 const REFLEXIVE_SIDE_LEFT = 'left'
 const REFLEXIVE_SIDE_RIGHT = 'right'
+const REFLEXIVE_SIDE_LOWER_RIGHT = 'lower-right'
+const REFLEXIVE_SIDE_LOWER_LEFT = 'lower-left'
+
+const ALL_REFLEXIVE_SIDES = [
+  REFLEXIVE_SIDE_LEFT,
+  REFLEXIVE_SIDE_RIGHT,
+  REFLEXIVE_SIDE_LOWER_RIGHT,
+  REFLEXIVE_SIDE_LOWER_LEFT,
+]
 
 export function normalizeControlPoints(value) {
   if (!Array.isArray(value)) {
@@ -36,6 +45,12 @@ export function normalizeReflexiveSide(value) {
   if (value === REFLEXIVE_SIDE_LEFT) {
     return REFLEXIVE_SIDE_LEFT
   }
+  if (value === REFLEXIVE_SIDE_LOWER_RIGHT) {
+    return REFLEXIVE_SIDE_LOWER_RIGHT
+  }
+  if (value === REFLEXIVE_SIDE_LOWER_LEFT) {
+    return REFLEXIVE_SIDE_LOWER_LEFT
+  }
   return null
 }
 
@@ -49,9 +64,7 @@ function getLegacyReflexiveSide(edge, fallbackIndex = 0) {
   const rawIndex = Number.isFinite(edge?.data?.reflexiveIndex)
     ? Number(edge.data.reflexiveIndex)
     : Number(fallbackIndex)
-  return Math.abs(rawIndex % 2) === 1
-    ? REFLEXIVE_SIDE_RIGHT
-    : REFLEXIVE_SIDE_LEFT
+  return ALL_REFLEXIVE_SIDES[Math.abs(Math.trunc(rawIndex)) % 4]
 }
 
 function assignReflexiveSides(orderedEdges) {
@@ -88,9 +101,8 @@ function assignReflexiveSides(orderedEdges) {
     }
 
     const preferredSide = getLegacyReflexiveSide(edge, index)
-    const oppositeSide = getOppositeReflexiveSide(preferredSide)
-    const resolvedSide = usedSides.has(preferredSide) && !usedSides.has(oppositeSide)
-      ? oppositeSide
+    const resolvedSide = usedSides.has(preferredSide)
+      ? (ALL_REFLEXIVE_SIDES.find((s) => !usedSides.has(s)) ?? preferredSide)
       : preferredSide
 
     sideById.set(edge.id, resolvedSide)

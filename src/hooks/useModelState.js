@@ -829,7 +829,7 @@ export function useModelState({
               }
               return count + 1
             }, 0)
-            return existingCount >= 2
+            return existingCount >= 4
           }
 
           return current.some((edge) => {
@@ -1911,7 +1911,9 @@ export function useModelState({
             }
           }
 
-          const rawHeight = layout.startAnchor.y - nextPoint.y
+          const rawHeight = layout.isLower
+            ? nextPoint.y - layout.startAnchor.y
+            : layout.startAnchor.y - nextPoint.y
           const nextLoopHeight = roundLoopMetric(
             Math.max(layout.minLoopHeight, rawHeight),
           )

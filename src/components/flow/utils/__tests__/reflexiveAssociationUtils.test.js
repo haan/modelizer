@@ -62,12 +62,28 @@ describe("getReflexiveSide", () => {
     expect(getReflexiveSide({ reflexiveSide: "left" })).toBe("left");
   });
 
+  it("returns 'lower-right' when reflexiveSide is 'lower-right'", () => {
+    expect(getReflexiveSide({ reflexiveSide: "lower-right" })).toBe("lower-right");
+  });
+
+  it("returns 'lower-left' when reflexiveSide is 'lower-left'", () => {
+    expect(getReflexiveSide({ reflexiveSide: "lower-left" })).toBe("lower-left");
+  });
+
   it("returns 'left' for reflexiveIndex 0", () => {
     expect(getReflexiveSide({ reflexiveIndex: 0 })).toBe("left");
   });
 
   it("returns 'right' for reflexiveIndex 1", () => {
     expect(getReflexiveSide({ reflexiveIndex: 1 })).toBe("right");
+  });
+
+  it("returns 'lower-right' for reflexiveIndex 2", () => {
+    expect(getReflexiveSide({ reflexiveIndex: 2 })).toBe("lower-right");
+  });
+
+  it("returns 'lower-left' for reflexiveIndex 3", () => {
+    expect(getReflexiveSide({ reflexiveIndex: 3 })).toBe("lower-left");
   });
 
   it("defaults to 'left' for missing/null data", () => {
@@ -129,17 +145,48 @@ describe("getReflexiveAssociationLayout", () => {
     expect(layout).toHaveProperty("loopWidth");
     expect(layout).toHaveProperty("loopHeight");
     expect(layout).toHaveProperty("side");
+    expect(layout).toHaveProperty("isLower");
     expect(layout).toHaveProperty("resizeHandles");
   });
 
   it("produces a 'left' side layout by default", () => {
     const layout = getReflexiveAssociationLayout(makeNode(0, 0, 200, 100), {});
     expect(layout.side).toBe("left");
+    expect(layout.isLower).toBe(false);
   });
 
   it("produces a 'right' side layout when reflexiveSide is right", () => {
     const layout = getReflexiveAssociationLayout(makeNode(0, 0, 200, 100), { reflexiveSide: "right" });
     expect(layout.side).toBe("right");
+    expect(layout.isLower).toBe(false);
+  });
+
+  it("produces a 'lower-right' layout with isLower=true", () => {
+    const node = makeNode(0, 0, 200, 100);
+    const layout = getReflexiveAssociationLayout(node, { reflexiveSide: "lower-right" });
+    expect(layout.side).toBe("lower-right");
+    expect(layout.isLower).toBe(true);
+    // startAnchor should be near the bottom of the node
+    expect(layout.startAnchor.y).toBeGreaterThan(node.internals.positionAbsolute.y + node.measured.height / 2);
+    // loop extends downward: outerEdgeY > startAnchor.y
+    expect(layout.outerEdgeY).toBeGreaterThan(layout.startAnchor.y);
+  });
+
+  it("produces a 'lower-left' layout with isLower=true", () => {
+    const node = makeNode(0, 0, 200, 100);
+    const layout = getReflexiveAssociationLayout(node, { reflexiveSide: "lower-left" });
+    expect(layout.side).toBe("lower-left");
+    expect(layout.isLower).toBe(true);
+    expect(layout.startAnchor.y).toBeGreaterThan(node.internals.positionAbsolute.y + node.measured.height / 2);
+    expect(layout.outerEdgeY).toBeGreaterThan(layout.startAnchor.y);
+  });
+
+  it("upper loops extend upward (outerEdgeY < startAnchor.y)", () => {
+    const node = makeNode(0, 0, 200, 100);
+    const left = getReflexiveAssociationLayout(node, { reflexiveSide: "left" });
+    const right = getReflexiveAssociationLayout(node, { reflexiveSide: "right" });
+    expect(left.outerEdgeY).toBeLessThan(left.startAnchor.y);
+    expect(right.outerEdgeY).toBeLessThan(right.startAnchor.y);
   });
 
   it("clamps loopWidth and loopHeight to their minimums for invalid data values", () => {

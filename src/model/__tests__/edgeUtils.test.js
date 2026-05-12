@@ -70,6 +70,14 @@ describe("normalizeReflexiveSide", () => {
     expect(normalizeReflexiveSide("right")).toBe("right");
   });
 
+  it("returns 'lower-right' for 'lower-right'", () => {
+    expect(normalizeReflexiveSide("lower-right")).toBe("lower-right");
+  });
+
+  it("returns 'lower-left' for 'lower-left'", () => {
+    expect(normalizeReflexiveSide("lower-left")).toBe("lower-left");
+  });
+
   it("returns null for any other value", () => {
     expect(normalizeReflexiveSide("top")).toBeNull();
     expect(normalizeReflexiveSide("")).toBeNull();
@@ -105,7 +113,7 @@ describe("normalizeEdges", () => {
     const result = normalizeEdges([edge]);
     expect(result[0].data.reflexiveIndex).toBe(0);
     expect(result[0].data.reflexiveCount).toBe(1);
-    expect(["left", "right"]).toContain(result[0].data.reflexiveSide);
+    expect(["left", "right", "lower-right", "lower-left"]).toContain(result[0].data.reflexiveSide);
   });
 
   it("assigns parallelIndex and parallelCount to parallel association edges", () => {

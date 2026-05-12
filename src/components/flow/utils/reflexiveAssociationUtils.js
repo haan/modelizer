@@ -3,6 +3,8 @@ const REFLEXIVE_CORNER_RADIUS = 5
 const REFLEXIVE_MIN_SEGMENT = 12
 const REFLEXIVE_SIDE_LEFT = 'left'
 const REFLEXIVE_SIDE_RIGHT = 'right'
+const REFLEXIVE_SIDE_LOWER_RIGHT = 'lower-right'
+const REFLEXIVE_SIDE_LOWER_LEFT = 'lower-left'
 
 function getNodePosition(node) {
   return (
@@ -88,11 +90,20 @@ export function getReflexiveSide(data) {
   if (data?.reflexiveSide === REFLEXIVE_SIDE_LEFT) {
     return REFLEXIVE_SIDE_LEFT
   }
+  if (data?.reflexiveSide === REFLEXIVE_SIDE_LOWER_RIGHT) {
+    return REFLEXIVE_SIDE_LOWER_RIGHT
+  }
+  if (data?.reflexiveSide === REFLEXIVE_SIDE_LOWER_LEFT) {
+    return REFLEXIVE_SIDE_LOWER_LEFT
+  }
 
   const reflexiveIndex = Number.isFinite(data?.reflexiveIndex)
     ? Number(data.reflexiveIndex)
     : 0
-  return reflexiveIndex === 1 ? REFLEXIVE_SIDE_RIGHT : REFLEXIVE_SIDE_LEFT
+  if (reflexiveIndex === 1) return REFLEXIVE_SIDE_RIGHT
+  if (reflexiveIndex === 2) return REFLEXIVE_SIDE_LOWER_RIGHT
+  if (reflexiveIndex === 3) return REFLEXIVE_SIDE_LOWER_LEFT
+  return REFLEXIVE_SIDE_LEFT
 }
 
 export function getReflexiveNodeRect(node) {
@@ -121,18 +132,19 @@ export function getReflexiveAssociationLayout(sourceNode, data = {}) {
   }
 
   const side = getReflexiveSide(data)
+  const isRight = side === REFLEXIVE_SIDE_RIGHT || side === REFLEXIVE_SIDE_LOWER_RIGHT
+  const isLower = side === REFLEXIVE_SIDE_LOWER_RIGHT || side === REFLEXIVE_SIDE_LOWER_LEFT
+
   const horizontalInset = Math.min(REFLEXIVE_INSET_LIMIT, rect.width / 4)
   const verticalInset = Math.min(REFLEXIVE_INSET_LIMIT, rect.height / 4)
+
   const startAnchor = {
-    x: side === REFLEXIVE_SIDE_RIGHT ? rect.x + rect.width : rect.x,
-    y: rect.y + verticalInset,
+    x: isRight ? rect.x + rect.width : rect.x,
+    y: isLower ? rect.y + rect.height - verticalInset : rect.y + verticalInset,
   }
   const endAnchor = {
-    x:
-      side === REFLEXIVE_SIDE_RIGHT
-        ? startAnchor.x - horizontalInset
-        : startAnchor.x + horizontalInset,
-    y: rect.y,
+    x: isRight ? startAnchor.x - horizontalInset : startAnchor.x + horizontalInset,
+    y: isLower ? rect.y + rect.height : rect.y,
   }
 
   const minLoopWidth = REFLEXIVE_MIN_SEGMENT
@@ -151,29 +163,28 @@ export function getReflexiveAssociationLayout(sourceNode, data = {}) {
     normalizePositive(data?.loopHeight) ?? defaultLoopHeight,
   )
 
-  const outerX =
-    side === REFLEXIVE_SIDE_RIGHT
-      ? startAnchor.x + loopWidth
-      : startAnchor.x - loopWidth
-  const topY = startAnchor.y - loopHeight
+  const outerX = isRight ? startAnchor.x + loopWidth : startAnchor.x - loopWidth
+  const outerEdgeY = isLower ? startAnchor.y + loopHeight : startAnchor.y - loopHeight
+
   const pathPoints = [
     startAnchor,
     { x: outerX, y: startAnchor.y },
-    { x: outerX, y: topY },
-    { x: endAnchor.x, y: topY },
+    { x: outerX, y: outerEdgeY },
+    { x: endAnchor.x, y: outerEdgeY },
     endAnchor,
   ]
   const topSegmentCenter = {
     x: (outerX + endAnchor.x) / 2,
-    y: topY,
+    y: outerEdgeY,
   }
   const outerSegmentCenter = {
     x: outerX,
-    y: (startAnchor.y + topY) / 2,
+    y: (startAnchor.y + outerEdgeY) / 2,
   }
 
   return {
     side,
+    isLower,
     rect,
     edgePath: getRoundedPolylinePath(pathPoints, REFLEXIVE_CORNER_RADIUS),
     pathPoints,
@@ -184,7 +195,7 @@ export function getReflexiveAssociationLayout(sourceNode, data = {}) {
     minLoopWidth,
     minLoopHeight,
     outerX,
-    topY,
+    outerEdgeY,
     topSegmentCenter,
     outerSegmentCenter,
     helperAnchor: topSegmentCenter,
@@ -204,4 +215,3 @@ export function getReflexiveAssociationLayout(sourceNode, data = {}) {
     ],
   }
 }
-
