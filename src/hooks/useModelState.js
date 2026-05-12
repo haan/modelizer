@@ -1892,7 +1892,7 @@ export function useModelState({
 
           if (handleKey === 'width') {
             const rawWidth =
-              layout.side === 'right'
+              layout.side === 'right' || layout.side === 'lower-right'
                 ? nextPoint.x - layout.startAnchor.x
                 : layout.startAnchor.x - nextPoint.x
             const nextLoopWidth = roundLoopMetric(
