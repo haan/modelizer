@@ -31,8 +31,20 @@ const normalizeNodeForPayload = (node) => {
     return node
   }
 
+  // Strip ReactFlow-internal computed properties that must not affect dirty-state
+  // comparisons: positionAbsolute is added after setNodes(), width/height are
+  // measured from the DOM for class/note nodes and vary between renders.
+  const {
+    positionAbsolute: _pa,
+    dragging: _dragging,
+    resizing: _resizing,
+    width: _width,
+    height: _height,
+    ...nodeData
+  } = node
+
   const baseNode = {
-    ...node,
+    ...nodeData,
     selected: false,
   }
 
