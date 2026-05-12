@@ -352,7 +352,7 @@ export function importJavaModelizer(text, fileName) {
       const isReflexive = sourceId === targetId
       if (isReflexive) {
         const existingCount = reflexiveCountByClass.get(sourceId) ?? 0
-        if (existingCount >= 2) {
+        if (existingCount >= 4) {
           return
         }
         reflexiveCountByClass.set(sourceId, existingCount + 1)

@@ -55,7 +55,7 @@ export const DIALOG_COPY = {
     reflexive: {
       title: 'Reflexive association limit',
       description:
-        'Up to two reflexive associations on the same class are supported. Remove an existing reflexive association before creating another.',
+        'Up to four reflexive associations on the same class are supported. Remove an existing reflexive association before creating another.',
     },
     association: {
       title: 'Duplicate association',

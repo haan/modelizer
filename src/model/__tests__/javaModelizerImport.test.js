@@ -6,6 +6,7 @@ import {
   importJavaModelizer,
 } from "../javaModelizerImport.js";
 import { ATTRIBUTE_TYPE_PARAMS_DEFAULT } from "../../attributes.js";
+import { REFLEXIVE_EDGE_TYPE } from "../constants.js";
 
 // ─── parseDob ────────────────────────────────────────────────────────────────
 
@@ -210,15 +211,26 @@ describe("importJavaModelizer", () => {
     expect(result.edges[0].data.multiplicityB).toBe("n");
   });
 
-  it("enforces a maximum of 2 reflexive edges per class", () => {
-    const links = [1, 2, 3].map((i) => ({
+  it("imports up to 4 reflexive edges per class", () => {
+    const links = [1, 2, 3, 4].map((i) => ({
       name: `rel${i}`,
       endpoints: [{ dob: "A" }, { dob: "A" }],
     }));
     const mod = { tables: [{ name: "A", links }] };
     const result = importJavaModelizer(JSON.stringify(mod));
-    const reflexiveEdges = result.edges.filter((e) => e.type === "reflexive");
-    expect(reflexiveEdges.length).toBeLessThanOrEqual(2);
+    const reflexiveEdges = result.edges.filter((e) => e.type === REFLEXIVE_EDGE_TYPE);
+    expect(reflexiveEdges.length).toBe(4);
+  });
+
+  it("drops a 5th reflexive edge on the same class", () => {
+    const links = [1, 2, 3, 4, 5].map((i) => ({
+      name: `rel${i}`,
+      endpoints: [{ dob: "A" }, { dob: "A" }],
+    }));
+    const mod = { tables: [{ name: "A", links }] };
+    const result = importJavaModelizer(JSON.stringify(mod));
+    const reflexiveEdges = result.edges.filter((e) => e.type === REFLEXIVE_EDGE_TYPE);
+    expect(reflexiveEdges.length).toBe(4);
   });
 
   it("uses deriveModelName to set the model name from fileName", () => {
