@@ -3,7 +3,6 @@ import {
   normalizeControlPoints,
   normalizePositiveNumber,
   normalizeReflexiveSide,
-  getOppositeReflexiveSide,
   normalizeEdges,
 } from "../edgeUtils.js";
 import {
@@ -86,17 +85,6 @@ describe("normalizeReflexiveSide", () => {
   });
 });
 
-describe("getOppositeReflexiveSide", () => {
-  it("returns 'left' for 'right'", () => {
-    expect(getOppositeReflexiveSide("right")).toBe("left");
-  });
-
-  it("returns 'right' for 'left' (and any other value)", () => {
-    expect(getOppositeReflexiveSide("left")).toBe("right");
-    expect(getOppositeReflexiveSide(null)).toBe("right");
-  });
-});
-
 describe("normalizeEdges", () => {
   it("returns an empty array for empty input", () => {
     expect(normalizeEdges([])).toEqual([]);
@@ -114,6 +102,20 @@ describe("normalizeEdges", () => {
     expect(result[0].data.reflexiveIndex).toBe(0);
     expect(result[0].data.reflexiveCount).toBe(1);
     expect(["left", "right", "lower-right", "lower-left"]).toContain(result[0].data.reflexiveSide);
+  });
+
+  it("assigns all four distinct sides when four reflexive edges share a node", () => {
+    const edges = ["e1", "e2", "e3", "e4"].map((id) => ({
+      id,
+      type: REFLEXIVE_EDGE_TYPE,
+      source: "node1",
+      target: "node1",
+      data: {},
+    }));
+    const result = normalizeEdges(edges);
+    const sides = result.map((e) => e.data.reflexiveSide);
+    expect(new Set(sides).size).toBe(4);
+    expect(new Set(sides)).toEqual(new Set(["left", "right", "lower-right", "lower-left"]));
   });
 
   it("assigns parallelIndex and parallelCount to parallel association edges", () => {

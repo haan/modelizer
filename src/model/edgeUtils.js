@@ -54,12 +54,6 @@ export function normalizeReflexiveSide(value) {
   return null
 }
 
-export function getOppositeReflexiveSide(side) {
-  return side === REFLEXIVE_SIDE_RIGHT
-    ? REFLEXIVE_SIDE_LEFT
-    : REFLEXIVE_SIDE_RIGHT
-}
-
 function getLegacyReflexiveSide(edge, fallbackIndex = 0) {
   const rawIndex = Number.isFinite(edge?.data?.reflexiveIndex)
     ? Number(edge.data.reflexiveIndex)

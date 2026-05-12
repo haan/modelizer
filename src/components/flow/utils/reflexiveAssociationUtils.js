@@ -173,7 +173,7 @@ export function getReflexiveAssociationLayout(sourceNode, data = {}) {
     { x: endAnchor.x, y: outerEdgeY },
     endAnchor,
   ]
-  const topSegmentCenter = {
+  const outerEdgeSegmentCenter = {
     x: (outerX + endAnchor.x) / 2,
     y: outerEdgeY,
   }
@@ -184,6 +184,7 @@ export function getReflexiveAssociationLayout(sourceNode, data = {}) {
 
   return {
     side,
+    isRight,
     isLower,
     rect,
     edgePath: getRoundedPolylinePath(pathPoints, REFLEXIVE_CORNER_RADIUS),
@@ -196,9 +197,9 @@ export function getReflexiveAssociationLayout(sourceNode, data = {}) {
     minLoopHeight,
     outerX,
     outerEdgeY,
-    topSegmentCenter,
+    outerEdgeSegmentCenter,
     outerSegmentCenter,
-    helperAnchor: topSegmentCenter,
+    helperAnchor: outerEdgeSegmentCenter,
     resizeHandles: [
       {
         key: 'width',
@@ -209,8 +210,8 @@ export function getReflexiveAssociationLayout(sourceNode, data = {}) {
       {
         key: 'height',
         axis: 'y',
-        x: topSegmentCenter.x,
-        y: topSegmentCenter.y,
+        x: outerEdgeSegmentCenter.x,
+        y: outerEdgeSegmentCenter.y,
       },
     ],
   }

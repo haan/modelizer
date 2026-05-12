@@ -26,6 +26,12 @@ function getStartRoleTransform(isRight, x, y, isLower) {
   return `translate(${xTranslate}, ${yTranslate}) translate(${x}px, ${yOffset}px)`
 }
 
+function getEndRoleTransform(x, y, isLower) {
+  const yTranslate = isLower ? '0%' : '-100%'
+  const yOffset = isLower ? y + 2 : y - 2
+  return `translate(-50%, ${yTranslate}) translate(${x}px, ${yOffset}px)`
+}
+
 export function ReflexiveAssociation({
   id,
   source,
@@ -40,15 +46,13 @@ export function ReflexiveAssociation({
     return null
   }
 
-  const side = layout.side
-  const isRight = side === 'right' || side === 'lower-right'
-  const isLower = layout.isLower
+  const { isRight, isLower } = layout
   const startX = layout.startAnchor.x
   const startY = layout.startAnchor.y
   const endX = layout.endAnchor.x
   const endY = layout.endAnchor.y
-  const roleBX = layout.topSegmentCenter.x
-  const roleBY = layout.topSegmentCenter.y
+  const roleBX = layout.outerEdgeSegmentCenter.x
+  const roleBY = layout.outerEdgeSegmentCenter.y
   const associationNameX = isRight
     ? layout.outerSegmentCenter.x + 4
     : layout.outerSegmentCenter.x - 4
@@ -108,7 +112,7 @@ export function ReflexiveAssociation({
         ) : null}
         {roleB ? (
           <RoleLabel
-            transform={`translate(-50%, ${isLower ? '0%' : '-100%'}) translate(${roleBX}px, ${roleBY + (isLower ? 2 : -2)}px)`}
+            transform={getEndRoleTransform(roleBX, roleBY, isLower)}
             label={roleB}
           />
         ) : null}

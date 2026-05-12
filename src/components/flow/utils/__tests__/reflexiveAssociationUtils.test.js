@@ -145,7 +145,9 @@ describe("getReflexiveAssociationLayout", () => {
     expect(layout).toHaveProperty("loopWidth");
     expect(layout).toHaveProperty("loopHeight");
     expect(layout).toHaveProperty("side");
+    expect(layout).toHaveProperty("isRight");
     expect(layout).toHaveProperty("isLower");
+    expect(layout).toHaveProperty("outerEdgeSegmentCenter");
     expect(layout).toHaveProperty("resizeHandles");
   });
 
@@ -179,6 +181,22 @@ describe("getReflexiveAssociationLayout", () => {
     expect(layout.isLower).toBe(true);
     expect(layout.startAnchor.y).toBeGreaterThan(node.internals.positionAbsolute.y + node.measured.height / 2);
     expect(layout.outerEdgeY).toBeGreaterThan(layout.startAnchor.y);
+  });
+
+  it("right-side layouts extend outerX to the right of startAnchor", () => {
+    const node = makeNode(0, 0, 200, 100);
+    const right = getReflexiveAssociationLayout(node, { reflexiveSide: "right" });
+    const lowerRight = getReflexiveAssociationLayout(node, { reflexiveSide: "lower-right" });
+    expect(right.outerX).toBeGreaterThan(right.startAnchor.x);
+    expect(lowerRight.outerX).toBeGreaterThan(lowerRight.startAnchor.x);
+  });
+
+  it("left-side layouts extend outerX to the left of startAnchor", () => {
+    const node = makeNode(0, 0, 200, 100);
+    const left = getReflexiveAssociationLayout(node, { reflexiveSide: "left" });
+    const lowerLeft = getReflexiveAssociationLayout(node, { reflexiveSide: "lower-left" });
+    expect(left.outerX).toBeLessThan(left.startAnchor.x);
+    expect(lowerLeft.outerX).toBeLessThan(lowerLeft.startAnchor.x);
   });
 
   it("upper loops extend upward (outerEdgeY < startAnchor.y)", () => {
