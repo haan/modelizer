@@ -146,7 +146,7 @@ function resizeTextarea(el, fontSize, zoom) {
   el.style.height = `${el.scrollHeight}px`
 }
 
-function AnnotationText({ item, editing, zoom, onCommit }) {
+function AnnotationText({ item, editing, activeTool, zoom, onCommit }) {
   if (editing) {
     return null  // caller renders TextEditor directly so it can pass textareaRef
   }
@@ -163,8 +163,8 @@ function AnnotationText({ item, editing, zoom, onCommit }) {
       fontFamily="sans-serif"
       dominantBaseline="alphabetic"
       data-annotation-id={item.id}
-      style={{ cursor: 'text', userSelect: 'none' }}
-      pointerEvents="all"
+      style={{ cursor: activeTool === 'text' ? 'text' : 'default', userSelect: 'none' }}
+      pointerEvents={activeTool === 'text' ? 'all' : 'none'}
     >
       {lines.map((line, i) => (
         <tspan key={i} x={item.x} dy={i === 0 ? 0 : lineHeight}>
@@ -220,6 +220,9 @@ export default function AnnotationLayer({
     if (activeTool !== 'text') return
     const annotEl = e.target.closest?.('[data-annotation-id]')
     if (!annotEl) return
+    if (activeTextareaRef.current) {
+      activeTextareaRef.current.blur()
+    }
     setEditingId(annotEl.dataset.annotationId)
     e.stopPropagation()
   }
@@ -258,6 +261,7 @@ export default function AnnotationLayer({
                 key={item.id}
                 item={item}
                 editing={editingId === item.id}
+                activeTool={activeTool}
                 zoom={zoom}
                 onCommit={(value) => handleEditCommit(item.id, value)}
               />
