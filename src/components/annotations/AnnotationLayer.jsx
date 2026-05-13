@@ -146,7 +146,7 @@ function resizeTextarea(el, fontSize, zoom) {
   el.style.height = `${el.scrollHeight}px`
 }
 
-function AnnotationText({ item, editing, activeTool, zoom, onCommit }) {
+function AnnotationText({ item, editing, activeTool, onEditStart }) {
   if (editing) {
     return null  // caller renders TextEditor directly so it can pass textareaRef
   }
@@ -162,9 +162,9 @@ function AnnotationText({ item, editing, activeTool, zoom, onCommit }) {
       fontSize={item.fontSize}
       fontFamily="sans-serif"
       dominantBaseline="alphabetic"
-      data-annotation-id={item.id}
       style={{ cursor: activeTool === 'text' ? 'text' : 'default', userSelect: 'none' }}
       pointerEvents={activeTool === 'text' ? 'all' : 'none'}
+      onPointerDown={activeTool === 'text' ? (e) => { e.stopPropagation(); onEditStart(item.id) } : undefined}
     >
       {lines.map((line, i) => (
         <tspan key={i} x={item.x} dy={i === 0 ? 0 : lineHeight}>
@@ -203,28 +203,22 @@ export default function AnnotationLayer({
     }
   }
 
-  // Div is the event surface. When an active text input exists, blur it explicitly
-  // before e.preventDefault() runs (which would otherwise suppress the blur).
-  // Clicking on an existing text item is handled by the <g> capture handler below.
+  // Div is the event surface. When an active text input exists, blur it to commit,
+  // then return so we don't immediately place a new text annotation.
   const handlePointerDown = (e) => {
     if (activeTextareaRef.current) {
       activeTextareaRef.current.blur()
-      return  // commit the open input; don't immediately place a new one
+      return
     }
     onPointerDown(e)
   }
 
-  // Capture phase on <g>: intercepts text-item clicks before they bubble to the div.
-  // Empty-canvas clicks target <svg> directly and never pass through <g> in capture.
-  const handleGroupCapture = (e) => {
-    if (activeTool !== 'text') return
-    const annotEl = e.target.closest?.('[data-annotation-id]')
-    if (!annotEl) return
+  // Called directly by AnnotationText onPointerDown (after stopPropagation).
+  const handleTextEditStart = (id) => {
     if (activeTextareaRef.current) {
       activeTextareaRef.current.blur()
     }
-    setEditingId(annotEl.dataset.annotationId)
-    e.stopPropagation()
+    setEditingId(id)
   }
 
   const editingItem = editingId ? items.find((i) => i.id === editingId) : null
@@ -249,10 +243,7 @@ export default function AnnotationLayer({
         height="100%"
         style={{ overflow: 'visible', display: 'block' }}
       >
-        <g
-          transform={`translate(${x}, ${y}) scale(${zoom})`}
-          onPointerDownCapture={handleGroupCapture}
-        >
+        <g transform={`translate(${x}, ${y}) scale(${zoom})`}>
           {items.map((item) =>
             item.kind === 'stroke' ? (
               <AnnotationStroke key={item.id} stroke={item} />
@@ -262,8 +253,7 @@ export default function AnnotationLayer({
                 item={item}
                 editing={editingId === item.id}
                 activeTool={activeTool}
-                zoom={zoom}
-                onCommit={(value) => handleEditCommit(item.id, value)}
+                onEditStart={handleTextEditStart}
               />
             ),
           )}
