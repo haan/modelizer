@@ -232,15 +232,15 @@ export default function AnnotationLayer({
         zIndex: 10,
         cursor,
       }}
+      onPointerDown={onPointerDown}
+      onPointerMove={onPointerMove}
+      onPointerUp={onPointerUp}
+      onPointerLeave={onPointerUp}
     >
       <svg
         width="100%"
         height="100%"
-        style={{ overflow: 'visible', display: 'block' }}
-        onPointerDown={onPointerDown}
-        onPointerMove={onPointerMove}
-        onPointerUp={onPointerUp}
-        onPointerLeave={onPointerUp}
+        style={{ overflow: 'visible', display: 'block', pointerEvents: 'all' }}
       >
         <g
           transform={`translate(${x}, ${y}) scale(${zoom})`}
