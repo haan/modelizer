@@ -1,6 +1,25 @@
 import { useRef } from 'react'
 import { useViewport } from 'reactflow'
 
+function buildCircleCursor(diameter, color, fillOpacity = 0) {
+  const size = Math.min(128, Math.max(8, Math.round(diameter) + 4))
+  const r = (size - 2) / 2
+  const cx = size / 2
+  const svg = encodeURIComponent(
+    `<svg xmlns="http://www.w3.org/2000/svg" width="${size}" height="${size}"><circle cx="${cx}" cy="${cx}" r="${r}" stroke="${color}" stroke-width="1.5" fill="${color}" fill-opacity="${fillOpacity}"/></svg>`
+  )
+  return `url("data:image/svg+xml,${svg}") ${cx} ${cx}, crosshair`
+}
+
+function getCursorForTool(activeTool, penSettings, markerSettings, eraserSettings, zoom) {
+  if (activeTool === 'pointer') return 'default'
+  if (activeTool === 'text') return 'text'
+  if (activeTool === 'pen') return buildCircleCursor(penSettings.thickness * zoom, penSettings.color)
+  if (activeTool === 'marker') return buildCircleCursor(markerSettings.thickness * zoom, markerSettings.color, markerSettings.opacity * 0.5)
+  if (activeTool === 'eraser') return buildCircleCursor(eraserSettings.size * zoom, '#6b7280')
+  return 'crosshair'
+}
+
 function pointsToPath(points) {
   if (!points || points.length === 0) return ''
   if (points.length === 1) {
@@ -126,6 +145,9 @@ export default function AnnotationLayer({
   annotations,
   activeView,
   activeTool,
+  penSettings,
+  markerSettings,
+  eraserSettings,
   currentStroke,
   pendingText,
   onPointerDown,
@@ -136,6 +158,7 @@ export default function AnnotationLayer({
 }) {
   const { x, y, zoom } = useViewport()
   const items = annotations?.[activeView]?.items ?? []
+  const cursor = getCursorForTool(activeTool, penSettings, markerSettings, eraserSettings, zoom)
 
   return (
     <div
@@ -145,6 +168,7 @@ export default function AnnotationLayer({
         inset: 0,
         pointerEvents: activeTool === 'pointer' ? 'none' : 'all',
         zIndex: 10,
+        cursor,
       }}
     >
       <svg

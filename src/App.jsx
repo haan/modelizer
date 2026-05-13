@@ -1038,6 +1038,9 @@ function App() {
                         annotations={annotations}
                         activeView={activeView}
                         activeTool={activeAnnotationTool}
+                        penSettings={penSettings}
+                        markerSettings={markerSettings}
+                        eraserSettings={eraserSettings}
                         currentStroke={currentStroke}
                         pendingText={pendingText}
                         onPointerDown={onAnnotationPointerDown}
