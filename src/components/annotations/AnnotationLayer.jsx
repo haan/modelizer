@@ -146,6 +146,19 @@ function resizeTextarea(el, fontSize, zoom) {
   el.style.height = `${el.scrollHeight}px`
 }
 
+function getTextBounds(item) {
+  const lines = item.text.split('\n')
+  const lineHeight = item.fontSize * LINE_HEIGHT_RATIO
+  const longestLine = lines.reduce((max, line) => Math.max(max, line.length), 0)
+  const width = Math.max(item.fontSize * 2, longestLine * item.fontSize * 0.62)
+  return {
+    x: item.x,
+    y: item.y - item.fontSize * 0.95,
+    width,
+    height: Math.max(lineHeight, lines.length * lineHeight),
+  }
+}
+
 function AnnotationText({ item, editing, activeTool, onEditStart }) {
   if (editing) {
     return null  // caller renders TextEditor directly so it can pass textareaRef
@@ -153,25 +166,46 @@ function AnnotationText({ item, editing, activeTool, onEditStart }) {
 
   const lines = item.text.split('\n')
   const lineHeight = item.fontSize * LINE_HEIGHT_RATIO
+  const bounds = getTextBounds(item)
+  const canEdit = activeTool === 'text'
+  const handlePointerDown = canEdit
+    ? (e) => {
+        e.preventDefault()
+        e.stopPropagation()
+        onEditStart(item.id)
+      }
+    : undefined
 
   return (
-    <text
-      x={item.x}
-      y={item.y}
-      fill={item.color}
-      fontSize={item.fontSize}
-      fontFamily="sans-serif"
-      dominantBaseline="alphabetic"
-      style={{ cursor: activeTool === 'text' ? 'text' : 'default', userSelect: 'none' }}
-      pointerEvents={activeTool === 'text' ? 'all' : 'none'}
-      onPointerDown={activeTool === 'text' ? (e) => { e.stopPropagation(); onEditStart(item.id) } : undefined}
-    >
-      {lines.map((line, i) => (
-        <tspan key={i} x={item.x} dy={i === 0 ? 0 : lineHeight}>
-          {line || ' '}
-        </tspan>
-      ))}
-    </text>
+    <g data-annotation-text-id={item.id} style={{ cursor: canEdit ? 'text' : 'default' }}>
+      {canEdit ? (
+        <rect
+          x={bounds.x}
+          y={bounds.y}
+          width={bounds.width}
+          height={bounds.height}
+          fill="transparent"
+          pointerEvents="all"
+          onPointerDown={handlePointerDown}
+        />
+      ) : null}
+      <text
+        x={item.x}
+        y={item.y}
+        fill={item.color}
+        fontSize={item.fontSize}
+        fontFamily="sans-serif"
+        dominantBaseline="alphabetic"
+        style={{ userSelect: 'none' }}
+        pointerEvents="none"
+      >
+        {lines.map((line, i) => (
+          <tspan key={i} x={item.x} dy={i === 0 ? 0 : lineHeight}>
+            {line || ' '}
+          </tspan>
+        ))}
+      </text>
+    </g>
   )
 }
 
