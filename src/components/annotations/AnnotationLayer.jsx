@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useRef, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { useViewport } from 'reactflow'
 
 function buildCircleCursor(diameter, color, fillOpacity = 0) {
@@ -74,7 +74,6 @@ function TextEditor({ x, y, color, fontSize, initialValue, zoom, onCommit }) {
   useEffect(() => {
     const el = ref.current
     if (!el) return
-    el.focus()
     el.setSelectionRange(el.value.length, el.value.length)
     resizeTextarea(el, fontSize, zoom)
   }, []) // eslint-disable-line react-hooks/exhaustive-deps
@@ -109,6 +108,7 @@ function TextEditor({ x, y, color, fontSize, initialValue, zoom, onCommit }) {
     >
       <textarea
         ref={ref}
+        autoFocus
         defaultValue={initialValue ?? ''}
         rows={1}
         onKeyDown={handleKeyDown}
@@ -211,20 +211,16 @@ export default function AnnotationLayer({
     }
   }
 
-  // Intercept pointer-down on the SVG to detect clicks on committed text items.
-  // Relying on stopPropagation from an SVG <text> child is unreliable in React's
-  // synthetic event system, so we inspect e.target.dataset directly instead.
-  const handleSvgPointerDown = useCallback((e) => {
-    if (activeTool === 'text') {
-      const annotEl = e.target.closest?.('[data-annotation-id]')
-      if (annotEl) {
-        setEditingId(annotEl.dataset.annotationId)
-        e.stopPropagation()
-        return
-      }
-    }
-    onPointerDown(e)
-  }, [activeTool, onPointerDown])
+  // Intercept text-item clicks during the capture phase on the <g> so they never reach
+  // the SVG's onPointerDown (which would create a new pendingText instead of editing).
+  // Empty-canvas clicks target the <svg> directly and never hit this handler at all.
+  const handleGroupCapture = (e) => {
+    if (activeTool !== 'text') return
+    const annotEl = e.target.closest?.('[data-annotation-id]')
+    if (!annotEl) return
+    setEditingId(annotEl.dataset.annotationId)
+    e.stopPropagation()
+  }
 
   return (
     <div
@@ -241,12 +237,15 @@ export default function AnnotationLayer({
         width="100%"
         height="100%"
         style={{ overflow: 'visible', display: 'block' }}
-        onPointerDown={handleSvgPointerDown}
+        onPointerDown={onPointerDown}
         onPointerMove={onPointerMove}
         onPointerUp={onPointerUp}
         onPointerLeave={onPointerUp}
       >
-        <g transform={`translate(${x}, ${y}) scale(${zoom})`}>
+        <g
+          transform={`translate(${x}, ${y}) scale(${zoom})`}
+          onPointerDownCapture={handleGroupCapture}
+        >
           {items.map((item) =>
             item.kind === 'stroke' ? (
               <AnnotationStroke key={item.id} stroke={item} />
