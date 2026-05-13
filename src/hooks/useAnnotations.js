@@ -234,10 +234,13 @@ export function useAnnotations({ activeView, reactFlowInstance, pushHistorySnaps
         onEraseAt(flowPt)
         isDrawingRef.current = true
       } else if (activeTool === 'text') {
-        setPendingText({ x: flowPt.x, y: flowPt.y, text: '', color: textSettings.color, fontSize: textSettings.fontSize })
+        // Don't create a new input while one is already open — let blur commit it first
+        if (!pendingText) {
+          setPendingText({ x: flowPt.x, y: flowPt.y, text: '', color: textSettings.color, fontSize: textSettings.fontSize })
+        }
       }
     },
-    [activeTool, penSettings, markerSettings, textSettings, screenToFlow, pushHistorySnapshot, onEraseAt],
+    [activeTool, penSettings, markerSettings, textSettings, pendingText, screenToFlow, pushHistorySnapshot, onEraseAt],
   )
 
   const onPointerMove = useCallback(

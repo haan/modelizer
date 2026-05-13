@@ -62,11 +62,14 @@ function AnnotationStroke({ stroke }) {
   )
 }
 
-// Inline textarea for both new text and editing existing text
+const LINE_HEIGHT_RATIO = 1.3
+
+// Inline textarea for both new text placement and editing existing text.
+// y is the text baseline in flow coords. The foreignObject is shifted up so the
+// textarea's rendered baseline aligns with y, matching SVG dominantBaseline="alphabetic".
 function TextEditor({ x, y, color, fontSize, initialValue, zoom, onCommit }) {
   const ref = useRef(null)
   const committedRef = useRef(false)
-  const lineHeight = fontSize * 1.3
 
   useEffect(() => {
     const el = ref.current
@@ -92,18 +95,24 @@ function TextEditor({ x, y, color, fontSize, initialValue, zoom, onCommit }) {
     }
   }
 
-  const handleInput = (e) => {
-    resizeTextarea(e.target, fontSize, zoom)
-  }
+  const lineHeight = fontSize * LINE_HEIGHT_RATIO
+  // Shift foreignObject up so the textarea baseline (≈ 85% of font-size from top) lands on y
+  const topOffset = fontSize * 0.85
 
   return (
-    <foreignObject x={x} y={y} width={400 / zoom} height={400 / zoom} style={{ overflow: 'visible', pointerEvents: 'none' }}>
+    <foreignObject
+      x={x}
+      y={y - topOffset}
+      width={400 / zoom}
+      height={400 / zoom}
+      style={{ overflow: 'visible', pointerEvents: 'none' }}
+    >
       <textarea
         ref={ref}
         defaultValue={initialValue ?? ''}
         rows={1}
         onKeyDown={handleKeyDown}
-        onInput={handleInput}
+        onInput={(e) => resizeTextarea(e.target, fontSize, zoom)}
         onBlur={(e) => commit(e.target.value)}
         style={{
           pointerEvents: 'all',
@@ -130,14 +139,13 @@ function TextEditor({ x, y, color, fontSize, initialValue, zoom, onCommit }) {
 }
 
 function resizeTextarea(el, fontSize, zoom) {
-  // Reset to measure scrollWidth/Height accurately
   el.style.width = `${80 / zoom}px`
   el.style.height = 'auto'
   el.style.width = `${Math.max(el.scrollWidth, 80 / zoom)}px`
   el.style.height = `${el.scrollHeight}px`
 }
 
-function AnnotationText({ item, editing, zoom, onStartEdit, onCommit }) {
+function AnnotationText({ item, activeTool, editing, zoom, onStartEdit, onCommit }) {
   if (editing) {
     return (
       <TextEditor
@@ -153,7 +161,15 @@ function AnnotationText({ item, editing, zoom, onStartEdit, onCommit }) {
   }
 
   const lines = item.text.split('\n')
-  const lineHeight = item.fontSize * 1.3
+  const lineHeight = item.fontSize * LINE_HEIGHT_RATIO
+
+  const handlePointerDown = (e) => {
+    if (activeTool === 'text') {
+      // Single click in text mode opens inline edit instead of placing a new label
+      e.stopPropagation()
+      onStartEdit()
+    }
+  }
 
   return (
     <text
@@ -162,14 +178,15 @@ function AnnotationText({ item, editing, zoom, onStartEdit, onCommit }) {
       fill={item.color}
       fontSize={item.fontSize}
       fontFamily="sans-serif"
-      dominantBaseline="text-before-edge"
+      dominantBaseline="alphabetic"
       style={{ cursor: 'text', userSelect: 'none' }}
+      onPointerDown={handlePointerDown}
       onDoubleClick={(e) => { e.stopPropagation(); onStartEdit() }}
       pointerEvents="all"
     >
       {lines.map((line, i) => (
         <tspan key={i} x={item.x} dy={i === 0 ? 0 : lineHeight}>
-          {line || ' '}
+          {line || ' '}
         </tspan>
       ))}
     </text>
@@ -231,6 +248,7 @@ export default function AnnotationLayer({
               <AnnotationText
                 key={item.id}
                 item={item}
+                activeTool={activeTool}
                 editing={editingId === item.id}
                 zoom={zoom}
                 onStartEdit={() => setEditingId(item.id)}
