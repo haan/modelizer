@@ -67,15 +67,18 @@ const LINE_HEIGHT_RATIO = 1.3
 // Inline textarea for both new text placement and editing existing text.
 // y is the text baseline in flow coords. The foreignObject is shifted up so the
 // textarea's rendered baseline aligns with y, matching SVG dominantBaseline="alphabetic".
-function TextEditor({ x, y, color, fontSize, initialValue, zoom, onCommit }) {
+function TextEditor({ x, y, color, fontSize, initialValue, zoom, onCommit, textareaRef }) {
   const ref = useRef(null)
   const committedRef = useRef(false)
 
   useEffect(() => {
     const el = ref.current
     if (!el) return
+    if (textareaRef) textareaRef.current = el
+    el.focus()
     el.setSelectionRange(el.value.length, el.value.length)
     resizeTextarea(el, fontSize, zoom)
+    return () => { if (textareaRef) textareaRef.current = null }
   }, []) // eslint-disable-line react-hooks/exhaustive-deps
 
   const commit = (value) => {
@@ -95,7 +98,6 @@ function TextEditor({ x, y, color, fontSize, initialValue, zoom, onCommit }) {
   }
 
   const lineHeight = fontSize * LINE_HEIGHT_RATIO
-  // Shift foreignObject up so the textarea baseline (≈ 85% of font-size from top) lands on y
   const topOffset = fontSize * 0.85
 
   return (
@@ -108,7 +110,6 @@ function TextEditor({ x, y, color, fontSize, initialValue, zoom, onCommit }) {
     >
       <textarea
         ref={ref}
-        autoFocus
         defaultValue={initialValue ?? ''}
         rows={1}
         onKeyDown={handleKeyDown}
@@ -147,17 +148,7 @@ function resizeTextarea(el, fontSize, zoom) {
 
 function AnnotationText({ item, editing, zoom, onCommit }) {
   if (editing) {
-    return (
-      <TextEditor
-        x={item.x}
-        y={item.y}
-        color={item.color}
-        fontSize={item.fontSize}
-        initialValue={item.text}
-        zoom={zoom}
-        onCommit={onCommit}
-      />
-    )
+    return null  // caller renders TextEditor directly so it can pass textareaRef
   }
 
   const lines = item.text.split('\n')
@@ -200,6 +191,7 @@ export default function AnnotationLayer({
   onUpdateText,
 }) {
   const [editingId, setEditingId] = useState(null)
+  const activeTextareaRef = useRef(null)
   const { x, y, zoom } = useViewport()
   const items = annotations?.[activeView]?.items ?? []
   const cursor = getCursorForTool(activeTool, penSettings, markerSettings, eraserSettings, zoom)
@@ -211,9 +203,19 @@ export default function AnnotationLayer({
     }
   }
 
-  // Intercept text-item clicks during the capture phase on the <g> so they never reach
-  // the SVG's onPointerDown (which would create a new pendingText instead of editing).
-  // Empty-canvas clicks target the <svg> directly and never hit this handler at all.
+  // Div is the event surface. When an active text input exists, blur it explicitly
+  // before e.preventDefault() runs (which would otherwise suppress the blur).
+  // Clicking on an existing text item is handled by the <g> capture handler below.
+  const handlePointerDown = (e) => {
+    if (activeTextareaRef.current) {
+      activeTextareaRef.current.blur()
+      return  // commit the open input; don't immediately place a new one
+    }
+    onPointerDown(e)
+  }
+
+  // Capture phase on <g>: intercepts text-item clicks before they bubble to the div.
+  // Empty-canvas clicks target <svg> directly and never pass through <g> in capture.
   const handleGroupCapture = (e) => {
     if (activeTool !== 'text') return
     const annotEl = e.target.closest?.('[data-annotation-id]')
@@ -221,6 +223,8 @@ export default function AnnotationLayer({
     setEditingId(annotEl.dataset.annotationId)
     e.stopPropagation()
   }
+
+  const editingItem = editingId ? items.find((i) => i.id === editingId) : null
 
   return (
     <div
@@ -232,7 +236,7 @@ export default function AnnotationLayer({
         zIndex: 10,
         cursor,
       }}
-      onPointerDown={onPointerDown}
+      onPointerDown={handlePointerDown}
       onPointerMove={onPointerMove}
       onPointerUp={onPointerUp}
       onPointerLeave={onPointerUp}
@@ -240,7 +244,7 @@ export default function AnnotationLayer({
       <svg
         width="100%"
         height="100%"
-        style={{ overflow: 'visible', display: 'block', pointerEvents: 'all' }}
+        style={{ overflow: 'visible', display: 'block' }}
       >
         <g
           transform={`translate(${x}, ${y}) scale(${zoom})`}
@@ -259,6 +263,19 @@ export default function AnnotationLayer({
               />
             ),
           )}
+          {editingItem && (
+            <TextEditor
+              key={editingItem.id}
+              x={editingItem.x}
+              y={editingItem.y}
+              color={editingItem.color}
+              fontSize={editingItem.fontSize}
+              initialValue={editingItem.text}
+              zoom={zoom}
+              onCommit={(value) => handleEditCommit(editingItem.id, value)}
+              textareaRef={activeTextareaRef}
+            />
+          )}
           {currentStroke && <AnnotationStroke stroke={currentStroke} />}
           {pendingText && (
             <TextEditor
@@ -269,6 +286,7 @@ export default function AnnotationLayer({
               initialValue=""
               zoom={zoom}
               onCommit={(value) => onCommitText(value ?? '')}
+              textareaRef={activeTextareaRef}
             />
           )}
         </g>
