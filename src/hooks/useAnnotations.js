@@ -45,6 +45,50 @@ function makeEmptyAnnotations() {
   }
 }
 
+function isFiniteNumber(value) {
+  return Number.isFinite(value)
+}
+
+function normalizePoint(point) {
+  if (!point || typeof point !== 'object') return null
+  if (!isFiniteNumber(point.x) || !isFiniteNumber(point.y)) return null
+  return { x: point.x, y: point.y }
+}
+
+function normalizeStrokeItem(item) {
+  const points = Array.isArray(item.points)
+    ? item.points.map(normalizePoint).filter(Boolean)
+    : []
+  if (points.length === 0) return null
+
+  const tool = item.tool === 'marker' ? 'marker' : 'pen'
+  const defaults = tool === 'marker' ? DEFAULT_TOOL_SETTINGS.marker : DEFAULT_TOOL_SETTINGS.pen
+
+  return {
+    id: item.id,
+    kind: 'stroke',
+    tool,
+    points,
+    color: typeof item.color === 'string' && item.color ? item.color : defaults.color,
+    thickness: isFiniteNumber(item.thickness) && item.thickness > 0 ? item.thickness : defaults.thickness,
+    opacity: isFiniteNumber(item.opacity) ? item.opacity : tool === 'marker' ? DEFAULT_TOOL_SETTINGS.marker.opacity : 1,
+  }
+}
+
+function normalizeTextItem(item) {
+  if (!isFiniteNumber(item.x) || !isFiniteNumber(item.y)) return null
+
+  return {
+    id: item.id,
+    kind: 'text',
+    x: item.x,
+    y: item.y,
+    text: typeof item.text === 'string' ? item.text : '',
+    color: typeof item.color === 'string' && item.color ? item.color : DEFAULT_TOOL_SETTINGS.text.color,
+    fontSize: isFiniteNumber(item.fontSize) && item.fontSize > 0 ? item.fontSize : DEFAULT_TOOL_SETTINGS.text.fontSize,
+  }
+}
+
 function normalizeAnnotations(raw) {
   const result = makeEmptyAnnotations()
   if (!raw || typeof raw !== 'object') return result
@@ -52,13 +96,18 @@ function normalizeAnnotations(raw) {
     const viewData = raw[view]
     if (!viewData || typeof viewData !== 'object') continue
     const items = Array.isArray(viewData.items) ? viewData.items : []
-    result[view].items = items.filter(
-      (item) =>
-        item &&
-        typeof item === 'object' &&
-        typeof item.id === 'string' &&
-        (item.kind === 'stroke' || item.kind === 'text'),
-    )
+    result[view].items = items.flatMap((item) => {
+      if (!item || typeof item !== 'object' || typeof item.id !== 'string') return []
+      if (item.kind === 'stroke') {
+        const stroke = normalizeStrokeItem(item)
+        return stroke ? [stroke] : []
+      }
+      if (item.kind === 'text') {
+        const text = normalizeTextItem(item)
+        return text ? [text] : []
+      }
+      return []
+    })
   }
   return result
 }
@@ -121,6 +170,20 @@ export function useAnnotations({ activeView, reactFlowInstance, pushHistorySnaps
 
   const getAnnotationsSnapshot = useCallback(() => annotationsRef.current, [])
 
+  const selectedTextItem = useMemo(() => {
+    if (!selectedTextId) return null
+    return annotations[activeView]?.items.find(
+      (item) => item.kind === 'text' && item.id === selectedTextId,
+    ) ?? null
+  }, [activeView, annotations, selectedTextId])
+
+  const editingTextItem = useMemo(() => {
+    if (!editingTextId) return null
+    return annotations[activeView]?.items.find(
+      (item) => item.kind === 'text' && item.id === editingTextId,
+    ) ?? null
+  }, [activeView, annotations, editingTextId])
+
   const setTool = useCallback((tool) => {
     setActiveTool(tool)
     const settings = readToolSettings()
@@ -182,8 +245,8 @@ export function useAnnotations({ activeView, reactFlowInstance, pushHistorySnaps
 
   const updateTextSettings = useCallback(
     (updates) => {
-      if (activeTool === 'text' && selectedTextId) {
-        updateSelectedText(selectedTextId, updates)
+      if (activeTool === 'text' && selectedTextItem) {
+        updateSelectedText(selectedTextItem.id, updates)
         return
       }
 
@@ -194,7 +257,7 @@ export function useAnnotations({ activeView, reactFlowInstance, pushHistorySnaps
         return next
       })
     },
-    [activeTool, selectedTextId, updateSelectedText],
+    [activeTool, selectedTextItem, updateSelectedText],
   )
 
   const updateEraserSettings = useCallback((updates) => {
@@ -281,7 +344,7 @@ export function useAnnotations({ activeView, reactFlowInstance, pushHistorySnaps
         onEraseAt(flowPt)
         isDrawingRef.current = true
       } else if (activeTool === 'text') {
-        if (selectedTextId || editingTextId) {
+        if (selectedTextItem || editingTextItem) {
           setSelectedTextId(null)
           setEditingTextId(null)
           return
@@ -292,7 +355,7 @@ export function useAnnotations({ activeView, reactFlowInstance, pushHistorySnaps
         }
       }
     },
-    [activeTool, editingTextId, penSettings, markerSettings, textSettings, pendingText, screenToFlow, selectedTextId, pushHistorySnapshot, onEraseAt],
+    [activeTool, editingTextItem, penSettings, markerSettings, textSettings, pendingText, screenToFlow, selectedTextItem, pushHistorySnapshot, onEraseAt],
   )
 
   const onPointerMove = useCallback(
@@ -503,17 +566,13 @@ export function useAnnotations({ activeView, reactFlowInstance, pushHistorySnaps
   )
 
   const onDeleteSelectedText = useCallback(() => {
-    if (!selectedTextId) return false
-    const exists = annotationsRef.current[activeView].items.some(
-      (item) => item.kind === 'text' && item.id === selectedTextId,
-    )
-    if (!exists) return false
+    if (!selectedTextItem) return false
     pushHistorySnapshot?.()
     setAnnotations((cur) => ({
       ...cur,
       [activeView]: {
         items: cur[activeView].items.filter(
-          (item) => item.kind !== 'text' || item.id !== selectedTextId,
+          (item) => item.kind !== 'text' || item.id !== selectedTextItem.id,
         ),
       },
     }))
@@ -522,7 +581,7 @@ export function useAnnotations({ activeView, reactFlowInstance, pushHistorySnaps
     textDragRef.current = null
     bumpDirty()
     return true
-  }, [activeView, bumpDirty, pushHistorySnapshot, selectedTextId])
+  }, [activeView, bumpDirty, pushHistorySnapshot, selectedTextItem])
 
   const onClearAnnotations = useCallback(
     (view) => {
@@ -567,7 +626,7 @@ export function useAnnotations({ activeView, reactFlowInstance, pushHistorySnaps
         return
       }
       if (key === 'escape') {
-        if (pendingText || selectedTextId || editingTextId) {
+        if (pendingText || selectedTextItem || editingTextItem) {
           event.preventDefault()
           setPendingText(null)
           setSelectedTextId(null)
@@ -576,22 +635,15 @@ export function useAnnotations({ activeView, reactFlowInstance, pushHistorySnaps
         }
         return
       }
-      if (key === 'enter' && selectedTextId && !editingTextId) {
+      if (key === 'enter' && selectedTextItem && !editingTextItem) {
         event.preventDefault()
-        onStartTextEdit(selectedTextId)
+        onStartTextEdit(selectedTextItem.id)
       }
     }
 
     window.addEventListener('keydown', handleKeyDown)
     return () => window.removeEventListener('keydown', handleKeyDown)
-  }, [activeTool, editingTextId, onDeleteSelectedText, onStartTextEdit, pendingText, selectedTextId])
-
-  const selectedTextItem = useMemo(() => {
-    if (!selectedTextId) return null
-    return annotations[activeView]?.items.find(
-      (item) => item.kind === 'text' && item.id === selectedTextId,
-    ) ?? null
-  }, [activeView, annotations, selectedTextId])
+  }, [activeTool, editingTextItem, onDeleteSelectedText, onStartTextEdit, pendingText, selectedTextItem])
 
   const effectiveTextSettings = selectedTextItem
     ? { color: selectedTextItem.color, fontSize: selectedTextItem.fontSize }
@@ -606,8 +658,8 @@ export function useAnnotations({ activeView, reactFlowInstance, pushHistorySnaps
     eraserSettings,
     currentStroke,
     pendingText,
-    selectedTextId,
-    editingTextId,
+    selectedTextId: selectedTextItem ? selectedTextItem.id : null,
+    editingTextId: editingTextItem ? editingTextItem.id : null,
     dirtySignal,
     getAnnotationsSnapshot,
     setTool,

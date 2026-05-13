@@ -15,12 +15,13 @@ const pointerEvent = (x, y) => ({
 })
 
 function renderAnnotations(pushHistorySnapshot = vi.fn()) {
-  return renderHook(() =>
+  return renderHook(({ activeView }) =>
     useAnnotations({
-      activeView: 'conceptual',
+      activeView,
       reactFlowInstance,
       pushHistorySnapshot,
     }),
+    { initialProps: { activeView: 'conceptual' } },
   )
 }
 
@@ -75,6 +76,93 @@ describe('useAnnotations text interactions', () => {
       color: '#f97316',
       fontSize: 18,
     })
+  })
+
+  it('clears transient text selection when switching views', () => {
+    const { result, rerender } = renderAnnotations()
+
+    act(() => result.current.setTool('text'))
+    act(() => result.current.onPointerDown(pointerEvent(10, 20)))
+    act(() => result.current.onCommitText('Conceptual text'))
+
+    expect(result.current.selectedTextId).toBe('annotation-1')
+
+    rerender({ activeView: 'logical' })
+
+    expect(result.current.selectedTextId).toBeNull()
+
+    act(() => result.current.updateTextSettings({ color: '#f97316', fontSize: 18 }))
+    act(() => result.current.onPointerDown(pointerEvent(30, 40)))
+
+    expect(result.current.pendingText).toMatchObject({
+      x: 30,
+      y: 40,
+      color: '#f97316',
+      fontSize: 18,
+    })
+  })
+
+  it('normalizes loaded annotations so malformed items cannot break text or stroke handling', () => {
+    const { result } = renderAnnotations()
+
+    act(() => {
+      result.current.onLoadAnnotations({
+        conceptual: {
+          items: [
+            {
+              id: 'bad-text',
+              kind: 'text',
+              x: 10,
+              y: 20,
+              text: null,
+              color: null,
+              fontSize: 'large',
+            },
+            {
+              id: 'bad-stroke',
+              kind: 'stroke',
+              points: [{ x: 1, y: 2 }, { x: 'bad', y: 4 }, { x: 5, y: 6 }],
+              color: null,
+              thickness: 0,
+              opacity: null,
+            },
+            {
+              id: 'empty-stroke',
+              kind: 'stroke',
+              points: [{ x: Number.NaN, y: 1 }],
+            },
+            {
+              id: 'bad-position',
+              kind: 'text',
+              x: 'bad',
+              y: 20,
+              text: 'No position',
+            },
+          ],
+        },
+      })
+    })
+
+    expect(result.current.annotations.conceptual.items).toEqual([
+      {
+        id: 'bad-text',
+        kind: 'text',
+        x: 10,
+        y: 20,
+        text: '',
+        color: '#1e293b',
+        fontSize: 14,
+      },
+      {
+        id: 'bad-stroke',
+        kind: 'stroke',
+        tool: 'pen',
+        points: [{ x: 1, y: 2 }, { x: 5, y: 6 }],
+        color: '#ef4444',
+        thickness: 2,
+        opacity: 1,
+      },
+    ])
   })
 
   it('moves selected text in flow coordinates with one history snapshot', () => {
