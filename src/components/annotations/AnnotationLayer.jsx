@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from 'react'
+import { useCallback, useEffect, useRef, useState } from 'react'
 import { useViewport } from 'reactflow'
 
 function buildCircleCursor(diameter, color, fillOpacity = 0) {
@@ -145,7 +145,7 @@ function resizeTextarea(el, fontSize, zoom) {
   el.style.height = `${el.scrollHeight}px`
 }
 
-function AnnotationText({ item, activeTool, editing, zoom, onStartEdit, onCommit }) {
+function AnnotationText({ item, editing, zoom, onCommit }) {
   if (editing) {
     return (
       <TextEditor
@@ -163,14 +163,6 @@ function AnnotationText({ item, activeTool, editing, zoom, onStartEdit, onCommit
   const lines = item.text.split('\n')
   const lineHeight = item.fontSize * LINE_HEIGHT_RATIO
 
-  const handlePointerDown = (e) => {
-    if (activeTool === 'text') {
-      // Single click in text mode opens inline edit instead of placing a new label
-      e.stopPropagation()
-      onStartEdit()
-    }
-  }
-
   return (
     <text
       x={item.x}
@@ -179,9 +171,8 @@ function AnnotationText({ item, activeTool, editing, zoom, onStartEdit, onCommit
       fontSize={item.fontSize}
       fontFamily="sans-serif"
       dominantBaseline="alphabetic"
+      data-annotation-id={item.id}
       style={{ cursor: 'text', userSelect: 'none' }}
-      onPointerDown={handlePointerDown}
-      onDoubleClick={(e) => { e.stopPropagation(); onStartEdit() }}
       pointerEvents="all"
     >
       {lines.map((line, i) => (
@@ -220,6 +211,21 @@ export default function AnnotationLayer({
     }
   }
 
+  // Intercept pointer-down on the SVG to detect clicks on committed text items.
+  // Relying on stopPropagation from an SVG <text> child is unreliable in React's
+  // synthetic event system, so we inspect e.target.dataset directly instead.
+  const handleSvgPointerDown = useCallback((e) => {
+    if (activeTool === 'text') {
+      const annotEl = e.target.closest?.('[data-annotation-id]')
+      if (annotEl) {
+        setEditingId(annotEl.dataset.annotationId)
+        e.stopPropagation()
+        return
+      }
+    }
+    onPointerDown(e)
+  }, [activeTool, onPointerDown])
+
   return (
     <div
       className="react-flow__annotation-layer"
@@ -235,7 +241,7 @@ export default function AnnotationLayer({
         width="100%"
         height="100%"
         style={{ overflow: 'visible', display: 'block' }}
-        onPointerDown={onPointerDown}
+        onPointerDown={handleSvgPointerDown}
         onPointerMove={onPointerMove}
         onPointerUp={onPointerUp}
         onPointerLeave={onPointerUp}
@@ -248,10 +254,8 @@ export default function AnnotationLayer({
               <AnnotationText
                 key={item.id}
                 item={item}
-                activeTool={activeTool}
                 editing={editingId === item.id}
                 zoom={zoom}
-                onStartEdit={() => setEditingId(item.id)}
                 onCommit={(value) => handleEditCommit(item.id, value)}
               />
             ),

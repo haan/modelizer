@@ -213,7 +213,9 @@ export function useAnnotations({ activeView, reactFlowInstance, pushHistorySnaps
   const onPointerDown = useCallback(
     (e) => {
       if (activeTool === 'pointer') return
-      e.preventDefault()
+      // preventDefault prevents browser pan/selection during drawing, but must NOT be
+      // called for the text tool — it would block focus changes and suppress textarea blur.
+      if (activeTool !== 'text') e.preventDefault()
       e.stopPropagation()
       const flowPt = screenToFlow(e.clientX, e.clientY)
 
