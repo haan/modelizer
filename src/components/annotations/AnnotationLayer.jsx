@@ -1,4 +1,4 @@
-import { useRef } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { useViewport } from 'reactflow'
 
 function buildCircleCursor(diameter, color, fillOpacity = 0) {
@@ -62,82 +62,117 @@ function AnnotationStroke({ stroke }) {
   )
 }
 
-function AnnotationText({ item, onEdit }) {
-  const handleDoubleClick = (e) => {
-    e.stopPropagation()
-    const newText = window.prompt('Edit annotation text:', item.text)
-    if (newText !== null) {
-      onEdit(item.id, newText)
+// Inline textarea for both new text and editing existing text
+function TextEditor({ x, y, color, fontSize, initialValue, zoom, onCommit }) {
+  const ref = useRef(null)
+  const committedRef = useRef(false)
+  const lineHeight = fontSize * 1.3
+
+  useEffect(() => {
+    const el = ref.current
+    if (!el) return
+    el.focus()
+    el.setSelectionRange(el.value.length, el.value.length)
+    resizeTextarea(el, fontSize, zoom)
+  }, []) // eslint-disable-line react-hooks/exhaustive-deps
+
+  const commit = (value) => {
+    if (committedRef.current) return
+    committedRef.current = true
+    onCommit(value)
+  }
+
+  const handleKeyDown = (e) => {
+    if (e.key === 'Enter' && !e.shiftKey) {
+      e.preventDefault()
+      commit(ref.current?.value ?? '')
+    }
+    if (e.key === 'Escape') {
+      commit(null)
     }
   }
 
-  const scaledFontSize = item.fontSize
+  const handleInput = (e) => {
+    resizeTextarea(e.target, fontSize, zoom)
+  }
+
+  return (
+    <foreignObject x={x} y={y} width={400 / zoom} height={400 / zoom} style={{ overflow: 'visible', pointerEvents: 'none' }}>
+      <textarea
+        ref={ref}
+        defaultValue={initialValue ?? ''}
+        rows={1}
+        onKeyDown={handleKeyDown}
+        onInput={handleInput}
+        onBlur={(e) => commit(e.target.value)}
+        style={{
+          pointerEvents: 'all',
+          background: 'transparent',
+          border: 'none',
+          borderBottom: `${1 / zoom}px solid ${color}`,
+          outline: 'none',
+          color,
+          fontSize: `${fontSize}px`,
+          fontFamily: 'sans-serif',
+          lineHeight: `${lineHeight}px`,
+          minWidth: `${80 / zoom}px`,
+          minHeight: `${lineHeight}px`,
+          padding: 0,
+          margin: 0,
+          resize: 'none',
+          overflow: 'hidden',
+          display: 'block',
+          whiteSpace: 'pre',
+        }}
+      />
+    </foreignObject>
+  )
+}
+
+function resizeTextarea(el, fontSize, zoom) {
+  // Reset to measure scrollWidth/Height accurately
+  el.style.width = `${80 / zoom}px`
+  el.style.height = 'auto'
+  el.style.width = `${Math.max(el.scrollWidth, 80 / zoom)}px`
+  el.style.height = `${el.scrollHeight}px`
+}
+
+function AnnotationText({ item, editing, zoom, onStartEdit, onCommit }) {
+  if (editing) {
+    return (
+      <TextEditor
+        x={item.x}
+        y={item.y}
+        color={item.color}
+        fontSize={item.fontSize}
+        initialValue={item.text}
+        zoom={zoom}
+        onCommit={onCommit}
+      />
+    )
+  }
+
+  const lines = item.text.split('\n')
+  const lineHeight = item.fontSize * 1.3
+
   return (
     <text
       x={item.x}
       y={item.y}
       fill={item.color}
-      fontSize={scaledFontSize}
+      fontSize={item.fontSize}
       fontFamily="sans-serif"
       dominantBaseline="text-before-edge"
       style={{ cursor: 'text', userSelect: 'none' }}
-      onDoubleClick={handleDoubleClick}
+      onDoubleClick={(e) => { e.stopPropagation(); onStartEdit() }}
       pointerEvents="all"
     >
-      {item.text}
+      {lines.map((line, i) => (
+        <tspan key={i} x={item.x} dy={i === 0 ? 0 : lineHeight}>
+          {line || ' '}
+        </tspan>
+      ))}
     </text>
-  )
-}
-
-function PendingTextInput({ pending, zoom, onCommit }) {
-  const ref = useRef(null)
-
-  const handleKeyDown = (e) => {
-    if (e.key === 'Enter' && !e.shiftKey) {
-      e.preventDefault()
-      onCommit(ref.current?.value ?? '')
-    }
-    if (e.key === 'Escape') {
-      onCommit('')
-    }
-  }
-
-  const handleBlur = () => {
-    onCommit(ref.current?.value ?? '')
-  }
-
-  const scaledFontSize = pending.fontSize
-  const width = 200 / zoom
-  const height = (pending.fontSize + 8) / zoom
-
-  return (
-    <foreignObject
-      x={pending.x}
-      y={pending.y}
-      width={width}
-      height={height}
-      style={{ overflow: 'visible' }}
-    >
-      <input
-        ref={ref}
-        autoFocus
-        defaultValue=""
-        onKeyDown={handleKeyDown}
-        onBlur={handleBlur}
-        style={{
-          background: 'transparent',
-          border: 'none',
-          borderBottom: `${1 / zoom}px solid ${pending.color}`,
-          outline: 'none',
-          color: pending.color,
-          fontSize: `${scaledFontSize}px`,
-          fontFamily: 'sans-serif',
-          width: '100%',
-          padding: 0,
-          margin: 0,
-        }}
-      />
-    </foreignObject>
   )
 }
 
@@ -156,9 +191,17 @@ export default function AnnotationLayer({
   onCommitText,
   onUpdateText,
 }) {
+  const [editingId, setEditingId] = useState(null)
   const { x, y, zoom } = useViewport()
   const items = annotations?.[activeView]?.items ?? []
   const cursor = getCursorForTool(activeTool, penSettings, markerSettings, eraserSettings, zoom)
+
+  const handleEditCommit = (id, value) => {
+    setEditingId(null)
+    if (value !== null) {
+      onUpdateText(id, value)
+    }
+  }
 
   return (
     <div
@@ -188,16 +231,23 @@ export default function AnnotationLayer({
               <AnnotationText
                 key={item.id}
                 item={item}
-                onEdit={onUpdateText}
+                editing={editingId === item.id}
+                zoom={zoom}
+                onStartEdit={() => setEditingId(item.id)}
+                onCommit={(value) => handleEditCommit(item.id, value)}
               />
             ),
           )}
           {currentStroke && <AnnotationStroke stroke={currentStroke} />}
           {pendingText && (
-            <PendingTextInput
-              pending={pendingText}
+            <TextEditor
+              x={pendingText.x}
+              y={pendingText.y}
+              color={pendingText.color}
+              fontSize={pendingText.fontSize}
+              initialValue=""
               zoom={zoom}
-              onCommit={onCommitText}
+              onCommit={(value) => onCommitText(value ?? '')}
             />
           )}
         </g>
