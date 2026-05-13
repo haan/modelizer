@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from 'react'
+import { useEffect, useRef } from 'react'
 import { useViewport } from 'reactflow'
 
 function buildCircleCursor(diameter, color, fillOpacity = 0) {
@@ -18,6 +18,49 @@ function getCursorForTool(activeTool, penSettings, markerSettings, eraserSetting
   if (activeTool === 'marker') return buildCircleCursor(markerSettings.thickness * zoom, markerSettings.color, markerSettings.opacity * 0.5)
   if (activeTool === 'eraser') return buildCircleCursor(eraserSettings.size * zoom, '#6b7280')
   return 'crosshair'
+}
+
+function forwardWheelToReactFlow(e) {
+  const overlay = e.currentTarget
+  const sourceEvent = e.nativeEvent
+  if (!overlay || sourceEvent.__annotationWheelForwarded) {
+    return
+  }
+
+  const previousPointerEvents = overlay.style.pointerEvents
+  overlay.style.pointerEvents = 'none'
+  const target = document.elementFromPoint(sourceEvent.clientX, sourceEvent.clientY)
+  overlay.style.pointerEvents = previousPointerEvents
+
+  if (!target || overlay.contains(target)) {
+    return
+  }
+
+  e.preventDefault()
+  e.stopPropagation()
+
+  const forwardedEvent = new WheelEvent('wheel', {
+    bubbles: true,
+    cancelable: true,
+    composed: true,
+    deltaX: sourceEvent.deltaX,
+    deltaY: sourceEvent.deltaY,
+    deltaZ: sourceEvent.deltaZ,
+    deltaMode: sourceEvent.deltaMode,
+    clientX: sourceEvent.clientX,
+    clientY: sourceEvent.clientY,
+    screenX: sourceEvent.screenX,
+    screenY: sourceEvent.screenY,
+    ctrlKey: sourceEvent.ctrlKey,
+    shiftKey: sourceEvent.shiftKey,
+    altKey: sourceEvent.altKey,
+    metaKey: sourceEvent.metaKey,
+  })
+
+  Object.defineProperty(forwardedEvent, '__annotationWheelForwarded', {
+    value: true,
+  })
+  target.dispatchEvent(forwardedEvent)
 }
 
 function pointsToPath(points) {
@@ -159,7 +202,55 @@ function getTextBounds(item) {
   }
 }
 
-function AnnotationText({ item, editing, activeTool, onEditStart }) {
+function TextSelection({ bounds, zoom }) {
+  const handleSize = 6 / zoom
+  const half = handleSize / 2
+  const handles = [
+    [bounds.x, bounds.y],
+    [bounds.x + bounds.width, bounds.y],
+    [bounds.x, bounds.y + bounds.height],
+    [bounds.x + bounds.width, bounds.y + bounds.height],
+  ]
+
+  return (
+    <g pointerEvents="none">
+      <rect
+        data-annotation-selection="true"
+        x={bounds.x}
+        y={bounds.y}
+        width={bounds.width}
+        height={bounds.height}
+        fill="none"
+        stroke="#2563eb"
+        strokeWidth={1.5 / zoom}
+        strokeDasharray={`${4 / zoom} ${3 / zoom}`}
+      />
+      {handles.map(([x, y], index) => (
+        <rect
+          key={index}
+          x={x - half}
+          y={y - half}
+          width={handleSize}
+          height={handleSize}
+          rx={1 / zoom}
+          fill="#ffffff"
+          stroke="#2563eb"
+          strokeWidth={1.25 / zoom}
+        />
+      ))}
+    </g>
+  )
+}
+
+function AnnotationText({
+  item,
+  editing,
+  selected,
+  activeTool,
+  zoom,
+  onPointerDown,
+  onDoubleClick,
+}) {
   if (editing) {
     return null  // caller renders TextEditor directly so it can pass textareaRef
   }
@@ -167,26 +258,25 @@ function AnnotationText({ item, editing, activeTool, onEditStart }) {
   const lines = item.text.split('\n')
   const lineHeight = item.fontSize * LINE_HEIGHT_RATIO
   const bounds = getTextBounds(item)
-  const canEdit = activeTool === 'text'
-  const handlePointerDown = canEdit
-    ? (e) => {
-        e.preventDefault()
-        e.stopPropagation()
-        onEditStart(item.id)
-      }
-    : undefined
+  const canInteract = activeTool === 'text'
 
   return (
-    <g data-annotation-text-id={item.id} style={{ cursor: canEdit ? 'text' : 'default' }}>
-      {canEdit ? (
+    <g
+      data-annotation-text-id={item.id}
+      style={{ cursor: canInteract && selected ? 'move' : canInteract ? 'text' : 'default' }}
+    >
+      {selected ? <TextSelection bounds={bounds} zoom={zoom} /> : null}
+      {canInteract ? (
         <rect
+          data-annotation-hit-target="true"
           x={bounds.x}
           y={bounds.y}
           width={bounds.width}
           height={bounds.height}
           fill="transparent"
           pointerEvents="all"
-          onPointerDown={handlePointerDown}
+          onPointerDown={(e) => onPointerDown(item.id, e)}
+          onDoubleClick={(e) => onDoubleClick(item.id, e)}
         />
       ) : null}
       <text
@@ -222,19 +312,19 @@ export default function AnnotationLayer({
   onPointerMove,
   onPointerUp,
   onCommitText,
-  onUpdateText,
+  onCommitTextEdit,
+  selectedTextId,
+  editingTextId,
+  onTextPointerDown,
+  onTextDoubleClick,
 }) {
-  const [editingId, setEditingId] = useState(null)
   const activeTextareaRef = useRef(null)
   const { x, y, zoom } = useViewport()
   const items = annotations?.[activeView]?.items ?? []
   const cursor = getCursorForTool(activeTool, penSettings, markerSettings, eraserSettings, zoom)
 
   const handleEditCommit = (id, value) => {
-    setEditingId(null)
-    if (value !== null) {
-      onUpdateText(id, value)
-    }
+    onCommitTextEdit(id, value)
   }
 
   // Div is the event surface. When an active text input exists, blur it to commit,
@@ -247,15 +337,27 @@ export default function AnnotationLayer({
     onPointerDown(e)
   }
 
-  // Called directly by AnnotationText onPointerDown (after stopPropagation).
-  const handleTextEditStart = (id) => {
+  const handleTextPointerDown = (id, e) => {
+    e.preventDefault()
+    e.stopPropagation()
     if (activeTextareaRef.current) {
       activeTextareaRef.current.blur()
+      return
     }
-    setEditingId(id)
+    onTextPointerDown(id, e)
   }
 
-  const editingItem = editingId ? items.find((i) => i.id === editingId) : null
+  const handleTextDoubleClick = (id, e) => {
+    e.preventDefault()
+    e.stopPropagation()
+    if (activeTextareaRef.current) {
+      activeTextareaRef.current.blur()
+      return
+    }
+    onTextDoubleClick(id, e)
+  }
+
+  const editingItem = editingTextId ? items.find((i) => i.id === editingTextId) : null
 
   return (
     <div
@@ -271,6 +373,7 @@ export default function AnnotationLayer({
       onPointerMove={onPointerMove}
       onPointerUp={onPointerUp}
       onPointerLeave={onPointerUp}
+      onWheel={forwardWheelToReactFlow}
     >
       <svg
         width="100%"
@@ -285,9 +388,12 @@ export default function AnnotationLayer({
               <AnnotationText
                 key={item.id}
                 item={item}
-                editing={editingId === item.id}
+                editing={editingTextId === item.id}
+                selected={selectedTextId === item.id}
                 activeTool={activeTool}
-                onEditStart={handleTextEditStart}
+                zoom={zoom}
+                onPointerDown={handleTextPointerDown}
+                onDoubleClick={handleTextDoubleClick}
               />
             ),
           )}

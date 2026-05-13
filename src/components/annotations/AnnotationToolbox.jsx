@@ -1,7 +1,10 @@
-import { useRef, useState } from 'react'
+import { forwardRef, useState } from 'react'
 import { Panel } from 'reactflow'
+import * as AlertDialog from '@radix-ui/react-alert-dialog'
+import * as Popover from '@radix-ui/react-popover'
 import * as Tooltip from '@radix-ui/react-tooltip'
 import { CirclePicker } from 'react-color'
+import { dialogStyles } from '../dialogs/dialogStyles.js'
 
 const PRESET_COLORS = [
   '#ef4444',
@@ -36,6 +39,7 @@ function ToolButton({ label, active, disabled, onClick, children }) {
     <ToolTip label={label}>
       <button
         type="button"
+        aria-label={label}
         onClick={onClick}
         disabled={disabled}
         className={`flex h-8 w-8 items-center justify-center rounded-md transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-base-content/20 disabled:cursor-not-allowed disabled:opacity-40 ${
@@ -50,9 +54,27 @@ function ToolButton({ label, active, disabled, onClick, children }) {
   )
 }
 
+function ToolGroup({ children }) {
+  return <div className="flex flex-col">{children}</div>
+}
+
+function AnimatedOptionsSlot({ active, children }) {
+  return (
+    <div
+      aria-hidden={!active}
+      className={`overflow-hidden transition-[max-height,opacity,transform,padding-top] duration-150 ease-out ${
+        active
+          ? 'max-h-10 translate-y-0 pt-0.5 opacity-100'
+          : 'pointer-events-none max-h-0 -translate-y-1 pt-0 opacity-0'
+      }`}
+    >
+      {active ? children : null}
+    </div>
+  )
+}
+
 function ColorPresetRow({ color, onChange }) {
   const [pickerOpen, setPickerOpen] = useState(false)
-  const pickerRef = useRef(null)
 
   const isCustom = !PRESET_COLORS.includes(color)
 
@@ -85,7 +107,6 @@ function ColorPresetRow({ color, onChange }) {
       {pickerOpen && (
         <div
           className="absolute right-0 top-8 z-50 rounded-lg border border-base-content/20 bg-base-100 p-2 shadow-xl"
-          ref={pickerRef}
         >
           <button
             type="button"
@@ -130,13 +151,96 @@ function Slider({ label, min, max, step = 1, value, onChange }) {
   )
 }
 
-function SubPanel({ children }) {
+function ToolOptionsPopover({ trigger, children }) {
   return (
-    <div className="mt-1 w-40 rounded-md border border-base-content/10 bg-base-100 shadow-md">
-      {children}
-    </div>
+    <Popover.Root>
+      <Popover.Trigger asChild>{trigger}</Popover.Trigger>
+      <Popover.Portal>
+        <Popover.Content
+          side="left"
+          align="start"
+          sideOffset={8}
+          className="z-50 w-40 rounded-md border border-base-content/10 bg-base-100 p-1 shadow-lg"
+        >
+          {children}
+          <Popover.Arrow className="fill-base-100" />
+        </Popover.Content>
+      </Popover.Portal>
+    </Popover.Root>
   )
 }
+
+function ClearAnnotationsDialog({ open, onOpenChange, onConfirm }) {
+  return (
+    <AlertDialog.Root open={open} onOpenChange={onOpenChange}>
+      <AlertDialog.Portal>
+        <AlertDialog.Overlay className={dialogStyles.overlay} />
+        <AlertDialog.Content className={dialogStyles.content}>
+          <AlertDialog.Title className={dialogStyles.title}>
+            Clear annotations?
+          </AlertDialog.Title>
+          <AlertDialog.Description className={dialogStyles.description}>
+            This removes all annotations in the current view. You can undo this action.
+          </AlertDialog.Description>
+          <div className={dialogStyles.actions}>
+            <AlertDialog.Cancel className={dialogStyles.cancel}>
+              Cancel
+            </AlertDialog.Cancel>
+            <AlertDialog.Action
+              className={dialogStyles.action}
+              onClick={onConfirm}
+              autoFocus
+            >
+              Clear
+            </AlertDialog.Action>
+          </div>
+        </AlertDialog.Content>
+      </AlertDialog.Portal>
+    </AlertDialog.Root>
+  )
+}
+
+const ColorSwatchButton = forwardRef(function ColorSwatchButton(
+  { label, color, ...buttonProps },
+  ref,
+) {
+  return (
+    <button
+      {...buttonProps}
+      ref={ref}
+      type="button"
+      aria-label={label}
+      className="flex h-8 w-8 items-center justify-center rounded-md transition-colors hover:bg-base-300 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-base-content/20"
+    >
+      <span
+        className="h-5 w-5 rounded-full border border-base-content/30 shadow-sm"
+        style={{ backgroundColor: color }}
+      />
+    </button>
+  )
+})
+
+const EraserSizeButton = forwardRef(function EraserSizeButton(
+  { size, ...buttonProps },
+  ref,
+) {
+  const diameter = Math.max(8, Math.min(22, Math.round(size / 3)))
+
+  return (
+    <button
+      {...buttonProps}
+      ref={ref}
+      type="button"
+      aria-label="Eraser options"
+      className="flex h-8 w-8 items-center justify-center rounded-md transition-colors hover:bg-base-300 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-base-content/20"
+    >
+      <span
+        className="rounded-full border border-base-content/40 bg-base-content/25"
+        style={{ width: `${diameter}px`, height: `${diameter}px` }}
+      />
+    </button>
+  )
+})
 
 // Bootstrap Icons
 const PointerIcon = () => (
@@ -189,18 +293,11 @@ export default function AnnotationToolbox({
   onEraserSettingsChange,
   onClearView,
 }) {
-  const [clearArmed, setClearArmed] = useState(false)
-  const clearTimerRef = useRef(null)
+  const [isClearDialogOpen, setIsClearDialogOpen] = useState(false)
 
-  const handleClear = () => {
-    if (clearArmed) {
-      clearTimeout(clearTimerRef.current)
-      setClearArmed(false)
-      onClearView()
-    } else {
-      setClearArmed(true)
-      clearTimerRef.current = setTimeout(() => setClearArmed(false), 2000)
-    }
+  const handleConfirmClear = () => {
+    setIsClearDialogOpen(false)
+    onClearView()
   }
 
   return (
@@ -220,141 +317,159 @@ export default function AnnotationToolbox({
 
         <div className="my-0.5 h-px bg-base-content/10" />
 
-        <ToolButton
-          label="Pen"
-          active={activeTool === 'pen'}
-          onClick={() => onSetTool('pen')}
-        >
-          <PenIcon />
-        </ToolButton>
-        {activeTool === 'pen' && (
-          <SubPanel>
-            <ColorPresetRow
-              color={penSettings.color}
-              onChange={(c) => onPenSettingsChange({ color: c })}
-            />
-            <Slider
-              label="Thickness"
-              min={1}
-              max={10}
-              value={penSettings.thickness}
-              onChange={(v) => onPenSettingsChange({ thickness: v })}
-            />
-          </SubPanel>
-        )}
+        <ToolGroup>
+          <ToolButton
+            label="Pen"
+            active={activeTool === 'pen'}
+            onClick={() => onSetTool('pen')}
+          >
+            <PenIcon />
+          </ToolButton>
+          <AnimatedOptionsSlot active={activeTool === 'pen'}>
+            <ToolOptionsPopover
+              trigger={<ColorSwatchButton label="Pen options" color={penSettings.color} />}
+            >
+              <ColorPresetRow
+                color={penSettings.color}
+                onChange={(c) => onPenSettingsChange({ color: c })}
+              />
+              <Slider
+                label="Thickness"
+                min={1}
+                max={10}
+                value={penSettings.thickness}
+                onChange={(v) => onPenSettingsChange({ thickness: v })}
+              />
+            </ToolOptionsPopover>
+          </AnimatedOptionsSlot>
+        </ToolGroup>
 
-        <ToolButton
-          label="Marker"
-          active={activeTool === 'marker'}
-          onClick={() => onSetTool('marker')}
-        >
-          <MarkerIcon />
-        </ToolButton>
-        {activeTool === 'marker' && (
-          <SubPanel>
-            <ColorPresetRow
-              color={markerSettings.color}
-              onChange={(c) => onMarkerSettingsChange({ color: c })}
-            />
-            <Slider
-              label="Thickness"
-              min={8}
-              max={40}
-              value={markerSettings.thickness}
-              onChange={(v) => onMarkerSettingsChange({ thickness: v })}
-            />
-            <Slider
-              label="Opacity"
-              min={10}
-              max={80}
-              value={Math.round(markerSettings.opacity * 100)}
-              onChange={(v) => onMarkerSettingsChange({ opacity: v / 100 })}
-            />
-          </SubPanel>
-        )}
+        <ToolGroup>
+          <ToolButton
+            label="Marker"
+            active={activeTool === 'marker'}
+            onClick={() => onSetTool('marker')}
+          >
+            <MarkerIcon />
+          </ToolButton>
+          <AnimatedOptionsSlot active={activeTool === 'marker'}>
+            <ToolOptionsPopover
+              trigger={<ColorSwatchButton label="Marker options" color={markerSettings.color} />}
+            >
+              <ColorPresetRow
+                color={markerSettings.color}
+                onChange={(c) => onMarkerSettingsChange({ color: c })}
+              />
+              <Slider
+                label="Thickness"
+                min={8}
+                max={40}
+                value={markerSettings.thickness}
+                onChange={(v) => onMarkerSettingsChange({ thickness: v })}
+              />
+              <Slider
+                label="Opacity"
+                min={10}
+                max={80}
+                value={Math.round(markerSettings.opacity * 100)}
+                onChange={(v) => onMarkerSettingsChange({ opacity: v / 100 })}
+              />
+            </ToolOptionsPopover>
+          </AnimatedOptionsSlot>
+        </ToolGroup>
 
-        <ToolButton
-          label="Text"
-          active={activeTool === 'text'}
-          onClick={() => onSetTool('text')}
-        >
-          <TextIcon />
-        </ToolButton>
-        {activeTool === 'text' && (
-          <SubPanel>
-            <ColorPresetRow
-              color={textSettings.color}
-              onChange={(c) => onTextSettingsChange({ color: c })}
-            />
-            <Slider
-              label="Font size"
-              min={10}
-              max={32}
-              value={textSettings.fontSize}
-              onChange={(v) => onTextSettingsChange({ fontSize: v })}
-            />
-          </SubPanel>
-        )}
+        <ToolGroup>
+          <ToolButton
+            label="Text"
+            active={activeTool === 'text'}
+            onClick={() => onSetTool('text')}
+          >
+            <TextIcon />
+          </ToolButton>
+          <AnimatedOptionsSlot active={activeTool === 'text'}>
+            <ToolOptionsPopover
+              trigger={<ColorSwatchButton label="Text options" color={textSettings.color} />}
+            >
+              <ColorPresetRow
+                color={textSettings.color}
+                onChange={(c) => onTextSettingsChange({ color: c })}
+              />
+              <Slider
+                label="Font size"
+                min={10}
+                max={32}
+                value={textSettings.fontSize}
+                onChange={(v) => onTextSettingsChange({ fontSize: v })}
+              />
+            </ToolOptionsPopover>
+          </AnimatedOptionsSlot>
+        </ToolGroup>
 
-        <ToolButton
-          label="Eraser"
-          active={activeTool === 'eraser'}
-          onClick={() => onSetTool('eraser')}
-        >
-          <EraserIcon />
-        </ToolButton>
-        {activeTool === 'eraser' && (
-          <SubPanel>
-            <Slider
-              label="Size"
-              min={10}
-              max={60}
-              value={eraserSettings.size}
-              onChange={(v) => onEraserSettingsChange({ size: v })}
-            />
-            <div className="flex gap-1 px-1 pb-1">
-              <button
-                type="button"
-                onClick={() => onEraserSettingsChange({ mode: 'whole' })}
-                className={`flex-1 rounded px-1 py-0.5 text-[10px] transition-colors ${
-                  eraserSettings.mode === 'whole'
-                    ? 'bg-primary text-primary-content'
-                    : 'bg-base-200 text-base-content hover:bg-base-300'
-                }`}
-              >
-                Whole
-              </button>
-              <button
-                type="button"
-                onClick={() => onEraserSettingsChange({ mode: 'partial' })}
-                className={`flex-1 rounded px-1 py-0.5 text-[10px] transition-colors ${
-                  eraserSettings.mode === 'partial'
-                    ? 'bg-primary text-primary-content'
-                    : 'bg-base-200 text-base-content hover:bg-base-300'
-                }`}
-              >
-                Partial
-              </button>
-            </div>
-          </SubPanel>
-        )}
+        <ToolGroup>
+          <ToolButton
+            label="Eraser"
+            active={activeTool === 'eraser'}
+            onClick={() => onSetTool('eraser')}
+          >
+            <EraserIcon />
+          </ToolButton>
+          <AnimatedOptionsSlot active={activeTool === 'eraser'}>
+            <ToolOptionsPopover
+              trigger={<EraserSizeButton size={eraserSettings.size} />}
+            >
+              <Slider
+                label="Size"
+                min={10}
+                max={60}
+                value={eraserSettings.size}
+                onChange={(v) => onEraserSettingsChange({ size: v })}
+              />
+              <div className="flex gap-1 px-1 pb-1">
+                <button
+                  type="button"
+                  onClick={() => onEraserSettingsChange({ mode: 'whole' })}
+                  className={`flex-1 rounded px-1 py-0.5 text-[10px] transition-colors ${
+                    eraserSettings.mode === 'whole'
+                      ? 'bg-primary text-primary-content'
+                      : 'bg-base-200 text-base-content hover:bg-base-300'
+                  }`}
+                >
+                  Whole
+                </button>
+                <button
+                  type="button"
+                  onClick={() => onEraserSettingsChange({ mode: 'partial' })}
+                  className={`flex-1 rounded px-1 py-0.5 text-[10px] transition-colors ${
+                    eraserSettings.mode === 'partial'
+                      ? 'bg-primary text-primary-content'
+                      : 'bg-base-200 text-base-content hover:bg-base-300'
+                  }`}
+                >
+                  Partial
+                </button>
+              </div>
+            </ToolOptionsPopover>
+          </AnimatedOptionsSlot>
+        </ToolGroup>
 
         <div className="my-0.5 h-px bg-base-content/10" />
 
-        <ToolTip label={clearArmed ? 'Click again to confirm' : 'Clear all annotations in this view'}>
+        <ToolTip label="Clear annotations in this view">
           <button
             type="button"
-            onClick={handleClear}
-            className={`flex h-8 w-8 items-center justify-center rounded-md transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-base-content/20 ${
-              clearArmed
-                ? 'bg-error text-error-content'
-                : 'text-base-content hover:bg-base-300'
-            }`}
+            aria-label="Clear annotations in this view"
+            onClick={() => setIsClearDialogOpen(true)}
+            className="flex h-8 w-8 items-center justify-center rounded-md text-base-content transition-colors hover:bg-base-300 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-base-content/20"
           >
             <TrashIcon />
           </button>
         </ToolTip>
       </Tooltip.Provider>
+      <ClearAnnotationsDialog
+        open={isClearDialogOpen}
+        onOpenChange={setIsClearDialogOpen}
+        onConfirm={handleConfirmClear}
+      />
     </Panel>
   )
 }

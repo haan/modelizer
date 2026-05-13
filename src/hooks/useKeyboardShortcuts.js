@@ -28,6 +28,9 @@ export function useKeyboardShortcuts({
       /Mac|iPhone|iPad|iPod/.test(navigator.platform)
 
     const handleKeyDown = (event) => {
+      if (event.defaultPrevented) {
+        return
+      }
       const key = event.key?.toLowerCase()
       const isAddAttributeShortcut =
         key === 'a' && event.ctrlKey && event.altKey && !event.shiftKey

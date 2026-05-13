@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useRef, useState } from 'react'
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 
 const STORAGE_KEY_TOOL_SETTINGS = 'modelizer.annotationToolSettings'
 
@@ -105,10 +105,13 @@ export function useAnnotations({ activeView, reactFlowInstance, pushHistorySnaps
   const [eraserSettings, setEraserSettings] = useState(initialSettings.eraser)
   const [currentStroke, setCurrentStroke] = useState(null)
   const [pendingText, setPendingText] = useState(null)
+  const [selectedTextId, setSelectedTextId] = useState(null)
+  const [editingTextId, setEditingTextId] = useState(null)
   const [dirtySignal, setDirtySignal] = useState(0)
 
   const annotationsRef = useRef(annotations)
   const isDrawingRef = useRef(false)
+  const textDragRef = useRef(null)
 
   useEffect(() => {
     annotationsRef.current = annotations
@@ -124,7 +127,12 @@ export function useAnnotations({ activeView, reactFlowInstance, pushHistorySnaps
     writeToolSettings({ ...settings, activeTool: tool })
     setPendingText(null)
     setCurrentStroke(null)
+    setEditingTextId(null)
+    if (tool !== 'text') {
+      setSelectedTextId(null)
+    }
     isDrawingRef.current = false
+    textDragRef.current = null
   }, [])
 
   const updatePenSettings = useCallback((updates) => {
@@ -145,14 +153,49 @@ export function useAnnotations({ activeView, reactFlowInstance, pushHistorySnaps
     })
   }, [])
 
-  const updateTextSettings = useCallback((updates) => {
-    setTextSettings((cur) => {
-      const next = { ...cur, ...updates }
-      const settings = readToolSettings()
-      writeToolSettings({ ...settings, text: next })
-      return next
-    })
-  }, [])
+  const updateSelectedText = useCallback(
+    (id, updates, { pushHistory = true } = {}) => {
+      const currentItem = annotationsRef.current[activeView].items.find(
+        (item) => item.kind === 'text' && item.id === id,
+      )
+      if (!currentItem) {
+        return false
+      }
+      const changed = Object.keys(updates).some((key) => updates[key] !== currentItem[key])
+      if (!changed) {
+        return false
+      }
+      if (pushHistory) {
+        pushHistorySnapshot?.()
+      }
+      setAnnotations((cur) => {
+        const nextItems = cur[activeView].items.map((item) =>
+          item.kind === 'text' && item.id === id ? { ...item, ...updates } : item,
+        )
+        return { ...cur, [activeView]: { items: nextItems } }
+      })
+      bumpDirty()
+      return true
+    },
+    [activeView, bumpDirty, pushHistorySnapshot],
+  )
+
+  const updateTextSettings = useCallback(
+    (updates) => {
+      if (activeTool === 'text' && selectedTextId) {
+        updateSelectedText(selectedTextId, updates)
+        return
+      }
+
+      setTextSettings((cur) => {
+        const next = { ...cur, ...updates }
+        const settings = readToolSettings()
+        writeToolSettings({ ...settings, text: next })
+        return next
+      })
+    },
+    [activeTool, selectedTextId, updateSelectedText],
+  )
 
   const updateEraserSettings = useCallback((updates) => {
     setEraserSettings((cur) => {
@@ -218,6 +261,8 @@ export function useAnnotations({ activeView, reactFlowInstance, pushHistorySnaps
       const flowPt = screenToFlow(e.clientX, e.clientY)
 
       if (activeTool === 'pen' || activeTool === 'marker') {
+        setSelectedTextId(null)
+        setEditingTextId(null)
         isDrawingRef.current = true
         const settings = activeTool === 'pen' ? penSettings : markerSettings
         setCurrentStroke({
@@ -230,21 +275,58 @@ export function useAnnotations({ activeView, reactFlowInstance, pushHistorySnaps
           opacity: activeTool === 'pen' ? 1 : markerSettings.opacity,
         })
       } else if (activeTool === 'eraser') {
+        setSelectedTextId(null)
+        setEditingTextId(null)
         pushHistorySnapshot?.()
         onEraseAt(flowPt)
         isDrawingRef.current = true
       } else if (activeTool === 'text') {
-        // Don't create a new input while one is already open — let blur commit it first
+        if (selectedTextId || editingTextId) {
+          setSelectedTextId(null)
+          setEditingTextId(null)
+          return
+        }
+        // Don't create a new input while one is already open - let blur commit it first.
         if (!pendingText) {
           setPendingText({ x: flowPt.x, y: flowPt.y, text: '', color: textSettings.color, fontSize: textSettings.fontSize })
         }
       }
     },
-    [activeTool, penSettings, markerSettings, textSettings, pendingText, screenToFlow, pushHistorySnapshot, onEraseAt],
+    [activeTool, editingTextId, penSettings, markerSettings, textSettings, pendingText, screenToFlow, selectedTextId, pushHistorySnapshot, onEraseAt],
   )
 
   const onPointerMove = useCallback(
     (e) => {
+      const textDrag = textDragRef.current
+      if (textDrag) {
+        e.preventDefault()
+        const flowPt = screenToFlow(e.clientX, e.clientY)
+        const dx = flowPt.x - textDrag.start.x
+        const dy = flowPt.y - textDrag.start.y
+        if (!textDrag.historyPushed && (Math.abs(dx) > 0.5 || Math.abs(dy) > 0.5)) {
+          pushHistorySnapshot?.()
+          textDrag.historyPushed = true
+        }
+        if (textDrag.historyPushed) {
+          textDrag.moved = true
+          setAnnotations((cur) => ({
+            ...cur,
+            [activeView]: {
+              items: cur[activeView].items.map((item) =>
+                item.kind === 'text' && item.id === textDrag.id
+                  ? {
+                      ...item,
+                      x: textDrag.origin.x + dx,
+                      y: textDrag.origin.y + dy,
+                    }
+                  : item,
+              ),
+            },
+          }))
+        }
+        return
+      }
+
       if (!isDrawingRef.current) return
       e.preventDefault()
       const flowPt = screenToFlow(e.clientX, e.clientY)
@@ -258,11 +340,17 @@ export function useAnnotations({ activeView, reactFlowInstance, pushHistorySnaps
         onEraseAt(flowPt)
       }
     },
-    [activeTool, screenToFlow, onEraseAt],
+    [activeTool, activeView, pushHistorySnapshot, screenToFlow, onEraseAt],
   )
 
   const onPointerUp = useCallback(
     () => {
+      if (textDragRef.current) {
+        if (textDragRef.current.moved) {
+          bumpDirty()
+        }
+        textDragRef.current = null
+      }
       if (activeTool === 'pen' || activeTool === 'marker') {
         if (isDrawingRef.current && currentStroke) {
           pushHistorySnapshot?.()
@@ -287,8 +375,9 @@ export function useAnnotations({ activeView, reactFlowInstance, pushHistorySnaps
       if (!pendingText) return
       if (text.trim()) {
         pushHistorySnapshot?.()
+        const id = crypto.randomUUID()
         const item = {
-          id: crypto.randomUUID(),
+          id,
           kind: 'text',
           x: pendingText.x,
           y: pendingText.y,
@@ -300,42 +389,149 @@ export function useAnnotations({ activeView, reactFlowInstance, pushHistorySnaps
           ...cur,
           [activeView]: { items: [...cur[activeView].items, item] },
         }))
+        setSelectedTextId(id)
+        setEditingTextId(null)
         bumpDirty()
+      } else {
+        setSelectedTextId(null)
+        setEditingTextId(null)
       }
       setPendingText(null)
     },
     [activeView, pendingText, pushHistorySnapshot, bumpDirty],
   )
 
-  const onUpdateText = useCallback(
+  const onCommitTextEdit = useCallback(
     (id, text) => {
-      pushHistorySnapshot?.()
-      if (!text.trim()) {
+      setEditingTextId(null)
+      if (text === null) {
+        return
+      }
+      const nextText = text.trim()
+      const currentItem = annotationsRef.current[activeView].items.find(
+        (item) => item.kind === 'text' && item.id === id,
+      )
+      if (!currentItem) {
+        return
+      }
+      if (!nextText) {
+        pushHistorySnapshot?.()
         setAnnotations((cur) => ({
           ...cur,
           [activeView]: {
             items: cur[activeView].items.filter((i) => i.id !== id),
           },
         }))
-      } else {
-        setAnnotations((cur) => ({
-          ...cur,
-          [activeView]: {
-            items: cur[activeView].items.map((i) =>
-              i.id === id ? { ...i, text: text.trim() } : i,
-            ),
-          },
-        }))
+        setSelectedTextId(null)
+        bumpDirty()
+        return
       }
+      if (nextText === currentItem.text) {
+        return
+      }
+      pushHistorySnapshot?.()
+      setAnnotations((cur) => ({
+        ...cur,
+        [activeView]: {
+          items: cur[activeView].items.map((i) =>
+            i.id === id ? { ...i, text: nextText } : i,
+          ),
+        },
+      }))
+      setSelectedTextId(id)
       bumpDirty()
     },
     [activeView, pushHistorySnapshot, bumpDirty],
   )
 
+  const onSelectText = useCallback(
+    (id) => {
+      if (activeTool !== 'text') return
+      setPendingText(null)
+      setEditingTextId(null)
+      setSelectedTextId(id)
+    },
+    [activeTool],
+  )
+
+  const onStartTextEdit = useCallback(
+    (id) => {
+      if (activeTool !== 'text') return
+      setPendingText(null)
+      setSelectedTextId(id)
+      setEditingTextId(id)
+      textDragRef.current = null
+    },
+    [activeTool],
+  )
+
+  const onTextPointerDown = useCallback(
+    (id, e) => {
+      if (activeTool !== 'text') return
+      e.preventDefault()
+      e.stopPropagation()
+      const item = annotationsRef.current[activeView].items.find(
+        (entry) => entry.kind === 'text' && entry.id === id,
+      )
+      if (!item) return
+      const flowPt = screenToFlow(e.clientX, e.clientY)
+      setPendingText(null)
+      setEditingTextId(null)
+      setSelectedTextId(id)
+      textDragRef.current =
+        selectedTextId === id
+          ? {
+              id,
+              start: flowPt,
+              origin: { x: item.x, y: item.y },
+              moved: false,
+              historyPushed: false,
+            }
+          : null
+    },
+    [activeTool, activeView, screenToFlow, selectedTextId],
+  )
+
+  const onTextDoubleClick = useCallback(
+    (id, e) => {
+      if (activeTool !== 'text') return
+      e.preventDefault()
+      e.stopPropagation()
+      onStartTextEdit(id)
+    },
+    [activeTool, onStartTextEdit],
+  )
+
+  const onDeleteSelectedText = useCallback(() => {
+    if (!selectedTextId) return false
+    const exists = annotationsRef.current[activeView].items.some(
+      (item) => item.kind === 'text' && item.id === selectedTextId,
+    )
+    if (!exists) return false
+    pushHistorySnapshot?.()
+    setAnnotations((cur) => ({
+      ...cur,
+      [activeView]: {
+        items: cur[activeView].items.filter(
+          (item) => item.kind !== 'text' || item.id !== selectedTextId,
+        ),
+      },
+    }))
+    setSelectedTextId(null)
+    setEditingTextId(null)
+    textDragRef.current = null
+    bumpDirty()
+    return true
+  }, [activeView, bumpDirty, pushHistorySnapshot, selectedTextId])
+
   const onClearAnnotations = useCallback(
     (view) => {
       pushHistorySnapshot?.()
       setAnnotations((cur) => ({ ...cur, [view ?? activeView]: { items: [] } }))
+      setPendingText(null)
+      setSelectedTextId(null)
+      setEditingTextId(null)
+      textDragRef.current = null
       bumpDirty()
     },
     [activeView, pushHistorySnapshot, bumpDirty],
@@ -344,17 +540,74 @@ export function useAnnotations({ activeView, reactFlowInstance, pushHistorySnaps
   const onLoadAnnotations = useCallback((raw) => {
     setAnnotations(normalizeAnnotations(raw))
     setDirtySignal(0)
+    setPendingText(null)
+    setSelectedTextId(null)
+    setEditingTextId(null)
+    textDragRef.current = null
   }, [])
+
+  useEffect(() => {
+    if (activeTool !== 'text') return
+
+    const handleKeyDown = (event) => {
+      const target = event.target
+      const isEditable =
+        target instanceof HTMLElement &&
+        (target.isContentEditable ||
+          target.tagName === 'INPUT' ||
+          target.tagName === 'TEXTAREA' ||
+          target.tagName === 'SELECT')
+      if (isEditable) return
+
+      const key = event.key?.toLowerCase()
+      if (key === 'delete' || key === 'backspace') {
+        if (onDeleteSelectedText()) {
+          event.preventDefault()
+        }
+        return
+      }
+      if (key === 'escape') {
+        if (pendingText || selectedTextId || editingTextId) {
+          event.preventDefault()
+          setPendingText(null)
+          setSelectedTextId(null)
+          setEditingTextId(null)
+          textDragRef.current = null
+        }
+        return
+      }
+      if (key === 'enter' && selectedTextId && !editingTextId) {
+        event.preventDefault()
+        onStartTextEdit(selectedTextId)
+      }
+    }
+
+    window.addEventListener('keydown', handleKeyDown)
+    return () => window.removeEventListener('keydown', handleKeyDown)
+  }, [activeTool, editingTextId, onDeleteSelectedText, onStartTextEdit, pendingText, selectedTextId])
+
+  const selectedTextItem = useMemo(() => {
+    if (!selectedTextId) return null
+    return annotations[activeView]?.items.find(
+      (item) => item.kind === 'text' && item.id === selectedTextId,
+    ) ?? null
+  }, [activeView, annotations, selectedTextId])
+
+  const effectiveTextSettings = selectedTextItem
+    ? { color: selectedTextItem.color, fontSize: selectedTextItem.fontSize }
+    : textSettings
 
   return {
     annotations,
     activeTool,
     penSettings,
     markerSettings,
-    textSettings,
+    textSettings: effectiveTextSettings,
     eraserSettings,
     currentStroke,
     pendingText,
+    selectedTextId,
+    editingTextId,
     dirtySignal,
     getAnnotationsSnapshot,
     setTool,
@@ -366,7 +619,12 @@ export function useAnnotations({ activeView, reactFlowInstance, pushHistorySnaps
     onPointerMove,
     onPointerUp,
     onCommitText,
-    onUpdateText,
+    onCommitTextEdit,
+    onSelectText,
+    onStartTextEdit,
+    onTextPointerDown,
+    onTextDoubleClick,
+    onDeleteSelectedText,
     onClearAnnotations,
     onLoadAnnotations,
   }

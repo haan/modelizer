@@ -422,6 +422,8 @@ function App() {
     eraserSettings,
     currentStroke,
     pendingText,
+    selectedTextId,
+    editingTextId,
     dirtySignal: annotationsDirtySignal,
     getAnnotationsSnapshot: getAnnotationsSnapshotFn,
     setTool: onSetAnnotationTool,
@@ -433,7 +435,9 @@ function App() {
     onPointerMove: onAnnotationPointerMove,
     onPointerUp: onAnnotationPointerUp,
     onCommitText: onAnnotationCommitText,
-    onUpdateText: onAnnotationUpdateText,
+    onCommitTextEdit: onAnnotationCommitTextEdit,
+    onTextPointerDown: onAnnotationTextPointerDown,
+    onTextDoubleClick: onAnnotationTextDoubleClick,
     onClearAnnotations,
     onLoadAnnotations,
   } = useAnnotations({ activeView, reactFlowInstance, pushHistorySnapshot })
@@ -1047,7 +1051,11 @@ function App() {
                         onPointerMove={onAnnotationPointerMove}
                         onPointerUp={onAnnotationPointerUp}
                         onCommitText={onAnnotationCommitText}
-                        onUpdateText={onAnnotationUpdateText}
+                        onCommitTextEdit={onAnnotationCommitTextEdit}
+                        selectedTextId={selectedTextId}
+                        editingTextId={editingTextId}
+                        onTextPointerDown={onAnnotationTextPointerDown}
+                        onTextDoubleClick={onAnnotationTextDoubleClick}
                       />
                       <div data-no-export="true">
                         <AnnotationToolbox
