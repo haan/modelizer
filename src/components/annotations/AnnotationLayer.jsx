@@ -141,6 +141,10 @@ function TextEditor({ x, y, color, fontSize, initialValue, zoom, onCommit, texta
     }
   }
 
+  const stopEditorEventPropagation = (e) => {
+    e.stopPropagation()
+  }
+
   const lineHeight = fontSize * LINE_HEIGHT_RATIO
   const topOffset = fontSize * 0.85
 
@@ -159,6 +163,14 @@ function TextEditor({ x, y, color, fontSize, initialValue, zoom, onCommit, texta
         onKeyDown={handleKeyDown}
         onInput={(e) => resizeTextarea(e.target, fontSize, zoom)}
         onBlur={(e) => commit(e.target.value)}
+        onPointerDown={stopEditorEventPropagation}
+        onPointerMove={stopEditorEventPropagation}
+        onPointerUp={stopEditorEventPropagation}
+        onMouseDown={stopEditorEventPropagation}
+        onMouseMove={stopEditorEventPropagation}
+        onMouseUp={stopEditorEventPropagation}
+        onClick={stopEditorEventPropagation}
+        onDoubleClick={stopEditorEventPropagation}
         style={{
           pointerEvents: 'all',
           background: 'transparent',
@@ -339,8 +351,12 @@ export default function AnnotationLayer({
   // Div is the event surface. When an active text input exists, blur it to commit,
   // then return so we don't immediately place a new text annotation.
   const handlePointerDown = (e) => {
-    if (activeTextareaRef.current) {
-      activeTextareaRef.current.blur()
+    const activeTextarea = activeTextareaRef.current
+    if (activeTextarea) {
+      if (e.target instanceof Node && activeTextarea.contains(e.target)) {
+        return
+      }
+      activeTextarea.blur()
       return
     }
     onPointerDown(e)

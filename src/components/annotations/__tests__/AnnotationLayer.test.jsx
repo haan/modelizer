@@ -95,6 +95,57 @@ describe('AnnotationLayer', () => {
     expect(onCommitTextEdit).toHaveBeenCalledWith('text-1', 'Updated annotation')
   })
 
+  it('keeps text editing active when interacting with the textarea by mouse', () => {
+    const onPointerDown = vi.fn()
+    const onPointerMove = vi.fn()
+    const onPointerUp = vi.fn()
+    const onCommitTextEdit = vi.fn()
+    renderLayer({
+      selectedTextId: 'text-1',
+      editingTextId: 'text-1',
+      onPointerDown,
+      onPointerMove,
+      onPointerUp,
+      onCommitTextEdit,
+    })
+
+    const editor = screen.getByRole('textbox')
+    expect(editor).toHaveFocus()
+
+    fireEvent.pointerDown(editor)
+    fireEvent.pointerMove(editor)
+    fireEvent.pointerUp(editor)
+    fireEvent.mouseDown(editor)
+    fireEvent.click(editor)
+    fireEvent.doubleClick(editor)
+
+    expect(editor).toHaveFocus()
+    expect(onCommitTextEdit).not.toHaveBeenCalled()
+    expect(onPointerDown).not.toHaveBeenCalled()
+    expect(onPointerMove).not.toHaveBeenCalled()
+    expect(onPointerUp).not.toHaveBeenCalled()
+  })
+
+  it('commits active text edits when clicking outside the textarea', () => {
+    const onPointerDown = vi.fn()
+    const onCommitTextEdit = vi.fn()
+    const { container } = renderLayer({
+      selectedTextId: 'text-1',
+      editingTextId: 'text-1',
+      onPointerDown,
+      onCommitTextEdit,
+    })
+
+    const editor = screen.getByRole('textbox')
+    const overlay = container.querySelector('.react-flow__annotation-layer')
+
+    fireEvent.change(editor, { target: { value: 'Committed from outside click' } })
+    fireEvent.pointerDown(overlay)
+
+    expect(onCommitTextEdit).toHaveBeenCalledWith('text-1', 'Committed from outside click')
+    expect(onPointerDown).not.toHaveBeenCalled()
+  })
+
   it('commits new text from a pending text editor', () => {
     const onCommitText = vi.fn()
     renderLayer({
