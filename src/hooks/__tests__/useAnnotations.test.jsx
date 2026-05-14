@@ -1,4 +1,4 @@
-import { act, renderHook } from '@testing-library/react'
+import { act, fireEvent, renderHook } from '@testing-library/react'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 
 import { useAnnotations } from '../useAnnotations.js'
@@ -14,14 +14,21 @@ const pointerEvent = (x, y) => ({
   stopPropagation: vi.fn(),
 })
 
-function renderAnnotations(pushHistorySnapshot = vi.fn()) {
-  return renderHook(({ activeView }) =>
+function renderAnnotations(pushHistorySnapshot = vi.fn(), options = {}) {
+  return renderHook(({ activeView = 'conceptual', enabled = true, instance = reactFlowInstance }) =>
     useAnnotations({
       activeView,
-      reactFlowInstance,
+      reactFlowInstance: instance,
       pushHistorySnapshot,
+      enabled,
     }),
-    { initialProps: { activeView: 'conceptual' } },
+    {
+      initialProps: {
+        activeView: 'conceptual',
+        enabled: options.enabled ?? true,
+        instance: options.reactFlowInstance ?? reactFlowInstance,
+      },
+    },
   )
 }
 
@@ -210,6 +217,184 @@ describe('useAnnotations text interactions', () => {
       window.dispatchEvent(new KeyboardEvent('keydown', { key: 'Escape', bubbles: true }))
     })
     expect(result.current.selectedTextId).toBeNull()
+  })
+
+  it('uses annotation hotkeys only when annotations are enabled and focus is not editable', () => {
+    const { result, rerender } = renderAnnotations()
+
+    act(() => {
+      window.dispatchEvent(new KeyboardEvent('keydown', { key: 'p', bubbles: true }))
+    })
+    expect(result.current.activeTool).toBe('pen')
+
+    act(() => {
+      window.dispatchEvent(new KeyboardEvent('keydown', { key: 'M', bubbles: true }))
+    })
+    expect(result.current.activeTool).toBe('marker')
+
+    act(() => {
+      window.dispatchEvent(new KeyboardEvent('keydown', { key: 't', bubbles: true }))
+    })
+    expect(result.current.activeTool).toBe('text')
+
+    act(() => {
+      window.dispatchEvent(new KeyboardEvent('keydown', { key: 'e', bubbles: true }))
+    })
+    expect(result.current.activeTool).toBe('eraser')
+
+    act(() => {
+      window.dispatchEvent(new KeyboardEvent('keydown', { key: 'v', bubbles: true }))
+    })
+    expect(result.current.activeTool).toBe('pointer')
+
+    act(() => {
+      window.dispatchEvent(new KeyboardEvent('keydown', { key: 'p', ctrlKey: true, bubbles: true }))
+    })
+    expect(result.current.activeTool).toBe('pointer')
+
+    const input = document.createElement('input')
+    document.body.appendChild(input)
+    try {
+      act(() => {
+        fireEvent.keyDown(input, { key: 'p' })
+      })
+    } finally {
+      input.remove()
+    }
+    expect(result.current.activeTool).toBe('pointer')
+
+    rerender({ enabled: false })
+    act(() => {
+      window.dispatchEvent(new KeyboardEvent('keydown', { key: 'p', bubbles: true }))
+    })
+    expect(result.current.activeTool).toBe('pointer')
+  })
+
+  it('uses Escape to clear transient text state before returning to pointer mode', () => {
+    const { result } = renderAnnotations()
+
+    act(() => result.current.setTool('text'))
+    act(() => result.current.onPointerDown(pointerEvent(10, 20)))
+    act(() => result.current.onCommitText('Selected'))
+
+    expect(result.current.activeTool).toBe('text')
+    expect(result.current.selectedTextId).toBe('annotation-1')
+
+    act(() => {
+      window.dispatchEvent(new KeyboardEvent('keydown', { key: 'Escape', bubbles: true }))
+    })
+
+    expect(result.current.activeTool).toBe('text')
+    expect(result.current.selectedTextId).toBeNull()
+
+    act(() => {
+      window.dispatchEvent(new KeyboardEvent('keydown', { key: 'Escape', bubbles: true }))
+    })
+
+    expect(result.current.activeTool).toBe('pointer')
+  })
+
+  it('returns non-text annotation tools to pointer mode with Escape', () => {
+    const { result } = renderAnnotations()
+
+    act(() => result.current.setTool('marker'))
+
+    act(() => {
+      window.dispatchEvent(new KeyboardEvent('keydown', { key: 'Escape', bubbles: true }))
+    })
+
+    expect(result.current.activeTool).toBe('pointer')
+  })
+
+  it('temporarily pans the viewport while Space is held with an annotation tool', () => {
+    const setViewport = vi.fn()
+    const getViewport = vi.fn(() => ({ x: 10, y: 20, zoom: 2 }))
+    const instance = {
+      screenToFlowPosition: ({ x, y }) => ({ x, y }),
+      getViewport,
+      setViewport,
+    }
+    const { result } = renderAnnotations(vi.fn(), { reactFlowInstance: instance })
+
+    act(() => result.current.setTool('pen'))
+    act(() => {
+      window.dispatchEvent(new KeyboardEvent('keydown', { key: ' ', bubbles: true }))
+    })
+
+    expect(result.current.isTemporaryPanMode).toBe(true)
+
+    act(() => result.current.onPointerDown(pointerEvent(100, 100)))
+    act(() => result.current.onPointerMove(pointerEvent(130, 115)))
+
+    expect(result.current.currentStroke).toBeNull()
+    expect(setViewport).toHaveBeenCalledWith(
+      { x: 40, y: 35, zoom: 2 },
+      { duration: 0 },
+    )
+
+    act(() => {
+      window.dispatchEvent(new KeyboardEvent('keyup', { key: ' ', bubbles: true }))
+    })
+
+    expect(result.current.isTemporaryPanMode).toBe(false)
+  })
+
+  it('starts temporary pan drag immediately after Space keydown', () => {
+    const setViewport = vi.fn()
+    const instance = {
+      screenToFlowPosition: ({ x, y }) => ({ x, y }),
+      getViewport: vi.fn(() => ({ x: 0, y: 0, zoom: 1 })),
+      setViewport,
+    }
+    const { result } = renderAnnotations(vi.fn(), { reactFlowInstance: instance })
+
+    act(() => result.current.setTool('marker'))
+    act(() => {
+      window.dispatchEvent(new KeyboardEvent('keydown', { code: 'Space', bubbles: true }))
+      result.current.onPointerDown(pointerEvent(20, 20))
+      result.current.onPointerMove(pointerEvent(35, 45))
+    })
+
+    expect(result.current.currentStroke).toBeNull()
+    expect(setViewport).toHaveBeenCalledWith(
+      { x: 15, y: 25, zoom: 1 },
+      { duration: 0 },
+    )
+  })
+
+  it('does not enter temporary pan mode for pointer tool and exposes pan mode as off when annotations are disabled', () => {
+    const { result, rerender } = renderAnnotations()
+
+    act(() => {
+      window.dispatchEvent(new KeyboardEvent('keydown', { key: ' ', bubbles: true }))
+    })
+    expect(result.current.isTemporaryPanMode).toBe(false)
+
+    act(() => result.current.setTool('eraser'))
+    act(() => {
+      window.dispatchEvent(new KeyboardEvent('keydown', { key: ' ', bubbles: true }))
+    })
+    expect(result.current.isTemporaryPanMode).toBe(true)
+
+    rerender({ enabled: false })
+    expect(result.current.isTemporaryPanMode).toBe(false)
+  })
+
+  it('recognizes Space key variants for temporary pan mode', () => {
+    const { result } = renderAnnotations()
+
+    act(() => result.current.setTool('marker'))
+    act(() => {
+      window.dispatchEvent(new KeyboardEvent('keydown', { key: 'Space', bubbles: true }))
+    })
+
+    expect(result.current.isTemporaryPanMode).toBe(true)
+
+    act(() => {
+      window.dispatchEvent(new KeyboardEvent('keyup', { code: 'Space', bubbles: true }))
+    })
+
+    expect(result.current.isTemporaryPanMode).toBe(false)
   })
 
   it('deletes selected text with Delete', () => {

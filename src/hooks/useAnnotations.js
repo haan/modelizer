@@ -12,6 +12,33 @@ const DEFAULT_TOOL_SETTINGS = {
   activeTool: 'pointer',
 }
 
+const TOOL_HOTKEYS = {
+  v: 'pointer',
+  p: 'pen',
+  m: 'marker',
+  t: 'text',
+  e: 'eraser',
+}
+
+function isEditableTarget(target) {
+  return (
+    target instanceof HTMLElement &&
+    (target.isContentEditable ||
+      target.tagName === 'INPUT' ||
+      target.tagName === 'TEXTAREA' ||
+      target.tagName === 'SELECT')
+  )
+}
+
+function isSpaceKey(event) {
+  const key = event.key?.toLowerCase()
+  return key === ' ' || key === 'spacebar' || key === 'space' || event.code === 'Space'
+}
+
+function isAnnotationTool(tool) {
+  return tool === 'pen' || tool === 'marker' || tool === 'text' || tool === 'eraser'
+}
+
 function readToolSettings() {
   try {
     const raw = window.localStorage.getItem(STORAGE_KEY_TOOL_SETTINGS)
@@ -143,7 +170,7 @@ function partialEraseStroke(stroke, center, radius) {
   }))
 }
 
-export function useAnnotations({ activeView, reactFlowInstance, pushHistorySnapshot }) {
+export function useAnnotations({ activeView, reactFlowInstance, pushHistorySnapshot, enabled = true }) {
   const initialSettings = readToolSettings()
 
   const [annotations, setAnnotations] = useState(makeEmptyAnnotations)
@@ -156,11 +183,14 @@ export function useAnnotations({ activeView, reactFlowInstance, pushHistorySnaps
   const [pendingText, setPendingText] = useState(null)
   const [selectedTextId, setSelectedTextId] = useState(null)
   const [editingTextId, setEditingTextId] = useState(null)
+  const [isTemporaryPanMode, setTemporaryPanMode] = useState(false)
   const [dirtySignal, setDirtySignal] = useState(0)
 
   const annotationsRef = useRef(annotations)
   const isDrawingRef = useRef(false)
   const textDragRef = useRef(null)
+  const panDragRef = useRef(null)
+  const isTemporaryPanModeRef = useRef(false)
 
   useEffect(() => {
     annotationsRef.current = annotations
@@ -169,6 +199,11 @@ export function useAnnotations({ activeView, reactFlowInstance, pushHistorySnaps
   const bumpDirty = useCallback(() => setDirtySignal((n) => n + 1), [])
 
   const getAnnotationsSnapshot = useCallback(() => annotationsRef.current, [])
+
+  const setTemporaryPanModeActive = useCallback((active) => {
+    isTemporaryPanModeRef.current = active
+    setTemporaryPanMode(active)
+  }, [])
 
   const selectedTextItem = useMemo(() => {
     if (!selectedTextId) return null
@@ -196,7 +231,9 @@ export function useAnnotations({ activeView, reactFlowInstance, pushHistorySnaps
     }
     isDrawingRef.current = false
     textDragRef.current = null
-  }, [])
+    panDragRef.current = null
+    setTemporaryPanModeActive(false)
+  }, [setTemporaryPanModeActive])
 
   const updatePenSettings = useCallback((updates) => {
     setPenSettings((cur) => {
@@ -277,6 +314,36 @@ export function useAnnotations({ activeView, reactFlowInstance, pushHistorySnaps
     [reactFlowInstance],
   )
 
+  const startTemporaryPanDrag = useCallback(
+    (e) => {
+      if (
+        !enabled ||
+        !isTemporaryPanModeRef.current ||
+        !reactFlowInstance?.getViewport ||
+        !reactFlowInstance?.setViewport
+      ) {
+        return false
+      }
+      const viewport = reactFlowInstance.getViewport()
+      if (!viewport) return false
+
+      e.preventDefault()
+      e.stopPropagation()
+      setSelectedTextId(null)
+      setEditingTextId(null)
+      setPendingText(null)
+      setCurrentStroke(null)
+      isDrawingRef.current = false
+      textDragRef.current = null
+      panDragRef.current = {
+        startClient: { x: e.clientX, y: e.clientY },
+        startViewport: viewport,
+      }
+      return true
+    },
+    [enabled, reactFlowInstance],
+  )
+
   const onEraseAt = useCallback(
     (flowPt) => {
       const radius = eraserSettings.size / 2
@@ -319,6 +386,7 @@ export function useAnnotations({ activeView, reactFlowInstance, pushHistorySnaps
   const onPointerDown = useCallback(
     (e) => {
       if (activeTool === 'pointer') return
+      if (startTemporaryPanDrag(e)) return
       e.preventDefault()
       e.stopPropagation()
       const flowPt = screenToFlow(e.clientX, e.clientY)
@@ -355,11 +423,28 @@ export function useAnnotations({ activeView, reactFlowInstance, pushHistorySnaps
         }
       }
     },
-    [activeTool, editingTextItem, penSettings, markerSettings, textSettings, pendingText, screenToFlow, selectedTextItem, pushHistorySnapshot, onEraseAt],
+    [activeTool, editingTextItem, penSettings, markerSettings, textSettings, pendingText, screenToFlow, selectedTextItem, pushHistorySnapshot, onEraseAt, startTemporaryPanDrag],
   )
 
   const onPointerMove = useCallback(
     (e) => {
+      const panDrag = panDragRef.current
+      if (panDrag && reactFlowInstance?.setViewport) {
+        e.preventDefault()
+        e.stopPropagation()
+        const dx = e.clientX - panDrag.startClient.x
+        const dy = e.clientY - panDrag.startClient.y
+        reactFlowInstance.setViewport(
+          {
+            x: panDrag.startViewport.x + dx,
+            y: panDrag.startViewport.y + dy,
+            zoom: panDrag.startViewport.zoom,
+          },
+          { duration: 0 },
+        )
+        return
+      }
+
       const textDrag = textDragRef.current
       if (textDrag) {
         e.preventDefault()
@@ -403,11 +488,12 @@ export function useAnnotations({ activeView, reactFlowInstance, pushHistorySnaps
         onEraseAt(flowPt)
       }
     },
-    [activeTool, activeView, pushHistorySnapshot, screenToFlow, onEraseAt],
+    [activeTool, activeView, pushHistorySnapshot, reactFlowInstance, screenToFlow, onEraseAt],
   )
 
   const onPointerUp = useCallback(
     () => {
+      panDragRef.current = null
       if (textDragRef.current) {
         if (textDragRef.current.moved) {
           bumpDirty()
@@ -531,6 +617,7 @@ export function useAnnotations({ activeView, reactFlowInstance, pushHistorySnaps
   const onTextPointerDown = useCallback(
     (id, e) => {
       if (activeTool !== 'text') return
+      if (startTemporaryPanDrag(e)) return
       e.preventDefault()
       e.stopPropagation()
       const item = annotationsRef.current[activeView].items.find(
@@ -552,7 +639,7 @@ export function useAnnotations({ activeView, reactFlowInstance, pushHistorySnaps
             }
           : null
     },
-    [activeTool, activeView, screenToFlow, selectedTextId],
+    [activeTool, activeView, screenToFlow, selectedTextId, startTemporaryPanDrag],
   )
 
   const onTextDoubleClick = useCallback(
@@ -579,6 +666,7 @@ export function useAnnotations({ activeView, reactFlowInstance, pushHistorySnaps
     setSelectedTextId(null)
     setEditingTextId(null)
     textDragRef.current = null
+    panDragRef.current = null
     bumpDirty()
     return true
   }, [activeView, bumpDirty, pushHistorySnapshot, selectedTextItem])
@@ -603,24 +691,33 @@ export function useAnnotations({ activeView, reactFlowInstance, pushHistorySnaps
     setSelectedTextId(null)
     setEditingTextId(null)
     textDragRef.current = null
-  }, [])
+    panDragRef.current = null
+    setTemporaryPanModeActive(false)
+  }, [setTemporaryPanModeActive])
 
   useEffect(() => {
-    if (activeTool !== 'text') return
-
     const handleKeyDown = (event) => {
-      const target = event.target
-      const isEditable =
-        target instanceof HTMLElement &&
-        (target.isContentEditable ||
-          target.tagName === 'INPUT' ||
-          target.tagName === 'TEXTAREA' ||
-          target.tagName === 'SELECT')
-      if (isEditable) return
+      if (!enabled || event.defaultPrevented || isEditableTarget(event.target)) return
 
       const key = event.key?.toLowerCase()
+      if (isSpaceKey(event)) {
+        if (isAnnotationTool(activeTool) && !event.ctrlKey && !event.metaKey && !event.altKey) {
+          event.preventDefault()
+          if (!event.repeat) {
+            setTemporaryPanModeActive(true)
+          }
+        }
+        return
+      }
+
+      if (!event.ctrlKey && !event.metaKey && !event.altKey && TOOL_HOTKEYS[key]) {
+        event.preventDefault()
+        setTool(TOOL_HOTKEYS[key])
+        return
+      }
+
       if (key === 'delete' || key === 'backspace') {
-        if (onDeleteSelectedText()) {
+        if (activeTool === 'text' && onDeleteSelectedText()) {
           event.preventDefault()
         }
         return
@@ -632,18 +729,36 @@ export function useAnnotations({ activeView, reactFlowInstance, pushHistorySnaps
           setSelectedTextId(null)
           setEditingTextId(null)
           textDragRef.current = null
+          panDragRef.current = null
+          setTemporaryPanModeActive(false)
+          return
+        }
+        if (activeTool !== 'pointer') {
+          event.preventDefault()
+          setTool('pointer')
         }
         return
       }
-      if (key === 'enter' && selectedTextItem && !editingTextItem) {
+      if (activeTool === 'text' && key === 'enter' && selectedTextItem && !editingTextItem) {
         event.preventDefault()
         onStartTextEdit(selectedTextItem.id)
       }
     }
 
-    window.addEventListener('keydown', handleKeyDown)
-    return () => window.removeEventListener('keydown', handleKeyDown)
-  }, [activeTool, editingTextItem, onDeleteSelectedText, onStartTextEdit, pendingText, selectedTextItem])
+    const handleKeyUp = (event) => {
+      if (isSpaceKey(event)) {
+        panDragRef.current = null
+        setTemporaryPanModeActive(false)
+      }
+    }
+
+    window.addEventListener('keydown', handleKeyDown, true)
+    window.addEventListener('keyup', handleKeyUp, true)
+    return () => {
+      window.removeEventListener('keydown', handleKeyDown, true)
+      window.removeEventListener('keyup', handleKeyUp, true)
+    }
+  }, [activeTool, editingTextItem, enabled, onDeleteSelectedText, onStartTextEdit, pendingText, selectedTextItem, setTemporaryPanModeActive, setTool])
 
   const effectiveTextSettings = selectedTextItem
     ? { color: selectedTextItem.color, fontSize: selectedTextItem.fontSize }
@@ -660,6 +775,7 @@ export function useAnnotations({ activeView, reactFlowInstance, pushHistorySnaps
     pendingText,
     selectedTextId: selectedTextItem ? selectedTextItem.id : null,
     editingTextId: editingTextItem ? editingTextItem.id : null,
+    isTemporaryPanMode: enabled && isTemporaryPanMode,
     dirtySignal,
     getAnnotationsSnapshot,
     setTool,

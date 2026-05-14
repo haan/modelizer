@@ -34,6 +34,7 @@ const baseProps = {
   eraserSettings: { size: 20, mode: 'whole' },
   currentStroke: null,
   pendingText: null,
+  isTemporaryPanMode: false,
   selectedTextId: null,
   editingTextId: null,
   onPointerDown: vi.fn(),
@@ -136,5 +137,13 @@ describe('AnnotationLayer', () => {
       })
       underlying.remove()
     }
+  })
+
+  it('shows a pan cursor while temporary pan mode is active', () => {
+    const { container } = renderLayer({ isTemporaryPanMode: true })
+
+    expect(container.querySelector('.react-flow__annotation-layer')).toHaveStyle({
+      cursor: 'grab',
+    })
   })
 })

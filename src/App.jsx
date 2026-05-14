@@ -424,6 +424,7 @@ function App() {
     pendingText,
     selectedTextId,
     editingTextId,
+    isTemporaryPanMode,
     dirtySignal: annotationsDirtySignal,
     getAnnotationsSnapshot: getAnnotationsSnapshotFn,
     setTool: onSetAnnotationTool,
@@ -440,7 +441,12 @@ function App() {
     onTextDoubleClick: onAnnotationTextDoubleClick,
     onClearAnnotations,
     onLoadAnnotations,
-  } = useAnnotations({ activeView, reactFlowInstance, pushHistorySnapshot })
+  } = useAnnotations({
+    activeView,
+    reactFlowInstance,
+    pushHistorySnapshot,
+    enabled: showAnnotations,
+  })
 
   // Wire stable ref callbacks after every render so useModelState can read/restore
   // annotation state without a hard circular dependency between the two hooks.
@@ -1047,6 +1053,7 @@ function App() {
                         eraserSettings={eraserSettings}
                         currentStroke={currentStroke}
                         pendingText={pendingText}
+                        isTemporaryPanMode={isTemporaryPanMode}
                         onPointerDown={onAnnotationPointerDown}
                         onPointerMove={onAnnotationPointerMove}
                         onPointerUp={onAnnotationPointerUp}

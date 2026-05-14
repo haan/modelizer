@@ -308,7 +308,7 @@ export default function AnnotationToolbox({
     >
       <Tooltip.Provider delayDuration={100}>
         <ToolButton
-          label="Pointer (interact with diagram)"
+          label="Pointer (V)"
           active={activeTool === 'pointer'}
           onClick={() => onSetTool('pointer')}
         >
@@ -319,7 +319,7 @@ export default function AnnotationToolbox({
 
         <ToolGroup>
           <ToolButton
-            label="Pen"
+            label="Pen (P)"
             active={activeTool === 'pen'}
             onClick={() => onSetTool('pen')}
           >
@@ -346,7 +346,7 @@ export default function AnnotationToolbox({
 
         <ToolGroup>
           <ToolButton
-            label="Marker"
+            label="Marker (M)"
             active={activeTool === 'marker'}
             onClick={() => onSetTool('marker')}
           >
@@ -380,7 +380,7 @@ export default function AnnotationToolbox({
 
         <ToolGroup>
           <ToolButton
-            label="Text"
+            label="Text (T)"
             active={activeTool === 'text'}
             onClick={() => onSetTool('text')}
           >
@@ -407,7 +407,7 @@ export default function AnnotationToolbox({
 
         <ToolGroup>
           <ToolButton
-            label="Eraser"
+            label="Eraser (E)"
             active={activeTool === 'eraser'}
             onClick={() => onSetTool('eraser')}
           >

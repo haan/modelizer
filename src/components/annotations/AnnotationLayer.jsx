@@ -11,7 +11,8 @@ function buildCircleCursor(diameter, color, fillOpacity = 0) {
   return `url("data:image/svg+xml,${svg}") ${cx} ${cx}, crosshair`
 }
 
-function getCursorForTool(activeTool, penSettings, markerSettings, eraserSettings, zoom) {
+function getCursorForTool(activeTool, penSettings, markerSettings, eraserSettings, zoom, isTemporaryPanMode) {
+  if (isTemporaryPanMode) return 'grab'
   if (activeTool === 'pointer') return 'default'
   if (activeTool === 'text') return 'text'
   if (activeTool === 'pen') return buildCircleCursor(penSettings.thickness * zoom, penSettings.color)
@@ -308,6 +309,7 @@ export default function AnnotationLayer({
   eraserSettings,
   currentStroke,
   pendingText,
+  isTemporaryPanMode,
   onPointerDown,
   onPointerMove,
   onPointerUp,
@@ -321,7 +323,14 @@ export default function AnnotationLayer({
   const activeTextareaRef = useRef(null)
   const { x, y, zoom } = useViewport()
   const items = annotations?.[activeView]?.items ?? []
-  const cursor = getCursorForTool(activeTool, penSettings, markerSettings, eraserSettings, zoom)
+  const cursor = getCursorForTool(
+    activeTool,
+    penSettings,
+    markerSettings,
+    eraserSettings,
+    zoom,
+    isTemporaryPanMode,
+  )
 
   const handleEditCommit = (id, value) => {
     onCommitTextEdit(id, value)

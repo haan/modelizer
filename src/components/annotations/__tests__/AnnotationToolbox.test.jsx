@@ -48,6 +48,16 @@ function renderToolbox(props = {}) {
 }
 
 describe('AnnotationToolbox', () => {
+  it('shows annotation tool shortcuts in toolbar button labels', () => {
+    renderToolbox()
+
+    expect(screen.getByRole('button', { name: 'Pointer (V)' })).toBeInTheDocument()
+    expect(screen.getByRole('button', { name: 'Pen (P)' })).toBeInTheDocument()
+    expect(screen.getByRole('button', { name: 'Marker (M)' })).toBeInTheDocument()
+    expect(screen.getByRole('button', { name: 'Text (T)' })).toBeInTheDocument()
+    expect(screen.getByRole('button', { name: 'Eraser (E)' })).toBeInTheDocument()
+  })
+
   it('keeps tool options out of the inline toolbar until the active tool swatch is opened', () => {
     renderToolbox({ activeTool: 'pen' })
 
