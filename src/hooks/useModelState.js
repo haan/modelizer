@@ -118,6 +118,8 @@ export function useModelState({
   nullDisplayMode,
   onDuplicateEdge,
   activeView = DEFAULT_VIEW,
+  getAnnotationsSnapshot,
+  onRestoreAnnotations,
 }) {
   const [nodes, setNodes] = useNodesState(initialNodes)
   const [edges, setEdges] = useEdgesState(normalizeEdges(initialEdges))
@@ -148,8 +150,14 @@ export function useModelState({
       nodes: nodesRef.current,
       edges: edgesRef.current,
       modelName: modelNameRef.current,
+      annotations: getAnnotationsSnapshot?.() ?? null,
     }),
-    [],
+    [getAnnotationsSnapshot],
+  )
+
+  const pushHistorySnapshot = useCallback(
+    () => pushHistory(getHistorySnapshot()),
+    [pushHistory, getHistorySnapshot],
   )
 
   const setModelName = useCallback(
@@ -229,16 +237,22 @@ export function useModelState({
   const onUndo = useCallback(() => {
     historyUndo(
       getHistorySnapshot(),
-      ({ nodes: n, edges: e, modelName: name }) => restoreModel(n, e, name),
+      ({ nodes: n, edges: e, modelName: name, annotations }) => {
+        restoreModel(n, e, name)
+        onRestoreAnnotations?.(annotations)
+      },
     )
-  }, [getHistorySnapshot, historyUndo, restoreModel])
+  }, [getHistorySnapshot, historyUndo, restoreModel, onRestoreAnnotations])
 
   const onRedo = useCallback(() => {
     historyRedo(
       getHistorySnapshot(),
-      ({ nodes: n, edges: e, modelName: name }) => restoreModel(n, e, name),
+      ({ nodes: n, edges: e, modelName: name, annotations }) => {
+        restoreModel(n, e, name)
+        onRestoreAnnotations?.(annotations)
+      },
     )
-  }, [getHistorySnapshot, historyRedo, restoreModel])
+  }, [getHistorySnapshot, historyRedo, restoreModel, onRestoreAnnotations])
 
   const normalizedActiveView =
     activeView === VIEW_LOGICAL || activeView === VIEW_PHYSICAL
@@ -2996,6 +3010,7 @@ export function useModelState({
     onRedo,
     canUndo,
     canRedo,
+    pushHistorySnapshot,
     onNodeDragStart,
     onNodeDragStop,
   }

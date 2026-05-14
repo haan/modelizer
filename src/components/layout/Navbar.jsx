@@ -28,6 +28,8 @@ export default function Navbar({
   onToggleNotes,
   showAreas,
   onToggleAreas,
+  showAnnotations,
+  onToggleAnnotations,
   viewSpecificSettingsOnly,
   onToggleViewSpecificSettingsOnly,
   nullDisplayMode,
@@ -296,6 +298,14 @@ export default function Navbar({
                   >
                     <span>
                       {showAreas ? 'Disable areas' : 'Enable areas'}
+                    </span>
+                  </Menubar.Item>
+                  <Menubar.Item
+                    className={settingsItemClass}
+                    onSelect={() => onToggleAnnotations?.()}
+                  >
+                    <span>
+                      {showAnnotations ? 'Disable annotations' : 'Enable annotations'}
                     </span>
                   </Menubar.Item>
                 </Menubar.Content>

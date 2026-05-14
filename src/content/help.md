@@ -173,6 +173,9 @@ MySQL importer notes:
 - Add class: `Ctrl+Alt+C` / `Ctrl+Opt+C`
 - Add attribute to selected class: `Ctrl+Alt+A` / `Ctrl+Opt+A`
 - Delete selection: `Delete` / `Backspace`
+- Annotation tools when annotations are enabled: `V` pointer, `P` pen, `M` marker, `T` text, `E` eraser
+- Annotation mode: `Esc` clears active annotation text selection/editing first, then returns to pointer
+- Annotation mode: hold `Space` and drag to temporarily pan the diagram
 
 ## Unsaved changes and persistence
 

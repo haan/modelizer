@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
+import { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react'
 import ReactFlow, {
   Background,
   ConnectionMode,
@@ -19,6 +19,9 @@ import { useFileActions } from './hooks/useFileActions.js'
 import { useKeyboardShortcuts } from './hooks/useKeyboardShortcuts.js'
 import { useModelState } from './hooks/useModelState.js'
 import DefaultValuesPanel from './components/flow/overlays/DefaultValuesPanel.jsx'
+import AnnotationLayer from './components/annotations/AnnotationLayer.jsx'
+import AnnotationToolbox from './components/annotations/AnnotationToolbox.jsx'
+import { useAnnotations } from './hooks/useAnnotations.js'
 import { sanitizeFileName } from './model/fileUtils.js'
 import {
   ASSOCIATION_EDGE_TYPE,
@@ -48,6 +51,7 @@ const STORAGE_KEYS = {
   showCompositionAggregation: 'modelizer.showCompositionAggregation',
   showNotes: 'modelizer.showNotes',
   showAreas: 'modelizer.showAreas',
+  showAnnotations: 'modelizer.showAnnotations',
 }
 
 const readStoredBool = (key, fallback) => {
@@ -109,6 +113,12 @@ const writeStoredString = (key, value) => {
 function App() {
   const reactFlowWrapper = useRef(null)
   const [reactFlowInstance, setReactFlowInstance] = useState(null)
+  // Stable ref-based bridge to break the circular dependency between useModelState
+  // and useAnnotations: each hook needs something the other produces.
+  const annotationsSnapshotRef = useRef(null)
+  const annotationsRestoreRef = useRef(null)
+  const getAnnotationsSnapshot = useCallback(() => annotationsSnapshotRef.current?.(), [])
+  const onRestoreAnnotations = useCallback((a) => annotationsRestoreRef.current?.(a), [])
   const [infoWidth, setInfoWidth] = useState(370)
   const [showBackground, setShowBackground] = useState(() =>
     readStoredBool(STORAGE_KEYS.showBackground, true),
@@ -143,6 +153,9 @@ function App() {
   )
   const [showAreas, setShowAreas] = useState(() =>
     readStoredBool(STORAGE_KEYS.showAreas, false),
+  )
+  const [showAnnotations, setShowAnnotations] = useState(() =>
+    readStoredBool(STORAGE_KEYS.showAnnotations, false),
   )
   const [activeView, setActiveView] = useState(DEFAULT_VIEW)
   const [openClassId, setOpenClassId] = useState('')
@@ -291,6 +304,9 @@ function App() {
   useEffect(() => {
     writeStoredBool(STORAGE_KEYS.showAreas, showAreas)
   }, [showAreas])
+  useEffect(() => {
+    writeStoredBool(STORAGE_KEYS.showAnnotations, showAnnotations)
+  }, [showAnnotations])
 
   const onDuplicateDialogOpenChange = useCallback((open) => {
     if (!open) {
@@ -379,6 +395,7 @@ function App() {
     onRedo,
     canUndo,
     canRedo,
+    pushHistorySnapshot,
     onNodeDragStart,
     onNodeDragStop,
   } = useModelState({
@@ -390,6 +407,50 @@ function App() {
     nullDisplayMode,
     onDuplicateEdge,
     activeView,
+    getAnnotationsSnapshot,
+    onRestoreAnnotations,
+  })
+
+  const {
+    annotations,
+    activeTool: activeAnnotationTool,
+    penSettings,
+    markerSettings,
+    textSettings,
+    eraserSettings,
+    currentStroke,
+    pendingText,
+    selectedTextId,
+    editingTextId,
+    isTemporaryPanMode,
+    dirtySignal: annotationsDirtySignal,
+    getAnnotationsSnapshot: getAnnotationsSnapshotFn,
+    setTool: onSetAnnotationTool,
+    updatePenSettings: onPenSettingsChange,
+    updateMarkerSettings: onMarkerSettingsChange,
+    updateTextSettings: onTextSettingsChange,
+    updateEraserSettings: onEraserSettingsChange,
+    onPointerDown: onAnnotationPointerDown,
+    onPointerMove: onAnnotationPointerMove,
+    onPointerUp: onAnnotationPointerUp,
+    onCommitText: onAnnotationCommitText,
+    onCommitTextEdit: onAnnotationCommitTextEdit,
+    onTextPointerDown: onAnnotationTextPointerDown,
+    onTextDoubleClick: onAnnotationTextDoubleClick,
+    onClearAnnotations,
+    onLoadAnnotations,
+  } = useAnnotations({
+    activeView,
+    reactFlowInstance,
+    pushHistorySnapshot,
+    enabled: showAnnotations,
+  })
+
+  // Wire stable ref callbacks after every render so useModelState can read/restore
+  // annotation state without a hard circular dependency between the two hooks.
+  useLayoutEffect(() => {
+    annotationsSnapshotRef.current = getAnnotationsSnapshotFn
+    annotationsRestoreRef.current = onLoadAnnotations
   })
 
   const onAddClass = useCallback(() => {
@@ -498,6 +559,10 @@ function App() {
       return next
     })
   }, [activeSidebarItem, setActiveSidebarItem])
+
+  const onToggleAnnotations = useCallback(() => {
+    setShowAnnotations((current) => !current)
+  }, [])
 
   const requestDelete = useCallback(
     ({ kind, action }) => {
@@ -618,6 +683,8 @@ function App() {
   } = useFileActions({
     nodes,
     edges,
+    annotations,
+    annotationsDirtySignal,
     modelName,
     setModel,
     setNodes,
@@ -630,9 +697,11 @@ function App() {
     showCompositionAggregation,
     onHiddenContent,
     onImportWarning,
+    onLoadAnnotations,
     onNewModelCreated: () => {
       setActiveView(VIEW_CONCEPTUAL)
       resetViewport()
+      onLoadAnnotations(null)
     },
     onModelLoaded: () => {
       setActiveView(VIEW_CONCEPTUAL)
@@ -847,6 +916,8 @@ function App() {
             }
             onToggleNotes={onToggleNotes}
             onToggleAreas={onToggleAreas}
+            showAnnotations={showAnnotations}
+            onToggleAnnotations={onToggleAnnotations}
             viewSpecificSettingsOnly={viewSpecificSettingsOnly}
             onToggleViewSpecificSettingsOnly={() =>
               setViewSpecificSettingsOnly((current) => !current)
@@ -968,6 +1039,45 @@ function App() {
                     <Controls position="bottom-right" />
                   </div>
                   {showBackground ? <Background gap={16} size={1} /> : null}
+                  {showAnnotations ? (
+                    <>
+                      <AnnotationLayer
+                        annotations={annotations}
+                        activeView={activeView}
+                        activeTool={activeAnnotationTool}
+                        penSettings={penSettings}
+                        markerSettings={markerSettings}
+                        eraserSettings={eraserSettings}
+                        currentStroke={currentStroke}
+                        pendingText={pendingText}
+                        isTemporaryPanMode={isTemporaryPanMode}
+                        onPointerDown={onAnnotationPointerDown}
+                        onPointerMove={onAnnotationPointerMove}
+                        onPointerUp={onAnnotationPointerUp}
+                        onCommitText={onAnnotationCommitText}
+                        onCommitTextEdit={onAnnotationCommitTextEdit}
+                        selectedTextId={selectedTextId}
+                        editingTextId={editingTextId}
+                        onTextPointerDown={onAnnotationTextPointerDown}
+                        onTextDoubleClick={onAnnotationTextDoubleClick}
+                      />
+                      <div data-no-export="true">
+                        <AnnotationToolbox
+                          activeTool={activeAnnotationTool}
+                          onSetTool={onSetAnnotationTool}
+                          penSettings={penSettings}
+                          onPenSettingsChange={onPenSettingsChange}
+                          markerSettings={markerSettings}
+                          onMarkerSettingsChange={onMarkerSettingsChange}
+                          textSettings={textSettings}
+                          onTextSettingsChange={onTextSettingsChange}
+                          eraserSettings={eraserSettings}
+                          onEraserSettingsChange={onEraserSettingsChange}
+                          onClearView={() => onClearAnnotations(activeView)}
+                        />
+                      </div>
+                    </>
+                  ) : null}
                 </ReactFlow>
                 {activeView === VIEW_PHYSICAL ? (
                   <DefaultValuesPanel entries={defaultValueEntries} />

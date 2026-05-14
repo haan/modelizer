@@ -119,6 +119,11 @@ export const buildHashPayload = (payload) => ({
   edges: Array.isArray(payload?.edges)
     ? payload.edges.map(normalizeEdgeForPayload)
     : [],
+  annotations: payload?.annotations ?? {
+    conceptual: { items: [] },
+    logical: { items: [] },
+    physical: { items: [] },
+  },
 })
 
 export const isSamePosition = (a, b) =>
@@ -196,6 +201,8 @@ export const hasMeaningfulEdgeChange = (prevEdges, nextEdges) => {
 export function useFileActions({
   nodes,
   edges,
+  annotations,
+  annotationsDirtySignal,
   modelName,
   setModel,
   setNodes,
@@ -208,6 +215,7 @@ export function useFileActions({
   showCompositionAggregation = false,
   onHiddenContent,
   onImportWarning,
+  onLoadAnnotations,
   onNewModelCreated,
   onModelLoaded,
 }) {
@@ -228,6 +236,7 @@ export function useFileActions({
         modelName: 'Untitled model',
         nodes: [],
         edges: [],
+        annotations: null,
       }),
       null,
       2,
@@ -241,8 +250,9 @@ export function useFileActions({
       modelName: modelName || 'Untitled model',
       nodes,
       edges,
+      annotations,
     })
-  }, [edges, modelName, nodes])
+  }, [annotations, edges, modelName, nodes])
 
   const getSerializedModelForDirty = useCallback(
     () => JSON.stringify(buildModelPayload(), null, 2),
@@ -278,6 +288,11 @@ export function useFileActions({
     }
     setIsDirty(getSerializedModelForDirty() !== lastSavedRef.current)
   }, [edges, getSerializedModelForDirty, isDragging, modelName, nodes])
+
+  useEffect(() => {
+    if (annotationsDirtySignal === 0) return
+    setIsDirty(getSerializedModelForDirty() !== lastSavedRef.current)
+  }, [annotationsDirtySignal, getSerializedModelForDirty])
 
   const applyLoadedModel = useCallback(
     (payload, handle) => {
@@ -391,11 +406,13 @@ export function useFileActions({
         typeof payload?.modelName === 'string' && payload.modelName.trim()
           ? payload.modelName
           : 'Untitled model'
+      const nextAnnotations = payload?.annotations ?? null
       const nextBasePayload = buildHashPayload({
         version: payload?.version ?? MODEL_VERSION,
         modelName: nextModelName,
         nodes: nextNodes,
         edges: nextEdges,
+        annotations: nextAnnotations,
       })
       if (setModel) {
         setModel(nextNodes, nextEdges, nextModelName)
@@ -404,6 +421,7 @@ export function useFileActions({
         setEdges(nextEdges)
         setModelName(nextModelName, { skipHistory: true })
       }
+      onLoadAnnotations?.(nextAnnotations)
       setActiveSidebarItem('tables')
       fileHandleRef.current = handle ?? null
       lastSavedRef.current = JSON.stringify(nextBasePayload, null, 2)
@@ -437,6 +455,7 @@ export function useFileActions({
       showNotes,
       showCompositionAggregation,
       onHiddenContent,
+      onLoadAnnotations,
       onModelLoaded,
     ],
   )
