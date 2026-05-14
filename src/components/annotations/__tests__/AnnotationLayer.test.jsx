@@ -82,6 +82,44 @@ describe('AnnotationLayer', () => {
     expect(onTextDoubleClick).toHaveBeenCalledWith('text-1', expect.any(Object))
   })
 
+  it('commits active text editing and opens another text item on double click', () => {
+    const onCommitTextEdit = vi.fn()
+    const onTextDoubleClick = vi.fn()
+    const { container } = renderLayer({
+      annotations: {
+        conceptual: {
+          items: [
+            ...baseProps.annotations.conceptual.items,
+            {
+              id: 'text-2',
+              kind: 'text',
+              x: 220,
+              y: 120,
+              text: 'Second annotation',
+              color: '#1e293b',
+              fontSize: 14,
+            },
+          ],
+        },
+      },
+      selectedTextId: 'text-1',
+      editingTextId: 'text-1',
+      onCommitTextEdit,
+      onTextDoubleClick,
+    })
+
+    const editor = screen.getByRole('textbox')
+    const secondHitTarget = container.querySelector(
+      '[data-annotation-text-id="text-2"] [data-annotation-hit-target="true"]',
+    )
+
+    fireEvent.change(editor, { target: { value: 'Edited first annotation' } })
+    fireEvent.doubleClick(secondHitTarget)
+
+    expect(onCommitTextEdit).toHaveBeenCalledWith('text-1', 'Edited first annotation')
+    expect(onTextDoubleClick).toHaveBeenCalledWith('text-2', expect.any(Object))
+  })
+
   it('opens an editor for editing text and commits changes on blur', () => {
     const onCommitTextEdit = vi.fn()
     renderLayer({ selectedTextId: 'text-1', editingTextId: 'text-1', onCommitTextEdit })
@@ -187,6 +225,39 @@ describe('AnnotationLayer', () => {
         value: originalElementFromPoint,
       })
       underlying.remove()
+    }
+  })
+
+  it('does not re-forward wheel events that already came through the annotation overlay', () => {
+    const originalElementFromPoint = document.elementFromPoint
+    const elementFromPoint = vi.fn()
+    Object.defineProperty(document, 'elementFromPoint', {
+      configurable: true,
+      value: elementFromPoint,
+    })
+
+    try {
+      const { container } = renderLayer()
+      const overlay = container.querySelector('.react-flow__annotation-layer')
+      const wheelEvent = new WheelEvent('wheel', {
+        bubbles: true,
+        cancelable: true,
+        clientX: 10,
+        clientY: 20,
+        deltaY: 120,
+      })
+      Object.defineProperty(wheelEvent, '__annotationWheelForwarded', {
+        value: true,
+      })
+
+      overlay.dispatchEvent(wheelEvent)
+
+      expect(elementFromPoint).not.toHaveBeenCalled()
+    } finally {
+      Object.defineProperty(document, 'elementFromPoint', {
+        configurable: true,
+        value: originalElementFromPoint,
+      })
     }
   })
 

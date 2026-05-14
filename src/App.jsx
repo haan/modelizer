@@ -52,7 +52,6 @@ const STORAGE_KEYS = {
   showNotes: 'modelizer.showNotes',
   showAreas: 'modelizer.showAreas',
   showAnnotations: 'modelizer.showAnnotations',
-  annotationToolSettings: 'modelizer.annotationToolSettings',
 }
 
 const readStoredBool = (key, fallback) => {
@@ -118,7 +117,6 @@ function App() {
   // and useAnnotations: each hook needs something the other produces.
   const annotationsSnapshotRef = useRef(null)
   const annotationsRestoreRef = useRef(null)
-  const pushHistorySnapshotRef = useRef(null)
   const getAnnotationsSnapshot = useCallback(() => annotationsSnapshotRef.current?.(), [])
   const onRestoreAnnotations = useCallback((a) => annotationsRestoreRef.current?.(a), [])
   const [infoWidth, setInfoWidth] = useState(370)
@@ -453,7 +451,6 @@ function App() {
   useLayoutEffect(() => {
     annotationsSnapshotRef.current = getAnnotationsSnapshotFn
     annotationsRestoreRef.current = onLoadAnnotations
-    pushHistorySnapshotRef.current = pushHistorySnapshot
   })
 
   const onAddClass = useCallback(() => {

@@ -28,6 +28,9 @@ function forwardWheelToReactFlow(e) {
     return
   }
 
+  // Temporarily opting the overlay out of hit-testing lets the browser resolve
+  // the React Flow element underneath. The style is restored before this handler
+  // returns, so the mutation is scoped to one synchronous event dispatch.
   const previousPointerEvents = overlay.style.pointerEvents
   overlay.style.pointerEvents = 'none'
   const target = document.elementFromPoint(sourceEvent.clientX, sourceEvent.clientY)
@@ -206,6 +209,8 @@ function getTextBounds(item) {
   const lines = item.text.split('\n')
   const lineHeight = item.fontSize * LINE_HEIGHT_RATIO
   const longestLine = lines.reduce((max, line) => Math.max(max, line.length), 0)
+  // Text hit targets are an SVG-side approximation so selection works without
+  // measuring rendered DOM on every annotation render.
   const width = Math.max(item.fontSize * 2, longestLine * item.fontSize * 0.62)
   return {
     x: item.x,
@@ -377,7 +382,6 @@ export default function AnnotationLayer({
     e.stopPropagation()
     if (activeTextareaRef.current) {
       activeTextareaRef.current.blur()
-      return
     }
     onTextDoubleClick(id, e)
   }

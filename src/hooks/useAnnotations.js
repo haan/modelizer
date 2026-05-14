@@ -171,7 +171,7 @@ function partialEraseStroke(stroke, center, radius) {
 }
 
 export function useAnnotations({ activeView, reactFlowInstance, pushHistorySnapshot, enabled = true }) {
-  const initialSettings = readToolSettings()
+  const [initialSettings] = useState(readToolSettings)
 
   const [annotations, setAnnotations] = useState(makeEmptyAnnotations)
   const [activeTool, setActiveTool] = useState(initialSettings.activeTool)
@@ -593,16 +593,6 @@ export function useAnnotations({ activeView, reactFlowInstance, pushHistorySnaps
     [activeView, pushHistorySnapshot, bumpDirty],
   )
 
-  const onSelectText = useCallback(
-    (id) => {
-      if (activeTool !== 'text') return
-      setPendingText(null)
-      setEditingTextId(null)
-      setSelectedTextId(id)
-    },
-    [activeTool],
-  )
-
   const onStartTextEdit = useCallback(
     (id) => {
       if (activeTool !== 'text') return
@@ -788,8 +778,6 @@ export function useAnnotations({ activeView, reactFlowInstance, pushHistorySnaps
     onPointerUp,
     onCommitText,
     onCommitTextEdit,
-    onSelectText,
-    onStartTextEdit,
     onTextPointerDown,
     onTextDoubleClick,
     onDeleteSelectedText,
