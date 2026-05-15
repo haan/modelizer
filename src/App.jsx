@@ -6,7 +6,6 @@ import ReactFlow, {
   Controls,
 } from 'reactflow'
 import * as Toast from '@radix-ui/react-toast'
-import { toPng } from 'html-to-image'
 import { edgeTypes, nodeTypes } from './flowTypes.js'
 import {
   ConfirmDiscardDialog,
@@ -23,6 +22,7 @@ import AnnotationLayer from './components/annotations/AnnotationLayer.jsx'
 import AnnotationToolbox from './components/annotations/AnnotationToolbox.jsx'
 import { useAnnotations } from './hooks/useAnnotations.js'
 import { sanitizeFileName } from './model/fileUtils.js'
+import { exportFlowPng } from './model/pngExport.jsx'
 import {
   ASSOCIATION_EDGE_TYPE,
   ASSOCIATIVE_EDGE_TYPE,
@@ -749,87 +749,6 @@ function App() {
     onRedo,
   })
 
-  const onExportPng = useCallback(async () => {
-    if (!reactFlowWrapper.current) {
-      return
-    }
-
-    const container = reactFlowWrapper.current
-    const containerRect = container.getBoundingClientRect()
-    if (!containerRect.width || !containerRect.height) {
-      return
-    }
-
-    const imageWidth = Math.round(containerRect.width)
-    const imageHeight = Math.round(containerRect.height)
-
-    const backgroundColor = '#ffffff'
-
-    try {
-      const dataUrl = await toPng(container, {
-        backgroundColor,
-        filter: (node) =>
-          !(node instanceof Element) ||
-          (!node.closest('[data-no-export="true"]') &&
-            !node.closest('.react-flow__background') &&
-            (includeAccentColorsInExport || node.dataset.accentBar !== 'true')),
-        width: imageWidth,
-        height: imageHeight,
-      })
-
-      const normalizedName = sanitizeFileName(modelName ?? 'Untitled model')
-      const viewLabel = activeView?.trim() ? activeView.trim() : 'conceptual'
-      const viewSuffix = sanitizeFileName(viewLabel)
-      const baseName = normalizedName || 'untitled-model'
-      const fileName = viewSuffix
-        ? `${baseName}-${viewSuffix}.png`
-        : `${baseName}.png`
-      const link = document.createElement('a')
-      link.href = dataUrl
-      link.download = fileName
-      link.click()
-    } catch (error) {
-      console.error('Failed to export PNG', error)
-    }
-  }, [activeView, includeAccentColorsInExport, modelName])
-
-  const onSidebarSelect = useCallback(
-    (item) => {
-      if (item === 'new') {
-        onRequestNewModel()
-        return
-      }
-      if (item === 'open') {
-        onOpenModel()
-        return
-      }
-      if (item === 'save') {
-        onSaveModel()
-        return
-      }
-      if (item === 'export') {
-        onExportPng()
-        return
-      }
-      if (item === 'notes' && !showNotes) {
-        return
-      }
-      if (item === 'areas' && !showAreas) {
-        return
-      }
-      setActiveSidebarItem(item)
-    },
-    [
-      onExportPng,
-      onOpenModel,
-      onRequestNewModel,
-      onSaveModel,
-      setActiveSidebarItem,
-      showAreas,
-      showNotes,
-    ],
-  )
-
   const defaultValueEntries = useMemo(() => {
     if (activeView !== VIEW_PHYSICAL) {
       return []
@@ -882,6 +801,99 @@ function App() {
         return true
       }),
     [flowNodes, showAreas, showNotes],
+  )
+
+  const onExportPng = useCallback(async () => {
+    if (!reactFlowWrapper.current) {
+      return
+    }
+
+    const container = reactFlowWrapper.current
+    const containerRect = container.getBoundingClientRect()
+    if (!containerRect.width || !containerRect.height) {
+      return
+    }
+
+    const fallbackWidth = Math.round(containerRect.width)
+    const fallbackHeight = Math.round(containerRect.height)
+
+    try {
+      const dataUrl = await exportFlowPng({
+        nodes: visibleFlowNodes,
+        edges: flowEdges,
+        nodeTypes,
+        edgeTypes,
+        annotations,
+        activeView,
+        showAnnotations,
+        currentStroke,
+        defaultValueEntries,
+        fallbackWidth,
+        fallbackHeight,
+        includeAccentColorsInExport,
+      })
+
+      const normalizedName = sanitizeFileName(modelName ?? 'Untitled model')
+      const viewLabel = activeView?.trim() ? activeView.trim() : 'conceptual'
+      const viewSuffix = sanitizeFileName(viewLabel)
+      const baseName = normalizedName || 'untitled-model'
+      const fileName = viewSuffix
+        ? `${baseName}-${viewSuffix}.png`
+        : `${baseName}.png`
+      const link = document.createElement('a')
+      link.href = dataUrl
+      link.download = fileName
+      link.click()
+    } catch (error) {
+      console.error('Failed to export PNG', error)
+    }
+  }, [
+    activeView,
+    annotations,
+    currentStroke,
+    defaultValueEntries,
+    flowEdges,
+    includeAccentColorsInExport,
+    modelName,
+    showAnnotations,
+    visibleFlowNodes,
+  ])
+
+  const onSidebarSelect = useCallback(
+    (item) => {
+      if (item === 'new') {
+        onRequestNewModel()
+        return
+      }
+      if (item === 'open') {
+        onOpenModel()
+        return
+      }
+      if (item === 'save') {
+        onSaveModel()
+        return
+      }
+      if (item === 'export') {
+        onExportPng()
+        return
+      }
+      if (item === 'notes' && !showNotes) {
+        return
+      }
+      if (item === 'areas' && !showAreas) {
+        return
+      }
+      setActiveSidebarItem(item)
+    },
+    [
+      onExportPng,
+      onOpenModel,
+      onRequestNewModel,
+      onSaveModel,
+      setActiveSidebarItem,
+      showAreas,
+      showNotes,
+    ],
   )
 
   return (
