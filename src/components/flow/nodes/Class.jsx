@@ -116,8 +116,10 @@ export function Class({ data, id, selected }) {
       >
         <div
           data-accent-bar="true"
-          className="h-2"
-          style={{ backgroundColor: showAccentColors ? accentColor : 'transparent' }}
+          className="-mx-2 h-2 rounded-t-lg"
+          style={{
+            backgroundColor: showAccentColors ? accentColor : 'transparent',
+          }}
         />
         <div className="border-b border-base-content/70 px-3 pb-2 pt-1 text-sm font-semibold">
           {data.label ?? ''}
