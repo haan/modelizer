@@ -109,64 +109,63 @@ export function Class({ data, id, selected }) {
   return (
     <div
       ref={nodeRef}
-      className={`group/node min-w-[180px] rounded-lg border-2 bg-base-100 text-base-content shadow-sm hover:border-primary ${borderClass}`}
+      className="group/node min-w-[180px] text-base-content"
     >
-      <div className="relative overflow-hidden rounded-[6px] bg-base-100">
+      <div
+        className={`overflow-hidden rounded-lg border-2 bg-base-100 shadow-sm hover:border-primary ${borderClass}`}
+      >
         <div
           data-accent-bar="true"
-          className="pointer-events-none absolute inset-x-0 top-0 h-4"
+          className="h-2"
           style={{ backgroundColor: showAccentColors ? accentColor : 'transparent' }}
         />
-        <div className="relative h-2" />
-        <div className="relative overflow-hidden rounded-t-[6px] bg-base-100">
-          <div className="border-b border-base-content/70 px-3 pb-2 pt-1 text-sm font-semibold">
-            {data.label ?? ''}
-          </div>
-          <div className="px-3 py-2 text-xs">
-            {visibleAttributes.length === 0 ? (
-              <div className="opacity-60">No attributes</div>
-            ) : (
-              <ul className="flex w-full flex-col gap-1">
-                {visibleAttributes.map((attr) => {
-                  const logicalName =
-                    typeof attr.logicalName === 'string' && attr.logicalName.trim()
-                      ? attr.logicalName
-                      : ''
-                  const displayName =
-                    activeView === VIEW_CONCEPTUAL
-                      ? attr.name
-                      : logicalName || attr.name
-                  return (
-                    <Attribute
-                      key={attr.id}
-                      attributeId={attr.id}
-                      name={attr.name}
-                      displayName={displayName}
-                      type={attr.type}
-                      typeParams={attr.typeParams}
-                      showType={showTypeDetails}
-                      showConstraints={showConstraints}
-                      showDefaultMarker={showDefaultMarker}
-                      nullDisplayMode={nullDisplayMode}
-                      nullable={attr.nullable}
-                      unique={attr.unique}
-                      autoIncrement={attr.autoIncrement}
-                      showHandles={showAttributeHandles}
-                      columnTemplate={columnTemplate}
-                      defaultValue={attr.defaultValue}
-                    />
-                  )
-                })}
-              </ul>
-            )}
-          </div>
-          {showOperationsCompartment ? (
-            <>
-              <div className="border-t border-base-content/70" />
-              <div className="h-6 px-3" />
-            </>
-          ) : null}
+        <div className="border-b border-base-content/70 px-3 pb-2 pt-1 text-sm font-semibold">
+          {data.label ?? ''}
         </div>
+        <div className="px-3 py-2 text-xs">
+          {visibleAttributes.length === 0 ? (
+            <div className="opacity-60">No attributes</div>
+          ) : (
+            <ul className="flex w-full flex-col gap-1">
+              {visibleAttributes.map((attr) => {
+                const logicalName =
+                  typeof attr.logicalName === 'string' && attr.logicalName.trim()
+                    ? attr.logicalName
+                    : ''
+                const displayName =
+                  activeView === VIEW_CONCEPTUAL
+                    ? attr.name
+                    : logicalName || attr.name
+                return (
+                  <Attribute
+                    key={attr.id}
+                    attributeId={attr.id}
+                    name={attr.name}
+                    displayName={displayName}
+                    type={attr.type}
+                    typeParams={attr.typeParams}
+                    showType={showTypeDetails}
+                    showConstraints={showConstraints}
+                    showDefaultMarker={showDefaultMarker}
+                    nullDisplayMode={nullDisplayMode}
+                    nullable={attr.nullable}
+                    unique={attr.unique}
+                    autoIncrement={attr.autoIncrement}
+                    showHandles={showAttributeHandles}
+                    columnTemplate={columnTemplate}
+                    defaultValue={attr.defaultValue}
+                  />
+                )
+              })}
+            </ul>
+          )}
+        </div>
+        {showOperationsCompartment ? (
+          <>
+            <div className="border-t border-base-content/70" />
+            <div className="h-6 px-3" />
+          </>
+        ) : null}
       </div>
       {showHandles ? (
         <>
