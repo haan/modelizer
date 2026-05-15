@@ -186,7 +186,7 @@ Reflexive associations can be resized when selected:
 
 Import behavior:
 - unmatched attribute types are mapped to **Undefined** (`type: ''`) and reported in a warning dialog
-- if imported/opened content contains Notes, Areas, or Composite aggregations that are currently disabled, a warning toast is shown
+- if imported/opened content contains Notes, Areas, Composite aggregations, or Annotations that are currently disabled, a warning toast is shown
 
 Java Modelizer importer notes:
 - imports tables/classes, fields/attributes, positions, visibility, associations, associative associations, reflexive associations, and relationships where they can be matched

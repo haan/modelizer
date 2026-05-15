@@ -198,6 +198,38 @@ export const hasMeaningfulEdgeChange = (prevEdges, nextEdges) => {
   return nextEdges.some((edge) => !isSameEdge(prevById.get(edge.id), edge))
 }
 
+export const getHiddenContentState = ({
+  nodes = [],
+  edges = [],
+  annotations = null,
+  showNotes = true,
+  showAreas = true,
+  showCompositionAggregation = false,
+  showAnnotations = true,
+} = {}) => {
+  const hasNotes = nodes.some((node) => node.type === NOTE_NODE_TYPE)
+  const hasAreas = nodes.some((node) => node.type === AREA_NODE_TYPE)
+  const hasCompositions = edges.some(
+    (edge) =>
+      edge.type === COMPOSITION_EDGE_TYPE ||
+      edge.data?.type === 'composition' ||
+      edge.sourceHandle === 'composition-source',
+  )
+  const hasAnnotations =
+    annotations != null &&
+    typeof annotations === 'object' &&
+    Object.values(annotations).some(
+      (view) => Array.isArray(view?.items) && view.items.length > 0,
+    )
+
+  return {
+    hiddenNotes: hasNotes && !showNotes,
+    hiddenAreas: hasAreas && !showAreas,
+    hiddenCompositions: hasCompositions && !showCompositionAggregation,
+    hiddenAnnotations: hasAnnotations && !showAnnotations,
+  }
+}
+
 export function useFileActions({
   nodes,
   edges,
@@ -213,6 +245,7 @@ export function useFileActions({
   showNotes = true,
   showAreas = true,
   showCompositionAggregation = false,
+  showAnnotations = true,
   onHiddenContent,
   onImportWarning,
   onLoadAnnotations,
@@ -429,18 +462,33 @@ export function useFileActions({
       onModelLoaded?.({ nodes: nextNodes, edges: nextEdges })
 
       if (onHiddenContent) {
-        const hasNotes = nextNodes.some((node) => node.type === NOTE_NODE_TYPE)
-        const hasAreas = nextNodes.some((node) => node.type === AREA_NODE_TYPE)
-        const hasCompositions = nextEdges.some(
-          (edge) =>
-            edge.type === COMPOSITION_EDGE_TYPE ||
-            edge.sourceHandle === 'composition-source',
-        )
-        const hiddenNotes = hasNotes && !showNotes
-        const hiddenAreas = hasAreas && !showAreas
-        const hiddenCompositions = hasCompositions && !showCompositionAggregation
-        if (hiddenNotes || hiddenAreas || hiddenCompositions) {
-          onHiddenContent({ hiddenNotes, hiddenAreas, hiddenCompositions })
+        const {
+          hiddenNotes,
+          hiddenAreas,
+          hiddenCompositions,
+          hiddenAnnotations,
+        } =
+          getHiddenContentState({
+            nodes: nextNodes,
+            edges: nextEdges,
+            annotations: nextAnnotations,
+            showNotes,
+            showAreas,
+            showCompositionAggregation,
+            showAnnotations,
+          })
+        if (
+          hiddenNotes ||
+          hiddenAreas ||
+          hiddenCompositions ||
+          hiddenAnnotations
+        ) {
+          onHiddenContent({
+            hiddenNotes,
+            hiddenAreas,
+            hiddenCompositions,
+            hiddenAnnotations,
+          })
         }
       }
     },
@@ -454,6 +502,7 @@ export function useFileActions({
       showAreas,
       showNotes,
       showCompositionAggregation,
+      showAnnotations,
       onHiddenContent,
       onLoadAnnotations,
       onModelLoaded,

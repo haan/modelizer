@@ -225,34 +225,37 @@ function App() {
   }, [])
 
   const onHiddenContent = useCallback(
-    ({ hiddenNotes, hiddenAreas, hiddenCompositions }) => {
-    const parts = []
-    if (hiddenNotes) {
-      parts.push('Notes')
-    }
-    if (hiddenAreas) {
-      parts.push('Areas')
-    }
-    if (hiddenCompositions) {
-      parts.push('Composite aggregations')
-    }
-    if (parts.length === 0) {
-      return
-    }
-    const subject =
-      parts.length <= 2
-        ? parts.join(' and ')
-        : `${parts.slice(0, -1).join(', ')}, and ${parts.at(-1)}`
-    const verb = 'are'
-    const pronoun = 'them'
-    setHiddenContentToast({
-      open: true,
-      title: 'Hidden content',
-      description: `This file contains ${subject}, but ${subject} ${verb} disabled in Settings. Enable ${subject} to view ${pronoun}.`,
-    })
-  },
-  [],
-)
+    ({ hiddenNotes, hiddenAreas, hiddenCompositions, hiddenAnnotations }) => {
+      const parts = []
+      if (hiddenNotes) {
+        parts.push('Notes')
+      }
+      if (hiddenAreas) {
+        parts.push('Areas')
+      }
+      if (hiddenCompositions) {
+        parts.push('Composite aggregations')
+      }
+      if (hiddenAnnotations) {
+        parts.push('Annotations')
+      }
+      if (parts.length === 0) {
+        return
+      }
+      const subject =
+        parts.length <= 2
+          ? parts.join(' and ')
+          : `${parts.slice(0, -1).join(', ')}, and ${parts.at(-1)}`
+      const verb = 'are'
+      const pronoun = 'them'
+      setHiddenContentToast({
+        open: true,
+        title: 'Hidden content',
+        description: `This file contains ${subject}, but ${subject} ${verb} disabled in Settings. Enable ${subject} to view ${pronoun}.`,
+      })
+    },
+    [],
+  )
 
   useEffect(() => {
     writeStoredBool(STORAGE_KEYS.showBackground, showBackground)
@@ -695,6 +698,7 @@ function App() {
     showNotes,
     showAreas,
     showCompositionAggregation,
+    showAnnotations,
     onHiddenContent,
     onImportWarning,
     onLoadAnnotations,

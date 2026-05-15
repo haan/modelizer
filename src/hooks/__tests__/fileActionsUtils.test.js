@@ -1,6 +1,7 @@
 import { describe, it, expect } from "vitest";
 import {
   buildHashPayload,
+  getHiddenContentState,
   isSamePosition,
   isSameNode,
   isSameEdge,
@@ -10,6 +11,8 @@ import {
 import {
   AREA_NODE_TYPE,
   CLASS_NODE_TYPE,
+  COMPOSITION_EDGE_TYPE,
+  NOTE_NODE_TYPE,
   VIEW_CONCEPTUAL,
   VIEW_LOGICAL,
   VIEW_PHYSICAL,
@@ -293,5 +296,82 @@ describe("hasMeaningfulEdgeChange", () => {
 
   it("returns false for empty arrays", () => {
     expect(hasMeaningfulEdgeChange([], [])).toBe(false);
+  });
+});
+
+describe("getHiddenContentState", () => {
+  const note = { id: "note-1", type: NOTE_NODE_TYPE };
+  const area = { id: "area-1", type: AREA_NODE_TYPE };
+  const composition = { id: "edge-1", type: COMPOSITION_EDGE_TYPE };
+
+  const annotations = {
+    conceptual: {
+      items: [{ id: "annotation-1", kind: "text", x: 10, y: 20, text: "Note" }],
+    },
+    logical: { items: [] },
+    physical: { items: [] },
+  };
+
+  it("reports notes, areas, composite aggregations, and annotations hidden by disabled settings", () => {
+    expect(
+      getHiddenContentState({
+        nodes: [note, area],
+        edges: [composition],
+        annotations,
+        showNotes: false,
+        showAreas: false,
+        showCompositionAggregation: false,
+        showAnnotations: false,
+      }),
+    ).toEqual({
+      hiddenNotes: true,
+      hiddenAreas: true,
+      hiddenCompositions: true,
+      hiddenAnnotations: true,
+    });
+  });
+
+  it("does not report present content when the matching setting is enabled", () => {
+    expect(
+      getHiddenContentState({
+        nodes: [note, area],
+        edges: [composition],
+        annotations,
+        showNotes: true,
+        showAreas: true,
+        showCompositionAggregation: true,
+        showAnnotations: true,
+      }),
+    ).toEqual({
+      hiddenNotes: false,
+      hiddenAreas: false,
+      hiddenCompositions: false,
+      hiddenAnnotations: false,
+    });
+  });
+
+  it("recognizes legacy composite aggregation markers", () => {
+    expect(
+      getHiddenContentState({
+        edges: [
+          { id: "edge-1", type: "association", data: { type: "composition" } },
+          { id: "edge-2", type: "association", sourceHandle: "composition-source" },
+        ],
+        showCompositionAggregation: false,
+      }).hiddenCompositions,
+    ).toBe(true);
+  });
+
+  it("ignores empty annotation views", () => {
+    expect(
+      getHiddenContentState({
+        annotations: {
+          conceptual: { items: [] },
+          logical: { items: [] },
+          physical: { items: [] },
+        },
+        showAnnotations: false,
+      }).hiddenAnnotations,
+    ).toBe(false);
   });
 });
