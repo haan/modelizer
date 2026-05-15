@@ -200,7 +200,7 @@ MySQL importer notes:
 - composite foreign keys are ignored
 
 ### Export as PNG
-- Exports the current viewport content with a white background.
+- Exports the full active view with a white background.
 - Respects current view and visibility.
 - Includes visible annotations when annotations are enabled.
 - Includes the Default Values overlay when visible.
