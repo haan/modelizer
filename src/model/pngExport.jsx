@@ -8,9 +8,29 @@ import {
 } from './pngExportUtils.js'
 
 const BACKGROUND_COLOR = '#ffffff'
+const EXPORT_RENDER_TIMEOUT_MS = 5000
 
 function waitForFrame() {
   return new Promise((resolve) => window.requestAnimationFrame(resolve))
+}
+
+function waitForExportInitialization(initializedPromise) {
+  return new Promise((resolve, reject) => {
+    const timeoutId = window.setTimeout(() => {
+      reject(new Error('Timed out waiting for the PNG export canvas to render.'))
+    }, EXPORT_RENDER_TIMEOUT_MS)
+
+    initializedPromise.then(
+      () => {
+        window.clearTimeout(timeoutId)
+        resolve()
+      },
+      (error) => {
+        window.clearTimeout(timeoutId)
+        reject(error)
+      },
+    )
+  })
 }
 
 export function shouldIncludePngExportNode(node, includeAccentColorsInExport) {
@@ -70,7 +90,6 @@ export async function exportFlowPng({
   const container = createOffscreenContainer(width, height)
   const root = createRoot(container)
 
-  let initialized = false
   const initializedPromise = new Promise((resolve) => {
     root.render(
       <PngExportCanvas
@@ -87,7 +106,6 @@ export async function exportFlowPng({
         currentStroke={currentStroke}
         defaultValueEntries={defaultValueEntries}
         onInit={() => {
-          initialized = true
           resolve()
         }}
       />,
@@ -95,13 +113,8 @@ export async function exportFlowPng({
   })
 
   try {
-    await Promise.race([
-      initializedPromise,
-      new Promise((resolve) => window.setTimeout(resolve, 300)),
-    ])
-    if (initialized) {
-      await waitForFrame()
-    }
+    await waitForExportInitialization(initializedPromise)
+    await waitForFrame()
     await waitForFrame()
 
     return await toPng(container, {
