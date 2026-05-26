@@ -581,7 +581,7 @@ export function useFileActions({
       const canPickOpen =
         typeof window !== 'undefined' && 'showOpenFilePicker' in window
       let fileHandle = null
-      let fileText = null
+      let fileText
 
       if (canPickOpen) {
         try {
@@ -652,7 +652,7 @@ export function useFileActions({
     const runImport = async () => {
       const canPickOpen =
         typeof window !== 'undefined' && 'showOpenFilePicker' in window
-      let fileText = null
+      let fileText
       let fileName = null
 
       if (canPickOpen) {
@@ -723,7 +723,7 @@ export function useFileActions({
     const runImport = async () => {
       const canPickOpen =
         typeof window !== 'undefined' && 'showOpenFilePicker' in window
-      let fileText = null
+      let fileText
       let fileName = null
 
       if (canPickOpen) {
