@@ -55,3 +55,15 @@ describe('Class display name', () => {
     expect(screen.getByText('Customer')).toBeInTheDocument()
   })
 })
+
+describe('Class accent layout', () => {
+  it('rounds the accent without clipping attribute handles at the class border', () => {
+    const { container } = renderClass(VIEW_LOGICAL)
+    const accent = container.querySelector('[data-accent-bar="true"]')
+    const classFrame = accent?.parentElement
+
+    expect(accent).toHaveClass('h-2', 'w-full', 'rounded-t-[6px]')
+    expect(accent).not.toHaveClass('-mx-2')
+    expect(classFrame).not.toHaveClass('overflow-hidden')
+  })
+})
