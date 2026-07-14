@@ -298,6 +298,7 @@ describe("importMySql", () => {
     expect(result).not.toBeNull();
     expect(result.nodes).toHaveLength(1);
     expect(result.nodes[0].data.label).toBe("users");
+    expect(result.nodes[0].data.logicalName).toBe("");
     expect(result.nodes[0].data.attributes).toHaveLength(2);
   });
 

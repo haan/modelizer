@@ -60,6 +60,7 @@ export default function ClassesPanel({
   nodes,
   onAddClass,
   onRenameClass,
+  onUpdateClassLogicalName,
   onReorderClasses,
   onReorderAttributes,
   onUpdateAttribute,
@@ -200,6 +201,7 @@ export default function ClassesPanel({
                     openAttributeId={openAttributeId}
                     onOpenAttributeIdChange={onOpenAttributeIdChange}
                     onRename={onRenameClass}
+                    onUpdateClassLogicalName={onUpdateClassLogicalName}
                     onReorderAttributes={onReorderAttributes}
                     onUpdateAttribute={onUpdateAttribute}
                     onAddAttribute={onAddAttribute}

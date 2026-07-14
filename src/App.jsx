@@ -23,6 +23,7 @@ import AnnotationToolbox from './components/annotations/AnnotationToolbox.jsx'
 import { useAnnotations } from './hooks/useAnnotations.js'
 import { sanitizeFileName } from './model/fileUtils.js'
 import { exportFlowPng } from './model/pngExport.jsx'
+import { getClassDisplayName } from './model/viewUtils.js'
 import {
   ASSOCIATION_EDGE_TYPE,
   ASSOCIATIVE_EDGE_TYPE,
@@ -361,6 +362,7 @@ function App() {
     onAddArea,
     onSyncViewPositions,
     onRenameClass,
+    onUpdateClassLogicalName,
     onRenameNote,
     onRenameArea,
     onRenameAssociation,
@@ -755,10 +757,8 @@ function App() {
     }
 
     return nodes.flatMap((node) => {
-      const className =
-        typeof node.data?.label === 'string' && node.data.label.trim()
-          ? node.data.label.trim()
-          : 'Class'
+      const displayName = getClassDisplayName(node.data, VIEW_PHYSICAL)
+      const className = displayName.trim() || 'Class'
       const attributes = Array.isArray(node.data?.attributes)
         ? node.data.attributes
         : []
@@ -984,6 +984,7 @@ function App() {
                 viewSpecificSettingsOnly={viewSpecificSettingsOnly}
                 onAddClass={onAddClass}
                 onRenameClass={onRenameClass}
+                onUpdateClassLogicalName={onUpdateClassLogicalName}
                 onReorderClasses={onReorderClasses}
                 onReorderAttributes={onReorderAttributes}
                 onUpdateAttribute={onUpdateAttribute}

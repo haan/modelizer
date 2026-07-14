@@ -1180,6 +1180,7 @@ export function useModelState({
         position,
         data: {
           label: `Class${classCount + 1}`,
+          logicalName: '',
           attributes: [],
           color: nextColor,
           visibility: defaultVisibility,
@@ -1378,6 +1379,19 @@ export function useModelState({
       )
     },
     [updateEdgesAndPanel, updateNodesAndPanel],
+  )
+
+  const onUpdateClassLogicalName = useCallback(
+    (nodeId, logicalName) => {
+      updateNodesAndPanel((current) =>
+        current.map((node) =>
+          node.id === nodeId
+            ? { ...node, data: { ...node.data, logicalName } }
+            : node,
+        ),
+      )
+    },
+    [updateNodesAndPanel],
   )
 
   const onRenameNote = useCallback(
@@ -2969,6 +2983,7 @@ export function useModelState({
     onAddArea,
     onSyncViewPositions,
     onRenameClass,
+    onUpdateClassLogicalName,
     onRenameNote,
     onRenameArea,
     onRenameAssociation,

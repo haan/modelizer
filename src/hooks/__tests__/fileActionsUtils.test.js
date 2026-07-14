@@ -140,6 +140,20 @@ describe("buildHashPayload", () => {
 
     expect(JSON.stringify(logicalPayload)).toBe(JSON.stringify(conceptualPayload));
   });
+
+  it("preserves class logical names without changing the model version", () => {
+    const result = buildHashPayload({
+      nodes: [{
+        id: "class-1",
+        type: CLASS_NODE_TYPE,
+        position: { x: 0, y: 0 },
+        data: { label: "Customer", logicalName: "customer_table" },
+      }],
+    });
+
+    expect(result.version).toBe(1);
+    expect(result.nodes[0].data.logicalName).toBe("customer_table");
+  });
 });
 
 // ─── isSamePosition ───────────────────────────────────────────────────────────
@@ -297,6 +311,7 @@ describe("hasMeaningfulEdgeChange", () => {
   it("returns false for empty arrays", () => {
     expect(hasMeaningfulEdgeChange([], [])).toBe(false);
   });
+
 });
 
 describe("getHiddenContentState", () => {

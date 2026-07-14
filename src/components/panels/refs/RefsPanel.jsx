@@ -54,6 +54,7 @@ export default function RefsPanel({
         <RelationshipsPanel
           edges={edges}
           nodes={nodes}
+          activeView={activeView}
           onDeleteAssociation={onDeleteAssociation}
           onHighlightAssociation={onHighlightAssociation}
           onUpdateRelationshipLineStyle={onUpdateRelationshipLineStyle}

@@ -1,10 +1,32 @@
 import { describe, it, expect } from "vitest";
 import {
   DEFAULT_VIEW_VISIBILITY,
+  getClassDisplayName,
   normalizeVisibility,
   normalizeViewPositions,
   normalizeViewSizes,
 } from "../viewUtils.js";
+
+describe("getClassDisplayName", () => {
+  const data = { label: "Customer", logicalName: "customer_table" };
+
+  it("uses the conceptual name in conceptual view", () => {
+    expect(getClassDisplayName(data, "conceptual")).toBe("Customer");
+    expect(getClassDisplayName(data)).toBe("Customer");
+  });
+
+  it("uses the logical name in logical and physical views", () => {
+    expect(getClassDisplayName(data, "logical")).toBe("customer_table");
+    expect(getClassDisplayName(data, "physical")).toBe("customer_table");
+  });
+
+  it("falls back to the conceptual name for blank logical names", () => {
+    expect(getClassDisplayName({ ...data, logicalName: "" }, "logical"))
+      .toBe("Customer");
+    expect(getClassDisplayName({ ...data, logicalName: "   " }, "physical"))
+      .toBe("Customer");
+  });
+});
 
 describe("normalizeVisibility", () => {
   it("passes through valid boolean flags", () => {

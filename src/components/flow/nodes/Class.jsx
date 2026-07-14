@@ -1,7 +1,10 @@
 import { useLayoutEffect, useRef } from 'react'
 import { Position, useUpdateNodeInternals } from 'reactflow'
 import { CLASS_COLOR_PALETTE } from '../../../classPalette.js'
-import { normalizeVisibility } from '../../../model/viewUtils.js'
+import {
+  getClassDisplayName,
+  normalizeVisibility,
+} from '../../../model/viewUtils.js'
 import {
   VIEW_CONCEPTUAL,
   VIEW_LOGICAL,
@@ -23,6 +26,7 @@ export function Class({ data, id, selected }) {
   const showNull = nullDisplayMode === 'null'
   const showNotNull = nullDisplayMode === 'not-null'
   const activeView = data?.activeView ?? VIEW_CONCEPTUAL
+  const displayName = getClassDisplayName(data, activeView)
   const showHandles = activeView === VIEW_CONCEPTUAL
   const showOperationsCompartment =
     activeView === VIEW_CONCEPTUAL && showConceptualOperationsCompartment
@@ -122,7 +126,7 @@ export function Class({ data, id, selected }) {
           }}
         />
         <div className="border-b border-base-content/70 px-3 pb-2 pt-1 text-sm font-semibold">
-          {data.label ?? ''}
+          {displayName}
         </div>
         <div className="px-3 py-2 text-xs">
           {visibleAttributes.length === 0 ? (

@@ -71,3 +71,33 @@ describe('useModelState model name history', () => {
     expect(result.current.modelName).toBe('Untitled model')
   })
 })
+
+describe('useModelState class logical names', () => {
+  it('initializes logical names and groups their edits into one undo step', async () => {
+    const { result } = renderModelState()
+    let classId
+
+    act(() => {
+      classId = result.current.onAddClass()
+    })
+    await flushHistoryPush()
+
+    expect(result.current.nodes[0].data.logicalName).toBe('')
+
+    act(() => {
+      window.dispatchEvent(new CustomEvent('model-text-edit-start'))
+      result.current.onUpdateClassLogicalName(classId, 'customer')
+      result.current.onUpdateClassLogicalName(classId, 'customer_table')
+      window.dispatchEvent(new CustomEvent('model-text-edit-end'))
+    })
+    await flushHistoryPush()
+
+    expect(result.current.nodes[0].data.logicalName).toBe('customer_table')
+
+    act(() => {
+      result.current.onUndo()
+    })
+
+    expect(result.current.nodes[0].data.logicalName).toBe('')
+  })
+})
