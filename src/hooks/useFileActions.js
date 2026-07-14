@@ -351,6 +351,8 @@ export function useFileActions({
             data: {
               ...data,
               label: typeof data.label === 'string' ? data.label : '',
+              logicalName:
+                typeof data.logicalName === 'string' ? data.logicalName : '',
               attributes,
               visibility,
               viewPositions,

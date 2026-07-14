@@ -47,6 +47,20 @@ export const normalizeVisibility = (visibility) => ({
       : DEFAULT_VIEW_VISIBILITY.physical,
 })
 
+export const getClassDisplayName = (data, activeView) => {
+  const conceptualName = typeof data?.label === 'string' ? data.label : ''
+  if (activeView !== VIEW_LOGICAL && activeView !== VIEW_PHYSICAL) {
+    return conceptualName
+  }
+
+  const logicalName =
+    typeof data?.logicalName === 'string' && data.logicalName.trim()
+      ? data.logicalName
+      : ''
+
+  return logicalName || conceptualName
+}
+
 export const normalizeViewPositions = (viewPositions, fallbackPosition) => {
   const fallback = normalizePosition(
     fallbackPosition ?? { x: 0, y: 0 },

@@ -51,10 +51,12 @@ It is intentionally **not** a smart assistant:
 - Associations are hidden.
 - Attribute handles are visible.
 - Attribute logical names are used when present.
+- Class logical names are used when present.
 
 ### Physical
 - Shows tables and relationships with full column type and constraint details.
 - Attribute logical names are used when present.
+- Class logical names are used when present.
 - Default values overlay appears when at least one visible attribute has a default value.
 
 ## Classes, tables, attributes, and columns
@@ -63,6 +65,7 @@ It is intentionally **not** a smart assistant:
 - Add from **Classes > Add class** in conceptual view, or **Tables > Add table** in logical/physical views.
 - New classes are auto-selected and opened for editing.
 - Names are generated as `Class1`, `Class2`, ... (counting classes only).
+- Classes have a separate logical name used for tables in logical and physical views; when it is blank, the class name is used.
 - You can reorder, rename, focus, recolor, set per-view visibility, and delete classes/tables.
 - `Ctrl+Alt+C` (`Ctrl+Opt+C` on macOS): add class/table.
 
@@ -82,7 +85,7 @@ It is intentionally **not** a smart assistant:
 
 ### View-specific settings
 - Enable with `View > Show only view-specific settings`.
-- In conceptual view, logical name and physical-only fields are hidden.
+- In conceptual view, class and attribute logical names and physical-only fields are hidden.
 - In logical view, physical-only fields are hidden.
 - In physical view, all attribute/column settings are shown.
 

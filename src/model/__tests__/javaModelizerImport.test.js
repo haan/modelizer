@@ -158,6 +158,7 @@ describe("importJavaModelizer", () => {
       tables: [
         {
           name: "User",
+          secName: "users_table",
           x0: 10, y0: 20,
           fields: [
             { name: "id", datatype: "int" },
@@ -170,6 +171,7 @@ describe("importJavaModelizer", () => {
     expect(result.nodes).toHaveLength(1);
     const node = result.nodes[0];
     expect(node.data.label).toBe("User");
+    expect(node.data.logicalName).toBe("users_table");
     expect(node.data.attributes).toHaveLength(2);
     expect(node.data.attributes[0].name).toBe("id");
     expect(node.data.attributes[0].type).toBe("int");

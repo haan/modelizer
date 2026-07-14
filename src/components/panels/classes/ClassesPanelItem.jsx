@@ -8,6 +8,7 @@ import { VIEW_CONCEPTUAL } from '../../../model/constants.js'
 import ClassesPanelAttributesPanel from './ClassesPanelAttributesPanel.jsx'
 import ClassesPanelOptionsPanel from './ClassesPanelOptionsPanel.jsx'
 import ClassesPanelVisibilityPanel from './ClassesPanelVisibilityPanel.jsx'
+import ClassesPanelLogicalNamePanel from './ClassesPanelLogicalNamePanel.jsx'
 import Input from '../../ui/Input.jsx'
 
 const TOOLTIP_CONTENT_CLASS =
@@ -23,6 +24,7 @@ export default function ClassesPanelItem({
   openAttributeId,
   onOpenAttributeIdChange,
   onRename,
+  onUpdateClassLogicalName,
   onReorderAttributes,
   onUpdateAttribute,
   onAddAttribute,
@@ -42,9 +44,11 @@ export default function ClassesPanelItem({
     ? node.data.attributes
     : []
   const label = node.data?.label ?? ''
+  const logicalName = node.data?.logicalName ?? ''
   const color = node.data?.color ?? CLASS_COLOR_PALETTE[0]
   const classVisibility = node.data?.visibility
   const isConceptualView = activeView === VIEW_CONCEPTUAL
+  const hideLogicalName = viewSpecificSettingsOnly && isConceptualView
   const entityNoun = isConceptualView ? 'class' : 'table'
   const entityNameLabel = isConceptualView ? 'Class name' : 'Table name'
   const untitledEntityLabel = isConceptualView
@@ -296,6 +300,16 @@ export default function ClassesPanelItem({
             onUpdateClassVisibility?.(node.id, nextVisibility)
           }
         />
+        {hideLogicalName ? null : (
+          <ClassesPanelLogicalNamePanel
+            accentColor={accentColor}
+            showAccentColors={showAccentColors}
+            logicalName={logicalName}
+            onChange={(nextValue) =>
+              onUpdateClassLogicalName?.(node.id, nextValue)
+            }
+          />
+        )}
         <div className="w-full">
           <div
             className="border-l-[6px] px-2 pb-3 pt-1 text-xs opacity-100"

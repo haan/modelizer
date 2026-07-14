@@ -32,6 +32,7 @@ function InfoPanel({
   viewSpecificSettingsOnly,
   onAddClass,
   onRenameClass,
+  onUpdateClassLogicalName,
   onReorderClasses,
   onReorderAttributes,
   onUpdateAttribute,
@@ -94,6 +95,7 @@ function InfoPanel({
               nodes={classNodes}
               onAddClass={onAddClass}
               onRenameClass={onRenameClass}
+              onUpdateClassLogicalName={onUpdateClassLogicalName}
               onReorderClasses={onReorderClasses}
               onReorderAttributes={onReorderAttributes}
               onUpdateAttribute={onUpdateAttribute}

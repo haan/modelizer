@@ -319,6 +319,7 @@ export async function importMySql(sqlText, fileName) {
       position,
       data: {
         label: tableName,
+        logicalName: '',
         attributes,
         color: CLASS_COLOR_PALETTE[index % CLASS_COLOR_PALETTE.length],
         visibility,

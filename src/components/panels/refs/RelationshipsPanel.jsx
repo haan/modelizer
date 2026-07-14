@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import * as Accordion from '@radix-ui/react-accordion'
 import RelationshipsPanelItem from './RelationshipsPanelItem.jsx'
+import { getClassDisplayName } from '../../../model/viewUtils.js'
 
 const getAttributeIdFromHandle = (handleId) => {
   if (!handleId) {
@@ -29,6 +30,7 @@ const getAttributeIdFromHandle = (handleId) => {
 export default function RelationshipsPanel({
   edges,
   nodes,
+  activeView,
   onDeleteAssociation,
   onHighlightAssociation,
   onUpdateRelationshipLineStyle,
@@ -46,7 +48,10 @@ export default function RelationshipsPanel({
   const setOpenRelationshipId =
     onOpenRelationshipIdChange ?? setUncontrolledOpenRelationshipId
   const nodeLabels = new Map(
-    nodes.map((node) => [node.id, node.data?.label ?? node.id]),
+    nodes.map((node) => [
+      node.id,
+      getClassDisplayName(node.data, activeView) || node.id,
+    ]),
   )
   const nodeAttributes = new Map(
     nodes.map((node) => [node.id, node.data?.attributes ?? []]),
