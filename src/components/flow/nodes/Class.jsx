@@ -116,11 +116,11 @@ export function Class({ data, id, selected }) {
       className="group/node min-w-[180px] text-base-content"
     >
       <div
-        className={`overflow-hidden rounded-lg border-2 bg-base-100 shadow-sm hover:border-primary ${borderClass}`}
+        className={`rounded-lg border-2 bg-base-100 shadow-sm hover:border-primary ${borderClass}`}
       >
         <div
           data-accent-bar="true"
-          className="-mx-2 h-2 rounded-t-lg"
+          className="h-2 w-full rounded-t-[6px]"
           style={{
             backgroundColor: showAccentColors ? accentColor : 'transparent',
           }}
