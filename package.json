@@ -35,9 +35,9 @@
     "html-to-image": "1.11.11",
     "markdown-it": "^14.2.0",
     "node-sql-parser": "^5.4.0",
-    "react": "^19.2.7",
+    "react": "^19.2.8",
     "react-color": "^2.19.3",
-    "react-dom": "^19.2.7",
+    "react-dom": "^19.2.8",
     "reactflow": "^11.11.4"
   },
   "devDependencies": {
