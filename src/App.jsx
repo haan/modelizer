@@ -15,6 +15,7 @@ import {
 } from './components/dialogs/index.js'
 import { InfoPanel, Navbar, Sidebar } from './components/layout/index.js'
 import { useFileActions } from './hooks/useFileActions.js'
+import { useModelFileDrop } from './hooks/useModelFileDrop.js'
 import { useKeyboardShortcuts } from './hooks/useKeyboardShortcuts.js'
 import { useModelState } from './hooks/useModelState.js'
 import DefaultValuesPanel from './components/flow/overlays/DefaultValuesPanel.jsx'
@@ -182,6 +183,10 @@ function App() {
     title: '',
     description: '',
   })
+  const [fileError, setFileError] = useState({ open: false, message: '', sequence: 0 })
+  const onFileError = useCallback((message) => {
+    setFileError((previous) => ({ open: true, message, sequence: previous.sequence + 1 }))
+  }, [])
   const resizeState = useRef(null)
   const deleteActionRef = useRef(null)
 
@@ -675,6 +680,8 @@ function App() {
 
   const {
     isDirty,
+    isOpening,
+    onOpenModelFile,
     isConfirmDialogOpen,
     onConfirmDialogOpenChange,
     onConfirmDiscardChanges,
@@ -686,6 +693,7 @@ function App() {
     onImportJavaModelizer,
     onImportMySql,
   } = useFileActions({
+    onFileError,
     nodes,
     edges,
     annotations,
@@ -696,7 +704,6 @@ function App() {
     setEdges,
     setModelName,
     setActiveSidebarItem,
-    activeView,
     showNotes,
     showAreas,
     showCompositionAggregation,
@@ -720,6 +727,12 @@ function App() {
         })
       })
     },
+  })
+
+  const isFileOver = useModelFileDrop({
+    onOpenModelFile,
+    onFileError,
+    disabled: isOpening || isConfirmDialogOpen,
   })
 
   useEffect(() => {
@@ -899,6 +912,11 @@ function App() {
   return (
     <Toast.Provider duration={6500} swipeDirection="right">
       <div className="h-screen overflow-hidden bg-base-200 text-base-content">
+        {isFileOver && (
+          <div className="model-file-drop-overlay" role="status" data-no-export="true">
+            <span>Drop .mdlz file to open</span>
+          </div>
+        )}
         <div className="flex h-full flex-col">
           <Navbar
             modelName={modelName}
@@ -1154,6 +1172,18 @@ function App() {
           <Toast.Description className="toast-description">
             {hiddenContentToast.description}
           </Toast.Description>
+        </Toast.Root>
+        <Toast.Root
+          key={fileError.sequence}
+          open={fileError.open}
+          onOpenChange={(open) => setFileError((current) => ({ ...current, open }))}
+          className="toast-root"
+          type="foreground"
+          data-no-export="true"
+        >
+          <Toast.Title className="toast-title">Could not open model</Toast.Title>
+          <Toast.Description className="toast-description">{fileError.message}</Toast.Description>
+          <Toast.Close aria-label="Dismiss file error">Dismiss</Toast.Close>
         </Toast.Root>
         <Toast.Viewport
           className="toast-viewport"

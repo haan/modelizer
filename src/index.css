@@ -128,3 +128,18 @@
   width: 22px;
   height: 22px;
 }
+/* External file drops do not intercept pointer interaction with the editor. */
+.model-file-drop-overlay {
+  position: fixed;
+  inset: 12px;
+  z-index: 1000;
+  pointer-events: none;
+  display: grid;
+  place-items: center;
+  border: 3px dashed rgb(var(--color-primary));
+  border-radius: 16px;
+  background: rgb(var(--color-base-100) / 0.88);
+  color: rgb(var(--color-base-content));
+  font-size: 1.5rem;
+  font-weight: 600;
+}

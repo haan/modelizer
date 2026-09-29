@@ -182,6 +182,10 @@ Reflexive associations can be resized when selected:
 - `.mdlz` saves model name, classes/tables, attributes/columns, associations, relationships, notes, areas, and annotations.
 - Creating a new model resets to conceptual view and resets the viewport.
 - Opening or importing a model switches to conceptual view and runs fit view.
+- You can also drop one `.mdlz` file anywhere on the Modelizer page. Folders and multiple files are not supported.
+- Model files are read and validated before you are asked to discard unsaved changes. Canceling or opening an invalid file keeps your current model.
+- After opening a dropped file, the first **Save** uses **Save As** (or downloads a copy, depending on your browser).
+- **File → Open** remains available for keyboard and mobile/tablet use.
 
 ### Import
 - **Java Modelizer** (`.mod`)
