@@ -235,7 +235,7 @@ function prepareLoadedModel(payload) {
   const nextNodes = (payload?.nodes ?? []).map((node, index) => {
     const nodeId = node?.id ?? `class-${Date.now()}-${index}`
     const data = node?.data ?? {}
-    const nodeType = node?.type ?? CLASS_NODE_TYPE
+    const nodeType = node?.type === 'umlClass' ? CLASS_NODE_TYPE : node?.type ?? CLASS_NODE_TYPE
 
     if (nodeType === CLASS_NODE_TYPE) {
       const viewPositions = normalizeViewPositions(
@@ -329,6 +329,7 @@ function prepareLoadedModel(payload) {
       id: nodeId,
       type: nodeType,
       selected: false,
+      position: normalizeViewPositions(data.viewPositions, node?.position)[VIEW_CONCEPTUAL],
       data,
     }
   })
@@ -604,7 +605,7 @@ export function useFileActions({
     requestDiscardChanges(onNewModel)
   }, [cancelPendingOpen, onNewModel, requestDiscardChanges])
 
-  const startOpen = useCallback(async (file, droppedHandle = null) => {
+  const startOpen = useCallback(async (file, droppedHandle = null, importFormat = null) => {
     if (openingRef.current || confirmActionRef.current) return
     openingRef.current = true
     setIsOpening(true)
@@ -620,7 +621,7 @@ export function useFileActions({
     try {
       const selection = file
         ? { file, handle: await droppedHandle }
-        : await pickModelFile((cleanup) => { pickerCleanupRef.current = cleanup })
+        : await pickModelFile((cleanup) => { pickerCleanupRef.current = cleanup }, importFormat)
       if (!current() || !selection) return
       if (selection.handle?.kind === 'directory') {
         throw new Error('Drop a .mdlz file, not a folder.')
@@ -632,12 +633,25 @@ export function useFileActions({
         throw new Error('The file could not be read. Please select it again.')
       }
       if (!current()) return
-      const payload = parseModelFile(text)
+      let payload
+      if (importFormat === 'java') {
+        payload = importJavaModelizer(text, selection.file.name)
+      } else if (importFormat === 'mysql') {
+        const { importMySql } = await import('../model/mysqlImport.js')
+        if (!current()) return
+        payload = await importMySql(text, selection.file.name)
+      } else {
+        payload = parseModelFile(text)
+      }
+      if (!current()) return
+      if (!payload) throw new Error('The selected file could not be imported.')
       const prepared = prepareLoadedModel(payload)
       const commit = () => {
         if (!current()) return
         try {
-          applyLoadedModel(payload, selection.handle, prepared)
+          applyLoadedModel(payload, importFormat ? null : selection.handle, prepared)
+          const unmatchedCount = payload.importWarnings?.unmatchedAttributeTypes ?? 0
+          if (importFormat && unmatchedCount > 0) onImportWarning?.(unmatchedCount)
         } finally {
           finish()
         }
@@ -651,158 +665,19 @@ export function useFileActions({
     } finally {
       if (!awaitingConfirmation) finish()
     }
-  }, [applyLoadedModel, onFileError, requestDiscardChanges])
+  }, [applyLoadedModel, onFileError, onImportWarning, requestDiscardChanges])
 
   const onOpenModel = useCallback(() => startOpen(), [startOpen])
   const onOpenModelFile = useCallback((file, handle) => startOpen(file, handle), [startOpen])
 
-  const onImportJavaModelizer = useCallback(async () => {
+  const startImport = useCallback((format) => {
     if (confirmActionRef.current) return
     cancelPendingOpen()
-    const runImport = async () => {
-      const canPickOpen =
-        typeof window !== 'undefined' && 'showOpenFilePicker' in window
-      let fileText
-      let fileName = null
+    return startOpen(undefined, null, format)
+  }, [cancelPendingOpen, startOpen])
 
-      if (canPickOpen) {
-        try {
-          const [handle] = await window.showOpenFilePicker({
-            multiple: false,
-            types: [
-              {
-                description: 'Java Modelizer Model',
-                accept: { 'application/json': ['.mod'] },
-              },
-            ],
-          })
-          const file = await handle.getFile()
-          fileName = file?.name ?? null
-          fileText = await file.text()
-        } catch (error) {
-          if (error?.name === 'AbortError') {
-            return
-          }
-          console.error('Failed to import model', error)
-          return
-        }
-      } else {
-        fileText = await new Promise((resolve) => {
-          const input = document.createElement('input')
-          input.type = 'file'
-          input.accept = '.mod,application/json'
-          input.onchange = () => {
-            const file = input.files?.[0]
-            if (!file) {
-              resolve(null)
-              return
-            }
-            fileName = file.name
-            file
-              .text()
-              .then(resolve)
-              .catch(() => resolve(null))
-          }
-          input.click()
-        })
-      }
-
-      if (!fileText) {
-        return
-      }
-
-      const payload = importJavaModelizer(fileText, fileName)
-      if (!payload) {
-        return
-      }
-
-      applyLoadedModel(payload, null)
-      const unmatchedCount =
-        payload?.importWarnings?.unmatchedAttributeTypes ?? 0
-      if (unmatchedCount > 0) {
-        onImportWarning?.(unmatchedCount)
-      }
-    }
-
-    requestDiscardChanges(() => {
-      runImport()
-    })
-  }, [applyLoadedModel, cancelPendingOpen, onImportWarning, requestDiscardChanges])
-
-  const onImportMySql = useCallback(async () => {
-    if (confirmActionRef.current) return
-    cancelPendingOpen()
-    const runImport = async () => {
-      const canPickOpen =
-        typeof window !== 'undefined' && 'showOpenFilePicker' in window
-      let fileText
-      let fileName = null
-
-      if (canPickOpen) {
-        try {
-          const [handle] = await window.showOpenFilePicker({
-            multiple: false,
-            types: [
-              {
-                description: 'MySQL file',
-                accept: { 'text/sql': ['.sql'] },
-              },
-            ],
-          })
-          const file = await handle.getFile()
-          fileName = file?.name ?? null
-          fileText = await file.text()
-        } catch (error) {
-          if (error?.name === 'AbortError') {
-            return
-          }
-          console.error('Failed to import SQL', error)
-          return
-        }
-      } else {
-        fileText = await new Promise((resolve) => {
-          const input = document.createElement('input')
-          input.type = 'file'
-          input.accept = '.sql,text/sql'
-          input.onchange = () => {
-            const file = input.files?.[0]
-            if (!file) {
-              resolve(null)
-              return
-            }
-            fileName = file.name
-            file
-              .text()
-              .then(resolve)
-              .catch(() => resolve(null))
-          }
-          input.click()
-        })
-      }
-
-      if (!fileText) {
-        return
-      }
-
-      const { importMySql } = await import('../model/mysqlImport.js')
-      const payload = await importMySql(fileText, fileName)
-      if (!payload) {
-        return
-      }
-
-      applyLoadedModel(payload, null)
-      const unmatchedCount =
-        payload?.importWarnings?.unmatchedAttributeTypes ?? 0
-      if (unmatchedCount > 0) {
-        onImportWarning?.(unmatchedCount)
-      }
-    }
-
-    requestDiscardChanges(() => {
-      runImport()
-    })
-  }, [applyLoadedModel, cancelPendingOpen, onImportWarning, requestDiscardChanges])
-
+  const onImportJavaModelizer = useCallback(() => startImport('java'), [startImport])
+  const onImportMySql = useCallback(() => startImport('mysql'), [startImport])
 
   const onSaveModelAs = useCallback(async () => {
     const basePayload = buildModelPayload()

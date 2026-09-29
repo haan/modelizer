@@ -1,5 +1,6 @@
 import { useState } from 'react'
-import { act, cleanup, renderHook } from '@testing-library/react'
+import { act, cleanup, renderHook, waitFor } from '@testing-library/react'
+import { ReactFlowProvider, useStoreApi } from 'reactflow'
 import { afterEach, describe, expect, it, vi } from 'vitest'
 import { useFileActions } from '../useFileActions.js'
 import { useModelState } from '../useModelState.js'
@@ -21,6 +22,10 @@ const deferred = () => {
   const promise = new Promise((done) => { resolve = done })
   return { promise, resolve }
 }
+const importCases = [
+  ['Java Modelizer', 'onImportJavaModelizer', 'older.mod', JSON.stringify({ tables: [{ name: 'Customer', fields: [] }] })],
+  ['MySQL', 'onImportMySql', 'older.sql', 'CREATE TABLE Customer (id INT PRIMARY KEY);'],
+]
 function setup() {
   const onFileError = vi.fn()
   const onHiddenContent = vi.fn()
@@ -49,6 +54,112 @@ afterEach(() => {
 })
 
 describe('shared model opening', () => {
+  it.each(['class', 'umlClass', 'note', 'area', 'associationHelper', 'associationFloatingEdgeNode'])(
+    'provides a canvas-safe default position for a %s node', async (type) => {
+      const { result } = setup()
+      await act(async () => {
+        await result.current.onOpenModelFile(fileFor({ nodes: [{ id: 'n', type }], edges: [] }))
+      })
+      expect(result.current.nodes[0].position).toEqual({ x: 0, y: 0 })
+      expect(result.current.isDirty).toBe(false)
+      if (type === 'umlClass') {
+        expect(result.current.nodes[0].type).toBe('class')
+        expect(result.current.nodes[0].data.attributes).toEqual([])
+      }
+      const canvas = renderHook(() => useStoreApi(), { wrapper: ReactFlowProvider })
+      expect(() => {
+        act(() => canvas.result.current.getState().setNodes(result.current.nodes))
+      }).not.toThrow()
+    },
+  )
+
+  it.each(importCases)('locks opens during %s import and confirms edits made while reading', async (_label, action, name, text) => {
+    const { result, onModelLoaded } = setup()
+    const read = deferred()
+    const file = { name, text: vi.fn(() => read.promise) }
+    window.showOpenFilePicker = vi.fn().mockResolvedValue([{ getFile: async () => file }])
+    let pending
+    act(() => { pending = result.current[action]() })
+    await waitFor(() => expect(file.text).toHaveBeenCalledOnce())
+    expect(result.current.isOpening).toBe(true)
+    const dropped = fileFor()
+    await act(async () => {
+      await result.current.onOpenModelFile(dropped)
+      await result.current.onOpenModel()
+    })
+    expect(dropped.text).not.toHaveBeenCalled()
+    expect(window.showOpenFilePicker).toHaveBeenCalledOnce()
+    act(() => { result.current.setModelName('Edited during import') })
+    await act(async () => { read.resolve(text); await pending })
+    expect(result.current.modelName).toBe('Edited during import')
+    expect(result.current.isDirty).toBe(true)
+    expect(result.current.isConfirmDialogOpen).toBe(true)
+    expect(onModelLoaded).not.toHaveBeenCalled()
+    act(() => { result.current.onConfirmDiscardChanges(); result.current.onConfirmDialogOpenChange(false) })
+    expect(onModelLoaded).toHaveBeenCalledOnce()
+    expect(result.current.nodes).toHaveLength(1)
+    expect(result.current.isDirty).toBe(false)
+    expect(result.current.isOpening).toBe(false)
+  })
+
+  it.each(importCases)('ignores stale %s results after New and a newer drop', async (_label, action, name, text) => {
+    const { result, onModelLoaded } = setup()
+    const read = deferred()
+    const file = { name, text: vi.fn(() => read.promise) }
+    window.showOpenFilePicker = vi.fn().mockResolvedValue([{ getFile: async () => file }])
+    let pending
+    act(() => { pending = result.current[action]() })
+    await waitFor(() => expect(file.text).toHaveBeenCalledOnce())
+    act(() => { result.current.onRequestNewModel() })
+    await act(async () => { await result.current.onOpenModelFile(fileFor()) })
+    act(() => { result.current.setModelName('Keep these edits') })
+    await act(async () => { read.resolve(text); await pending })
+    expect(result.current.modelName).toBe('Keep these edits')
+    expect(result.current.isDirty).toBe(true)
+    expect(onModelLoaded).toHaveBeenCalledOnce()
+  })
+
+  it.each(importCases)('ignores stale %s results after a newer import and after unmount', async (_label, action, name, text) => {
+    const { result, unmount, onModelLoaded, onFileError } = setup()
+    const firstRead = deferred()
+    const firstFile = { name, text: vi.fn(() => firstRead.promise) }
+    window.showOpenFilePicker = vi.fn()
+      .mockResolvedValueOnce([{ getFile: async () => firstFile }])
+      .mockResolvedValueOnce([{ getFile: async () => ({ name, text: async () => text }) }])
+    let first
+    act(() => { first = result.current[action]() })
+    await waitFor(() => expect(firstFile.text).toHaveBeenCalledOnce())
+    await act(async () => { await result.current[action]() })
+    expect(onModelLoaded).toHaveBeenCalledOnce()
+    await act(async () => { firstRead.resolve(text); await first })
+    expect(onModelLoaded).toHaveBeenCalledOnce()
+
+    const lastRead = deferred()
+    const lastFile = { name, text: vi.fn(() => lastRead.promise) }
+    window.showOpenFilePicker.mockResolvedValue([{ getFile: async () => lastFile }])
+    let last
+    act(() => { last = result.current[action]() })
+    await waitFor(() => expect(lastFile.text).toHaveBeenCalledOnce())
+    unmount()
+    await act(async () => { lastRead.resolve(text); await last })
+    expect(onModelLoaded).toHaveBeenCalledOnce()
+    expect(onFileError).not.toHaveBeenCalled()
+  })
+
+  it.each(importCases)('releases the busy lock when a %s fallback picker is canceled', async (_label, action, name) => {
+    const { result } = setup()
+    vi.spyOn(HTMLInputElement.prototype, 'click').mockImplementation(() => {})
+    let pending
+    act(() => { pending = result.current[action]() })
+    const input = document.querySelector('input[type="file"]')
+    expect(input.accept).toContain(name.slice(name.lastIndexOf('.')))
+    await act(async () => { input.dispatchEvent(new Event('cancel')); await pending })
+    expect(result.current.isOpening).toBe(false)
+    expect(input.isConnected).toBe(false)
+    await act(async () => { await result.current.onOpenModelFile(fileFor()) })
+    expect(result.current.modelName).toBe('Loaded model')
+  })
+
   it.each(['menu', 'drop'])('loads through %s with clean state, normalized annotations and reset history', async (source) => {
     const { result, onHiddenContent, onModelLoaded } = setup()
     await act(async () => { result.current.setModelName('Unsaved') })

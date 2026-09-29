@@ -61,13 +61,18 @@ export function parseModelFile(text) {
   return { ...payload, version: MODEL_VERSION, nodes, edges }
 }
 
-export async function pickModelFile(registerCleanup) {
+export async function pickModelFile(registerCleanup, importFormat = null) {
+  const type = importFormat === 'java'
+    ? { description: 'Java Modelizer Model', accept: { 'application/json': ['.mod'] } }
+    : importFormat === 'mysql'
+      ? { description: 'MySQL file', accept: { 'text/sql': ['.sql'] } }
+      : { description: 'Modelizer Model', accept: { 'application/json': ['.mdlz', '.json'] } }
   if (typeof window.showOpenFilePicker === 'function') {
     let handle
     try {
       const handles = await window.showOpenFilePicker({
         multiple: false,
-        types: [{ description: 'Modelizer Model', accept: { 'application/json': ['.mdlz', '.json'] } }],
+        types: [type],
       })
       handle = handles[0]
     } catch (error) {
@@ -84,7 +89,7 @@ export async function pickModelFile(registerCleanup) {
   return new Promise((resolve, reject) => {
     const input = document.createElement('input')
     input.type = 'file'
-    input.accept = '.mdlz,.json,application/json'
+    input.accept = Object.entries(type.accept).flatMap(([mime, extensions]) => [...extensions, mime]).join(',')
     input.hidden = true
     const finish = (selection) => {
       input.onchange = null
