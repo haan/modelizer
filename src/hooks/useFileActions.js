@@ -2,7 +2,6 @@ import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { normalizeAttributes } from '../attributes.js'
 import {
   CLASS_NODE_TYPE,
-  DEFAULT_VIEW,
   MODEL_FILE_EXTENSION,
   MODEL_VERSION,
   AREA_NODE_TYPE,
@@ -13,6 +12,8 @@ import {
   VIEW_PHYSICAL,
 } from '../model/constants.js'
 import { normalizeEdges } from '../model/edgeUtils.js'
+import { normalizeAnnotations } from './useAnnotations.js'
+import { parseModelFile, pickModelFile } from '../model/modelOpening.js'
 import { sanitizeFileName } from '../model/fileUtils.js'
 import { importJavaModelizer } from '../model/javaModelizerImport.js'
 import {
@@ -230,6 +231,131 @@ export const getHiddenContentState = ({
   }
 }
 
+function prepareLoadedModel(payload) {
+  const nextNodes = (payload?.nodes ?? []).map((node, index) => {
+    const nodeId = node?.id ?? `class-${Date.now()}-${index}`
+    const data = node?.data ?? {}
+    const nodeType = node?.type === 'umlClass' ? CLASS_NODE_TYPE : node?.type ?? CLASS_NODE_TYPE
+
+    if (nodeType === CLASS_NODE_TYPE) {
+      const viewPositions = normalizeViewPositions(
+        data.viewPositions,
+        node?.position,
+      )
+      const visibility = normalizeVisibility(data.visibility)
+      const attributes = normalizeAttributes(nodeId, data.attributes)
+
+      return {
+        ...node,
+        id: nodeId,
+        type: nodeType,
+        selected: false,
+        position: viewPositions[VIEW_CONCEPTUAL] ?? node?.position,
+        data: {
+          ...data,
+          label: typeof data.label === 'string' ? data.label : '',
+          logicalName:
+            typeof data.logicalName === 'string' ? data.logicalName : '',
+          attributes,
+          visibility,
+          viewPositions,
+        },
+      }
+    }
+
+    if (nodeType === NOTE_NODE_TYPE) {
+      const visibility = normalizeVisibility(data.visibility)
+      const viewPositions = normalizeViewPositions(
+        data.viewPositions,
+        node?.position,
+      )
+      const nextPosition = viewPositions[VIEW_CONCEPTUAL] ?? node?.position
+      return {
+        ...node,
+        id: nodeId,
+        type: nodeType,
+        selected: false,
+        position: nextPosition,
+        data: {
+          ...data,
+          label: typeof data.label === 'string' ? data.label : '',
+          text: typeof data.text === 'string' ? data.text : '',
+          visibility,
+          viewPositions,
+        },
+      }
+    }
+
+    if (nodeType === AREA_NODE_TYPE) {
+      const width = typeof node?.width === 'number' ? node.width : 280
+      const height = typeof node?.height === 'number' ? node.height : 180
+      const visibility = normalizeVisibility(data.visibility)
+      const viewPositions = normalizeViewPositions(
+        data.viewPositions,
+        node?.position,
+      )
+      const viewSizes = normalizeViewSizes(data.viewSizes, {
+        width,
+        height,
+      })
+      const nextPosition = viewPositions[VIEW_CONCEPTUAL] ?? node?.position
+
+      return {
+        ...node,
+        id: nodeId,
+        type: nodeType,
+        selected: false,
+        position: nextPosition,
+        width: viewSizes[VIEW_CONCEPTUAL].width,
+        height: viewSizes[VIEW_CONCEPTUAL].height,
+        style: {
+          ...node?.style,
+          width: viewSizes[VIEW_CONCEPTUAL].width,
+          height: viewSizes[VIEW_CONCEPTUAL].height,
+        },
+        data: {
+          ...data,
+          label: typeof data.label === 'string' ? data.label : '',
+          color: typeof data.color === 'string' ? data.color : '',
+          visibility,
+          viewPositions,
+          viewSizes,
+        },
+      }
+    }
+
+    return {
+      ...node,
+      id: nodeId,
+      type: nodeType,
+      selected: false,
+      position: normalizeViewPositions(data.viewPositions, node?.position)[VIEW_CONCEPTUAL],
+      data,
+    }
+  })
+  const nextEdges = normalizeEdges(
+    (payload?.edges ?? []).map((edge, index) => ({
+      ...edge,
+      id: edge?.id ?? `edge-${Date.now()}-${index}`,
+      selected: false,
+      data: edge?.data ?? {},
+    })),
+  )
+  const nextModelName =
+    typeof payload?.modelName === 'string' && payload.modelName.trim()
+      ? payload.modelName
+      : 'Untitled model'
+  const nextAnnotations = normalizeAnnotations(payload?.annotations)
+  const nextBasePayload = buildHashPayload({
+    version: payload?.version ?? MODEL_VERSION,
+    modelName: nextModelName,
+    nodes: nextNodes,
+    edges: nextEdges,
+    annotations: nextAnnotations,
+  })
+  return { nextNodes, nextEdges, nextModelName, nextAnnotations, nextBasePayload }
+}
+
 export function useFileActions({
   nodes,
   edges,
@@ -241,7 +367,6 @@ export function useFileActions({
   setEdges,
   setModelName,
   setActiveSidebarItem,
-  activeView = DEFAULT_VIEW,
   showNotes = true,
   showAreas = true,
   showCompositionAggregation = false,
@@ -251,6 +376,7 @@ export function useFileActions({
   onLoadAnnotations,
   onNewModelCreated,
   onModelLoaded,
+  onFileError,
 }) {
   const [isDirty, setIsDirty] = useState(false)
   const [isConfirmDialogOpen, setIsConfirmDialogOpen] = useState(false)
@@ -258,10 +384,6 @@ export function useFileActions({
   const prevNodesRef = useRef(nodes)
   const prevEdgesRef = useRef(edges)
   const prevModelNameRef = useRef(modelName)
-  const normalizedActiveView =
-    activeView === VIEW_LOGICAL || activeView === VIEW_PHYSICAL
-      ? activeView
-      : VIEW_CONCEPTUAL
   const lastSavedRef = useRef(
     JSON.stringify(
       buildHashPayload({
@@ -276,6 +398,24 @@ export function useFileActions({
     ),
   )
   const confirmActionRef = useRef(null)
+  const [isOpening, setIsOpening] = useState(false)
+  const openingRef = useRef(false)
+  const openGeneration = useRef(0)
+  const pickerCleanupRef = useRef(null)
+  const dirtyRef = useRef(isDirty)
+  useEffect(() => { dirtyRef.current = isDirty }, [isDirty])
+  useEffect(() => () => {
+    openGeneration.current += 1
+    pickerCleanupRef.current?.()
+  }, [])
+
+  const cancelPendingOpen = useCallback(() => {
+    openGeneration.current += 1
+    pickerCleanupRef.current?.()
+    pickerCleanupRef.current = null
+    openingRef.current = false
+    setIsOpening(false)
+  }, [])
 
   const buildModelPayload = useCallback(() => {
     return buildHashPayload({
@@ -328,127 +468,10 @@ export function useFileActions({
   }, [annotationsDirtySignal, getSerializedModelForDirty])
 
   const applyLoadedModel = useCallback(
-    (payload, handle) => {
-      const nextNodes = (payload?.nodes ?? []).map((node, index) => {
-        const nodeId = node?.id ?? `class-${Date.now()}-${index}`
-        const data = node?.data ?? {}
-        const nodeType = node?.type ?? CLASS_NODE_TYPE
-
-        if (nodeType === CLASS_NODE_TYPE) {
-          const viewPositions = normalizeViewPositions(
-            data.viewPositions,
-            node?.position,
-          )
-          const visibility = normalizeVisibility(data.visibility)
-          const attributes = normalizeAttributes(nodeId, data.attributes)
-
-          return {
-            ...node,
-            id: nodeId,
-            type: nodeType,
-            selected: false,
-            position: viewPositions[normalizedActiveView] ?? node?.position,
-            data: {
-              ...data,
-              label: typeof data.label === 'string' ? data.label : '',
-              logicalName:
-                typeof data.logicalName === 'string' ? data.logicalName : '',
-              attributes,
-              visibility,
-              viewPositions,
-            },
-          }
-        }
-
-        if (nodeType === NOTE_NODE_TYPE) {
-          const visibility = normalizeVisibility(data.visibility)
-          const viewPositions = normalizeViewPositions(
-            data.viewPositions,
-            node?.position,
-          )
-          const nextPosition = viewPositions[normalizedActiveView] ?? node?.position
-          return {
-            ...node,
-            id: nodeId,
-            type: nodeType,
-            selected: false,
-            position: nextPosition,
-            data: {
-              ...data,
-              label: typeof data.label === 'string' ? data.label : '',
-              text: typeof data.text === 'string' ? data.text : '',
-              visibility,
-              viewPositions,
-            },
-          }
-        }
-
-        if (nodeType === AREA_NODE_TYPE) {
-          const width = typeof node?.width === 'number' ? node.width : 280
-          const height = typeof node?.height === 'number' ? node.height : 180
-          const visibility = normalizeVisibility(data.visibility)
-          const viewPositions = normalizeViewPositions(
-            data.viewPositions,
-            node?.position,
-          )
-          const viewSizes = normalizeViewSizes(data.viewSizes, {
-            width,
-            height,
-          })
-          const nextPosition = viewPositions[normalizedActiveView] ?? node?.position
-
-          return {
-            ...node,
-            id: nodeId,
-            type: nodeType,
-            selected: false,
-            position: nextPosition,
-            width: viewSizes[normalizedActiveView].width,
-            height: viewSizes[normalizedActiveView].height,
-            style: {
-              ...node?.style,
-              width: viewSizes[normalizedActiveView].width,
-              height: viewSizes[normalizedActiveView].height,
-            },
-            data: {
-              ...data,
-              label: typeof data.label === 'string' ? data.label : '',
-              color: typeof data.color === 'string' ? data.color : '',
-              visibility,
-              viewPositions,
-              viewSizes,
-            },
-          }
-        }
-
-        return {
-          ...node,
-          id: nodeId,
-          type: nodeType,
-          selected: false,
-          data,
-        }
-      })
-      const nextEdges = normalizeEdges(
-        (payload?.edges ?? []).map((edge, index) => ({
-          ...edge,
-          id: edge?.id ?? `edge-${Date.now()}-${index}`,
-          selected: false,
-          data: edge?.data ?? {},
-        })),
-      )
-      const nextModelName =
-        typeof payload?.modelName === 'string' && payload.modelName.trim()
-          ? payload.modelName
-          : 'Untitled model'
-      const nextAnnotations = payload?.annotations ?? null
-      const nextBasePayload = buildHashPayload({
-        version: payload?.version ?? MODEL_VERSION,
-        modelName: nextModelName,
-        nodes: nextNodes,
-        edges: nextEdges,
-        annotations: nextAnnotations,
-      })
+    (payload, handle, prepared) => {
+      const {
+        nextNodes, nextEdges, nextModelName, nextAnnotations, nextBasePayload,
+      } = prepared ?? prepareLoadedModel(payload)
       if (setModel) {
         setModel(nextNodes, nextEdges, nextModelName)
       } else {
@@ -495,7 +518,6 @@ export function useFileActions({
       }
     },
     [
-      normalizedActiveView,
       setActiveSidebarItem,
       setEdges,
       setModel,
@@ -513,14 +535,15 @@ export function useFileActions({
 
   const requestDiscardChanges = useCallback(
     (action) => {
-      if (!isDirty) {
+      if (confirmActionRef.current) return
+      if (!dirtyRef.current) {
         action()
         return
       }
       confirmActionRef.current = action
       setIsConfirmDialogOpen(true)
     },
-    [isDirty],
+    [],
   )
 
   const onConfirmDiscardChanges = useCallback(() => {
@@ -532,14 +555,16 @@ export function useFileActions({
 
   const onCancelDiscardChanges = useCallback(() => {
     confirmActionRef.current = null
-  }, [])
+    cancelPendingOpen()
+  }, [cancelPendingOpen])
 
   const onConfirmDialogOpenChange = useCallback((open) => {
     setIsConfirmDialogOpen(open)
     if (!open) {
       confirmActionRef.current = null
+      cancelPendingOpen()
     }
-  }, [])
+  }, [cancelPendingOpen])
 
   const onNewModel = useCallback(() => {
     if (setModel) {
@@ -575,224 +600,84 @@ export function useFileActions({
   ])
 
   const onRequestNewModel = useCallback(() => {
+    if (confirmActionRef.current) return
+    cancelPendingOpen()
     requestDiscardChanges(onNewModel)
-  }, [onNewModel, requestDiscardChanges])
+  }, [cancelPendingOpen, onNewModel, requestDiscardChanges])
 
-  const onOpenModel = useCallback(async () => {
-    const runOpen = async () => {
-      const canPickOpen =
-        typeof window !== 'undefined' && 'showOpenFilePicker' in window
-      let fileHandle = null
-      let fileText
-
-      if (canPickOpen) {
-        try {
-          const [handle] = await window.showOpenFilePicker({
-            multiple: false,
-            types: [
-              {
-                description: 'Modelizer Model',
-                accept: { 'application/json': [MODEL_FILE_EXTENSION] },
-              },
-            ],
-          })
-          fileHandle = handle
-          const file = await handle.getFile()
-          fileText = await file.text()
-        } catch (error) {
-          if (error?.name === 'AbortError') {
-            return
-          }
-          console.error('Failed to open model', error)
-          return
-        }
-      } else {
-        fileText = await new Promise((resolve) => {
-          const input = document.createElement('input')
-          input.type = 'file'
-          input.accept = `${MODEL_FILE_EXTENSION},application/json`
-          input.onchange = () => {
-            const file = input.files?.[0]
-            if (!file) {
-              resolve(null)
-              return
-            }
-            file
-              .text()
-              .then(resolve)
-              .catch(() => resolve(null))
-          }
-          input.click()
-        })
+  const startOpen = useCallback(async (file, droppedHandle = null, importFormat = null) => {
+    if (openingRef.current || confirmActionRef.current) return
+    openingRef.current = true
+    setIsOpening(true)
+    const generation = ++openGeneration.current
+    const current = () => openGeneration.current === generation
+    const finish = () => {
+      if (!current()) return
+      openingRef.current = false
+      setIsOpening(false)
+      pickerCleanupRef.current = null
+    }
+    let awaitingConfirmation = false
+    try {
+      const selection = file
+        ? { file, handle: await droppedHandle }
+        : await pickModelFile((cleanup) => { pickerCleanupRef.current = cleanup }, importFormat)
+      if (!current() || !selection) return
+      if (selection.handle?.kind === 'directory') {
+        throw new Error('Drop a .mdlz file, not a folder.')
       }
-
-      if (!fileText) {
-        return
-      }
-
-      let parsed
+      let text
       try {
-        parsed = JSON.parse(fileText)
-      } catch (error) {
-        console.error('Invalid model file', error)
-        return
+        text = await selection.file.text()
+      } catch {
+        throw new Error('The file could not be read. Please select it again.')
       }
-
-      if (!parsed || typeof parsed !== 'object') {
-        return
-      }
-
-      applyLoadedModel(parsed, fileHandle)
-    }
-
-    requestDiscardChanges(() => {
-      runOpen()
-    })
-  }, [applyLoadedModel, requestDiscardChanges])
-
-  const onImportJavaModelizer = useCallback(async () => {
-    const runImport = async () => {
-      const canPickOpen =
-        typeof window !== 'undefined' && 'showOpenFilePicker' in window
-      let fileText
-      let fileName = null
-
-      if (canPickOpen) {
-        try {
-          const [handle] = await window.showOpenFilePicker({
-            multiple: false,
-            types: [
-              {
-                description: 'Java Modelizer Model',
-                accept: { 'application/json': ['.mod'] },
-              },
-            ],
-          })
-          const file = await handle.getFile()
-          fileName = file?.name ?? null
-          fileText = await file.text()
-        } catch (error) {
-          if (error?.name === 'AbortError') {
-            return
-          }
-          console.error('Failed to import model', error)
-          return
-        }
+      if (!current()) return
+      let payload
+      if (importFormat === 'java') {
+        payload = importJavaModelizer(text, selection.file.name)
+      } else if (importFormat === 'mysql') {
+        const { importMySql } = await import('../model/mysqlImport.js')
+        if (!current()) return
+        payload = await importMySql(text, selection.file.name)
       } else {
-        fileText = await new Promise((resolve) => {
-          const input = document.createElement('input')
-          input.type = 'file'
-          input.accept = '.mod,application/json'
-          input.onchange = () => {
-            const file = input.files?.[0]
-            if (!file) {
-              resolve(null)
-              return
-            }
-            fileName = file.name
-            file
-              .text()
-              .then(resolve)
-              .catch(() => resolve(null))
-          }
-          input.click()
-        })
+        payload = parseModelFile(text)
       }
-
-      if (!fileText) {
-        return
-      }
-
-      const payload = importJavaModelizer(fileText, fileName)
-      if (!payload) {
-        return
-      }
-
-      applyLoadedModel(payload, null)
-      const unmatchedCount =
-        payload?.importWarnings?.unmatchedAttributeTypes ?? 0
-      if (unmatchedCount > 0) {
-        onImportWarning?.(unmatchedCount)
-      }
-    }
-
-    requestDiscardChanges(() => {
-      runImport()
-    })
-  }, [applyLoadedModel, onImportWarning, requestDiscardChanges])
-
-  const onImportMySql = useCallback(async () => {
-    const runImport = async () => {
-      const canPickOpen =
-        typeof window !== 'undefined' && 'showOpenFilePicker' in window
-      let fileText
-      let fileName = null
-
-      if (canPickOpen) {
+      if (!current()) return
+      if (!payload) throw new Error('The selected file could not be imported.')
+      const prepared = prepareLoadedModel(payload)
+      const commit = () => {
+        if (!current()) return
         try {
-          const [handle] = await window.showOpenFilePicker({
-            multiple: false,
-            types: [
-              {
-                description: 'MySQL file',
-                accept: { 'text/sql': ['.sql'] },
-              },
-            ],
-          })
-          const file = await handle.getFile()
-          fileName = file?.name ?? null
-          fileText = await file.text()
-        } catch (error) {
-          if (error?.name === 'AbortError') {
-            return
-          }
-          console.error('Failed to import SQL', error)
-          return
+          applyLoadedModel(payload, importFormat ? null : selection.handle, prepared)
+          const unmatchedCount = payload.importWarnings?.unmatchedAttributeTypes ?? 0
+          if (importFormat && unmatchedCount > 0) onImportWarning?.(unmatchedCount)
+        } finally {
+          finish()
         }
-      } else {
-        fileText = await new Promise((resolve) => {
-          const input = document.createElement('input')
-          input.type = 'file'
-          input.accept = '.sql,text/sql'
-          input.onchange = () => {
-            const file = input.files?.[0]
-            if (!file) {
-              resolve(null)
-              return
-            }
-            fileName = file.name
-            file
-              .text()
-              .then(resolve)
-              .catch(() => resolve(null))
-          }
-          input.click()
-        })
       }
-
-      if (!fileText) {
-        return
+      awaitingConfirmation = dirtyRef.current
+      requestDiscardChanges(commit)
+    } catch (error) {
+      if (current() && error?.name !== 'AbortError') {
+        onFileError?.(error?.message || 'The model could not be opened.')
       }
-
-      const { importMySql } = await import('../model/mysqlImport.js')
-      const payload = await importMySql(fileText, fileName)
-      if (!payload) {
-        return
-      }
-
-      applyLoadedModel(payload, null)
-      const unmatchedCount =
-        payload?.importWarnings?.unmatchedAttributeTypes ?? 0
-      if (unmatchedCount > 0) {
-        onImportWarning?.(unmatchedCount)
-      }
+    } finally {
+      if (!awaitingConfirmation) finish()
     }
+  }, [applyLoadedModel, onFileError, onImportWarning, requestDiscardChanges])
 
-    requestDiscardChanges(() => {
-      runImport()
-    })
-  }, [applyLoadedModel, onImportWarning, requestDiscardChanges])
+  const onOpenModel = useCallback(() => startOpen(), [startOpen])
+  const onOpenModelFile = useCallback((file, handle) => startOpen(file, handle), [startOpen])
 
+  const startImport = useCallback((format) => {
+    if (confirmActionRef.current) return
+    cancelPendingOpen()
+    return startOpen(undefined, null, format)
+  }, [cancelPendingOpen, startOpen])
+
+  const onImportJavaModelizer = useCallback(() => startImport('java'), [startImport])
+  const onImportMySql = useCallback(() => startImport('mysql'), [startImport])
 
   const onSaveModelAs = useCallback(async () => {
     const basePayload = buildModelPayload()
@@ -865,6 +750,8 @@ export function useFileActions({
 
   return {
     isDirty,
+    isOpening,
+    onOpenModelFile,
     isConfirmDialogOpen,
     onConfirmDialogOpenChange,
     onConfirmDiscardChanges,

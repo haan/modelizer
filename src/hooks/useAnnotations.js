@@ -116,7 +116,7 @@ function normalizeTextItem(item) {
   }
 }
 
-function normalizeAnnotations(raw) {
+export function normalizeAnnotations(raw) {
   const result = makeEmptyAnnotations()
   if (!raw || typeof raw !== 'object') return result
   for (const view of VIEWS) {
