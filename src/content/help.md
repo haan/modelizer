@@ -184,7 +184,7 @@ Reflexive associations can be resized when selected:
 - Opening or importing a model switches to conceptual view and runs fit view.
 - You can also drop one `.mdlz` file anywhere on the Modelizer page. Folders and multiple files are not supported.
 - Model files are read and validated before you are asked to discard unsaved changes. Canceling or opening an invalid file keeps your current model.
-- After opening a dropped file, the first **Save** uses **Save As** (or downloads a copy, depending on your browser).
+- When your browser supports file handles for dropped files (such as Chrome and Edge), **Save** writes back to the dropped file; the browser may ask for permission. Otherwise, the first **Save** uses **Save As** or downloads a copy.
 - **File → Open** remains available for keyboard and mobile/tablet use.
 
 ### Import

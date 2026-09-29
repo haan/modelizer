@@ -16,6 +16,32 @@ const setup = (disabled = false) => {
 afterEach(() => { cleanup(); document.body.innerHTML = '' })
 
 describe('window model drops', () => {
+  it('captures the file handle synchronously during the drop event', async () => {
+    const { props } = setup()
+    const file = { name: 'model.mdlz' }
+    const handle = { kind: 'file', createWritable: vi.fn() }
+    const getAsFileSystemHandle = vi.fn().mockResolvedValue(handle)
+    dispatch('drop', { ...transfer([file]), items: [{ kind: 'file', getAsFileSystemHandle }] })
+    expect(getAsFileSystemHandle).toHaveBeenCalledOnce()
+    expect(props.onOpenModelFile).toHaveBeenCalledExactlyOnceWith(file, expect.any(Promise))
+    await expect(props.onOpenModelFile.mock.calls[0][1]).resolves.toBe(handle)
+  })
+
+  it.each(['throws', 'rejects', 'null'])('falls back to a plain File when handle acquisition %s', async (failure) => {
+    const { props } = setup()
+    const file = { name: 'model.mdlz' }
+    const getAsFileSystemHandle = vi.fn(() => {
+      if (failure === 'throws') throw new Error('Unavailable')
+      if (failure === 'rejects') return Promise.reject(new Error('Unavailable'))
+      return Promise.resolve(null)
+    })
+    dispatch('drop', { ...transfer([file]), items: [{ kind: 'file', getAsFileSystemHandle }] })
+    expect(props.onOpenModelFile).toHaveBeenCalledOnce()
+    expect(props.onOpenModelFile.mock.calls[0][0]).toBe(file)
+    expect(await props.onOpenModelFile.mock.calls[0][1]).toBeFalsy()
+    expect(props.onFileError).not.toHaveBeenCalled()
+  })
+
   it('accepts uppercase extensions, prevents navigation, and opens exactly once', () => {
     const { props, result } = setup()
     dispatch('dragenter')

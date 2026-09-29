@@ -170,7 +170,50 @@ describe('shared model opening', () => {
     expect(result.current.isDirty).toBe(false)
   })
 
-  it('preserves the existing handle on failure/cancel and clears it after a successful drop', async () => {
+  it('saves directly to the dropped handle once it resolves without selecting a file again', async () => {
+    const { result } = setup()
+    const acquisition = deferred()
+    const writable = { write: vi.fn(), close: vi.fn() }
+    const handle = { kind: 'file', createWritable: vi.fn().mockResolvedValue(writable) }
+    window.showSaveFilePicker = vi.fn()
+    let pending
+    act(() => { pending = result.current.onOpenModelFile(fileFor(), acquisition.promise) })
+    expect(result.current.isOpening).toBe(true)
+    const ignored = fileFor()
+    await act(async () => { await result.current.onOpenModelFile(ignored) })
+    expect(ignored.text).not.toHaveBeenCalled()
+    await act(async () => { acquisition.resolve(handle); await pending })
+    act(() => { result.current.setModelName('Changed after dropping') })
+    await act(async () => { await result.current.onSaveModel() })
+    expect(handle.createWritable).toHaveBeenCalledOnce()
+    expect(JSON.parse(writable.write.mock.calls[0][0]).modelName).toBe('Changed after dropping')
+    expect(writable.close).toHaveBeenCalledOnce()
+    expect(window.showSaveFilePicker).not.toHaveBeenCalled()
+    expect(result.current.isDirty).toBe(false)
+  })
+
+  it('does not apply a dropped file when its pending handle is superseded by New', async () => {
+    const { result, onModelLoaded } = setup()
+    const acquisition = deferred()
+    const file = fileFor()
+    let pending
+    act(() => { pending = result.current.onOpenModelFile(file, acquisition.promise) })
+    act(() => { result.current.onRequestNewModel() })
+    await act(async () => { acquisition.resolve({ kind: 'file' }); await pending })
+    expect(file.text).not.toHaveBeenCalled()
+    expect(onModelLoaded).not.toHaveBeenCalled()
+    expect(result.current.isOpening).toBe(false)
+  })
+
+  it('rejects directory handles without replacing the model', async () => {
+    const { result, onFileError } = setup()
+    await act(async () => { await result.current.onOpenModelFile(fileFor(), Promise.resolve({ kind: 'directory' })) })
+    expect(onFileError).toHaveBeenCalledWith(expect.stringContaining('folder'))
+    expect(result.current.modelName).toBe('Untitled model')
+    expect(result.current.isOpening).toBe(false)
+  })
+
+  it('preserves the existing handle on failure/cancel and clears it after a drop without a handle', async () => {
     const { result } = setup()
     const writable = { write: vi.fn(), close: vi.fn() }
     const original = { getFile: async () => fileFor(), createWritable: vi.fn().mockResolvedValue(writable) }
@@ -178,9 +221,9 @@ describe('shared model opening', () => {
     window.showOpenFilePicker = vi.fn().mockResolvedValue([original])
     window.showSaveFilePicker = vi.fn().mockResolvedValue(replacement)
     await act(async () => { await result.current.onOpenModel() })
-    await act(async () => { await result.current.onOpenModelFile(fileFor({})) })
+    await act(async () => { await result.current.onOpenModelFile(fileFor({}), replacement) })
     act(() => { result.current.setModelName('Edit') })
-    await act(async () => { await result.current.onOpenModelFile(fileFor()) })
+    await act(async () => { await result.current.onOpenModelFile(fileFor(), replacement) })
     act(() => { result.current.onConfirmDialogOpenChange(false) })
     await act(async () => { await result.current.onSaveModel() })
     expect(original.createWritable).toHaveBeenCalledOnce()

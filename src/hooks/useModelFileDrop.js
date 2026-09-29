@@ -41,6 +41,17 @@ export function useModelFileDrop({ onOpenModelFile, onFileError, disabled = fals
         onFileError('Drop exactly one .mdlz file. Folders and other file types are not supported.')
         return
       }
+      const item = Array.from(event.dataTransfer.items ?? []).find((entry) => entry.kind === 'file')
+      if (typeof item?.getAsFileSystemHandle === 'function') {
+        try {
+          // Capture during the drop event; browsers clear the drag data after it returns.
+          const handle = Promise.resolve(item.getAsFileSystemHandle()).catch(() => null)
+          onOpenModelFile(files[0], handle)
+          return
+        } catch {
+          // Reading the File still works when acquiring a persistent handle does not.
+        }
+      }
       onOpenModelFile(files[0])
     }
     const handlers = { dragenter: enter, dragover: over, dragleave: leave, drop, blur: reset }

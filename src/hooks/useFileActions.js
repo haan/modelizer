@@ -604,7 +604,7 @@ export function useFileActions({
     requestDiscardChanges(onNewModel)
   }, [cancelPendingOpen, onNewModel, requestDiscardChanges])
 
-  const startOpen = useCallback(async (file) => {
+  const startOpen = useCallback(async (file, droppedHandle = null) => {
     if (openingRef.current || confirmActionRef.current) return
     openingRef.current = true
     setIsOpening(true)
@@ -619,9 +619,12 @@ export function useFileActions({
     let awaitingConfirmation = false
     try {
       const selection = file
-        ? { file, handle: null }
+        ? { file, handle: await droppedHandle }
         : await pickModelFile((cleanup) => { pickerCleanupRef.current = cleanup })
       if (!current() || !selection) return
+      if (selection.handle?.kind === 'directory') {
+        throw new Error('Drop a .mdlz file, not a folder.')
+      }
       let text
       try {
         text = await selection.file.text()
@@ -651,7 +654,7 @@ export function useFileActions({
   }, [applyLoadedModel, onFileError, requestDiscardChanges])
 
   const onOpenModel = useCallback(() => startOpen(), [startOpen])
-  const onOpenModelFile = useCallback((file) => startOpen(file), [startOpen])
+  const onOpenModelFile = useCallback((file, handle) => startOpen(file, handle), [startOpen])
 
   const onImportJavaModelizer = useCallback(async () => {
     if (confirmActionRef.current) return
