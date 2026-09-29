@@ -1,5 +1,4 @@
 import { afterEach, describe, expect, it, vi } from 'vitest'
-import { readFileSync } from 'node:fs'
 import { parseModelFile, pickModelFile } from '../modelOpening.js'
 
 afterEach(() => {
@@ -9,9 +8,15 @@ afterEach(() => {
 })
 
 describe('model file validation', () => {
-  it('accepts the bundled example including virtual association endpoints', () => {
-    const text = readFileSync('import/Convention_Example.mdlz', 'utf8')
-    const original = JSON.parse(text)
+  it('accepts virtual association endpoints only when their base association exists', () => {
+    const original = {
+      nodes: ['a', 'b', 'c'].map((id) => ({ id, type: 'class', position: { x: 0, y: 0 } })),
+      edges: [
+        { id: 'base', type: 'association', source: 'a', target: 'b' },
+        { id: 'link', type: 'associativeAssociation', source: 'c', target: 'assoc-edge-base' },
+      ],
+    }
+    const text = JSON.stringify(original)
     const loaded = parseModelFile(text)
     expect(loaded.nodes).toHaveLength(original.nodes.length)
     expect(loaded.edges).toHaveLength(original.edges.length)
