@@ -1,7 +1,7 @@
 import { forwardRef } from 'react'
 
 const baseClass =
-  'w-full rounded-md border border-base-content/20 bg-transparent focus:outline-none focus:ring-1 focus:ring-ring'
+  'w-full rounded-md border border-control-border bg-transparent focus:outline-none focus:ring-1 focus:ring-ring'
 const sizes = {
   xs: 'h-6 px-1 py-0.5 text-xs',
   sm: 'h-7 px-2 py-1 text-sm',

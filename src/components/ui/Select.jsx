@@ -1,7 +1,7 @@
 import * as Select from '@radix-ui/react-select'
 
 const triggerBase =
-  'flex w-full items-center justify-between whitespace-nowrap rounded-md border border-base-content/20 bg-transparent px-2 py-1 text-xs shadow-sm focus:outline-none focus:ring-1 focus:ring-ring disabled:cursor-not-allowed disabled:opacity-50'
+  'flex w-full items-center justify-between whitespace-nowrap rounded-md border border-control-border bg-transparent px-2 py-1 text-xs shadow-sm focus:outline-none focus:ring-1 focus:ring-ring disabled:cursor-not-allowed disabled:opacity-50'
 const contentBase =
   'z-50 min-w-[8rem] overflow-hidden rounded-md border border-base-content/20 bg-base-100 shadow-lg'
 const itemBase =

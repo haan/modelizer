@@ -1,4 +1,40 @@
-/* Intentionally left empty; React Flow styling lives in component classes. */
+/* React Flow's built-in controls use fixed light colors by default. */
+.react-flow__controls-button {
+    color: rgb(var(--color-base-content));
+    background: rgb(var(--color-base-100));
+    border-color: rgb(var(--color-base-content) / 0.2);
+}
+
+.react-flow__controls-button:hover {
+    background: rgb(var(--color-base-200));
+}
+
+.react-flow__controls-button svg {
+    fill: currentColor;
+}
+
+.react-flow__controls-button:focus-visible {
+    outline: 2px solid rgb(var(--color-ring));
+    outline-offset: 2px;
+}
+
+.react-flow__attribution {
+    background: rgb(var(--color-base-100) / 0.8);
+}
+
+.react-flow__attribution a {
+    color: rgb(var(--color-muted-foreground));
+}
+
+.react-flow__connection-path {
+    stroke: rgb(var(--color-primary));
+}
+
+.react-flow__selection,
+.react-flow__nodesselection-rect {
+    background: rgb(var(--color-selection) / 0.12);
+    border: 1px solid rgb(var(--color-selection));
+}
 
 .react-flow__handle-left {
     top: 50%;

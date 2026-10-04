@@ -3,13 +3,16 @@
 @import "tailwindcss";
 @import "./xy-theme.css";
 
-:root {
+:root,
+[data-theme='light'] {
+  color-scheme: light;
   --color-base-100: 255 255 255;
   --color-base-200: 245 245 245;
   --color-base-300: 229 231 235;
   --color-base-content: 31 41 55;
   --color-primary: 59 130 246;
   --color-primary-content: 255 255 255;
+  --color-primary-label: 59 130 246;
   --color-secondary: 239 68 68;
   --color-accent: 245 158 11;
   --color-accent-foreground: 17 24 39;
@@ -17,6 +20,50 @@
   --color-input: 229 231 235;
   --color-background: 255 255 255;
   --color-muted-foreground: 107 114 128;
+  --color-danger: 185 28 28;
+  --color-grid: 129 129 138;
+  --color-note: 254 243 199;
+  --color-note-border: 253 230 138;
+  --color-note-content: 120 53 15;
+  --color-selection: 37 99 235;
+  --color-control-border: 31 41 55;
+  --opacity-control-border: 0.2;
+  --opacity-checkbox-border: 0.3;
+  --opacity-subtle: 0.5;
+}
+
+[data-theme='dark'] {
+  color-scheme: dark;
+  --color-base-100: 30 41 59;
+  --color-base-200: 15 23 42;
+  --color-base-300: 51 65 85;
+  --color-base-content: 226 232 240;
+  --color-primary: 96 165 250;
+  --color-primary-content: 15 23 42;
+  --color-primary-label: 147 197 253;
+  --color-secondary: 248 113 113;
+  --color-accent: 251 191 36;
+  --color-accent-foreground: 15 23 42;
+  --color-ring: 96 165 250;
+  --color-input: 148 163 184;
+  --color-background: 15 23 42;
+  --color-muted-foreground: 148 163 184;
+  --color-danger: 248 113 113;
+  --color-grid: 71 85 105;
+  --color-note: 69 26 3;
+  --color-note-border: 180 83 9;
+  --color-note-content: 254 243 199;
+  --color-selection: 96 165 250;
+  --color-control-border: 148 163 184;
+  --opacity-control-border: 1;
+  --opacity-checkbox-border: 1;
+  --opacity-subtle: 0.7;
+}
+
+body,
+[data-theme] {
+  color: rgb(var(--color-base-content));
+  background-color: rgb(var(--color-background));
 }
 
 @keyframes toast-slide-in {
@@ -57,7 +104,7 @@
 }
 
 .toast-root {
-  background-color: white;
+  background-color: rgb(var(--color-base-100));
   border: 1px solid rgb(var(--color-accent) / 0.6);
   border-left-width: 4px;
   border-radius: 8px;

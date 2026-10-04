@@ -5,8 +5,9 @@ function buildCircleCursor(diameter, color, fillOpacity = 0) {
   const size = Math.min(128, Math.max(8, Math.round(diameter) + 4))
   const r = (size - 2) / 2
   const cx = size / 2
+  // A two-tone outline keeps even black/white drawing cursors visible on either theme.
   const svg = encodeURIComponent(
-    `<svg xmlns="http://www.w3.org/2000/svg" width="${size}" height="${size}"><circle cx="${cx}" cy="${cx}" r="${r}" stroke="${color}" stroke-width="1.5" fill="${color}" fill-opacity="${fillOpacity}"/></svg>`
+    `<svg xmlns="http://www.w3.org/2000/svg" width="${size}" height="${size}"><circle cx="${cx}" cy="${cx}" r="${Math.max(1, r - 1)}" stroke="white" stroke-width="4" fill="none"/><circle cx="${cx}" cy="${cx}" r="${Math.max(1, r - 1)}" stroke="black" stroke-width="2.5" fill="none"/><circle cx="${cx}" cy="${cx}" r="${Math.max(1, r - 1)}" stroke="${color}" stroke-width="1.5" fill="${color}" fill-opacity="${fillOpacity}"/></svg>`
   )
   return `url("data:image/svg+xml,${svg}") ${cx} ${cx}, crosshair`
 }
@@ -239,7 +240,7 @@ function TextSelection({ bounds, zoom }) {
         width={bounds.width}
         height={bounds.height}
         fill="none"
-        stroke="#2563eb"
+        stroke="rgb(var(--color-selection))"
         strokeWidth={1.5 / zoom}
         strokeDasharray={`${4 / zoom} ${3 / zoom}`}
       />
@@ -251,8 +252,8 @@ function TextSelection({ bounds, zoom }) {
           width={handleSize}
           height={handleSize}
           rx={1 / zoom}
-          fill="#ffffff"
-          stroke="#2563eb"
+          fill="rgb(var(--color-base-100))"
+          stroke="rgb(var(--color-selection))"
           strokeWidth={1.25 / zoom}
         />
       ))}

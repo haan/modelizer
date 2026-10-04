@@ -142,7 +142,7 @@ export default function ClassesPanelAttributesItem({
             <button
               ref={setActivatorNodeRef}
               type="button"
-              className="inline-flex h-5 w-5 items-center justify-center rounded-md text-base-content/50 hover:bg-base-300 hover:text-base-content cursor-grab active:cursor-grabbing"
+              className="inline-flex h-5 w-5 items-center justify-center rounded-md text-subtle hover:bg-base-300 hover:text-base-content cursor-grab active:cursor-grabbing"
               onClick={(event) => event.stopPropagation()}
               onMouseDown={(event) => event.stopPropagation()}
               aria-label={`Reorder ${attributeNoun}`}
@@ -442,7 +442,7 @@ export default function ClassesPanelAttributesItem({
           ) : null}
           <div className="flex items-center justify-center pt-2">
             <button
-              className="inline-flex h-7 items-center justify-center gap-2 whitespace-nowrap rounded-md px-2 text-xs font-medium text-red-700 transition-colors hover:bg-base-300 focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:pointer-events-none disabled:opacity-50 [&_svg]:pointer-events-none [&_svg]:size-4 [&_svg]:shrink-0"
+              className="inline-flex h-7 items-center justify-center gap-2 whitespace-nowrap rounded-md px-2 text-xs font-medium text-danger transition-colors hover:bg-base-300 focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:pointer-events-none disabled:opacity-50 [&_svg]:pointer-events-none [&_svg]:size-4 [&_svg]:shrink-0"
               type="button"
               onClick={onDelete}
             >

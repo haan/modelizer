@@ -1,7 +1,8 @@
 import { Handle } from 'reactflow'
+import HandleDot from './HandleDot.jsx'
 
 const HANDLE_BASE_CLASS =
-  'opacity-0 transition-opacity rounded-full w-4 h-4 border-2 border-base-100 bg-accent'
+  'opacity-0 transition-opacity rounded-full w-4 h-4 border-0 bg-transparent'
 const HANDLE_SOURCE_CLASS = `${HANDLE_BASE_CLASS} group-hover/node:opacity-100 group-[.is-connecting]/flow:opacity-0 group-[.is-connecting]/flow:pointer-events-none`
 const HANDLE_TARGET_CLASS = `${HANDLE_BASE_CLASS} pointer-events-none group-[.is-connecting]/flow:pointer-events-auto group-[.is-connecting]/flow:opacity-100`
 
@@ -33,6 +34,8 @@ export default function CompositionHandle({
       isConnectable={isActive}
       style={style}
       {...connectableProps}
-    />
+    >
+      <HandleDot color="accent" />
+    </Handle>
   )
 }

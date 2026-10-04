@@ -2,7 +2,7 @@ import * as Checkbox from '@radix-ui/react-checkbox'
 import { CheckIcon } from '@radix-ui/react-icons'
 
 const baseClass =
-  'flex h-4 w-4 items-center justify-center rounded border border-base-content/30 bg-base-100 text-base-content shadow-sm focus:outline-none focus:ring-1 focus:ring-ring data-[state=checked]:border-base-content/70'
+  'flex h-4 w-4 items-center justify-center rounded border border-checkbox-border bg-base-100 text-base-content shadow-sm focus:outline-none focus:ring-1 focus:ring-ring data-[state=checked]:border-base-content/70'
 
 export default function CheckboxInput({
   checked,

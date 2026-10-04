@@ -42,7 +42,7 @@ function ToolButton({ label, active, disabled, onClick, children }) {
         aria-label={label}
         onClick={onClick}
         disabled={disabled}
-        className={`flex h-8 w-8 items-center justify-center rounded-md transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-base-content/20 disabled:cursor-not-allowed disabled:opacity-40 ${
+        className={`flex h-8 w-8 items-center justify-center rounded-md transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-40 ${
           active
             ? 'bg-primary text-primary-content shadow-sm'
             : 'text-base-content hover:bg-base-300'
@@ -210,7 +210,7 @@ const ColorSwatchButton = forwardRef(function ColorSwatchButton(
       ref={ref}
       type="button"
       aria-label={label}
-      className="flex h-8 w-8 items-center justify-center rounded-md transition-colors hover:bg-base-300 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-base-content/20"
+      className="flex h-8 w-8 items-center justify-center rounded-md transition-colors hover:bg-base-300 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
     >
       <span
         className="h-5 w-5 rounded-full border border-base-content/30 shadow-sm"
@@ -232,7 +232,7 @@ const EraserSizeButton = forwardRef(function EraserSizeButton(
       ref={ref}
       type="button"
       aria-label="Eraser options"
-      className="flex h-8 w-8 items-center justify-center rounded-md transition-colors hover:bg-base-300 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-base-content/20"
+      className="flex h-8 w-8 items-center justify-center rounded-md transition-colors hover:bg-base-300 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
     >
       <span
         className="rounded-full border border-base-content/40 bg-base-content/25"
@@ -459,7 +459,7 @@ export default function AnnotationToolbox({
             type="button"
             aria-label="Clear annotations in this view"
             onClick={() => setIsClearDialogOpen(true)}
-            className="flex h-8 w-8 items-center justify-center rounded-md text-base-content transition-colors hover:bg-base-300 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-base-content/20"
+            className="flex h-8 w-8 items-center justify-center rounded-md text-base-content transition-colors hover:bg-base-300 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
           >
             <TrashIcon />
           </button>

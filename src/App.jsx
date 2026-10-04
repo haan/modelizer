@@ -17,6 +17,7 @@ import { InfoPanel, Navbar, Sidebar } from './components/layout/index.js'
 import { useFileActions } from './hooks/useFileActions.js'
 import { useModelFileDrop } from './hooks/useModelFileDrop.js'
 import { useKeyboardShortcuts } from './hooks/useKeyboardShortcuts.js'
+import { useTheme } from './hooks/useTheme.js'
 import { useModelState } from './hooks/useModelState.js'
 import DefaultValuesPanel from './components/flow/overlays/DefaultValuesPanel.jsx'
 import AnnotationLayer from './components/annotations/AnnotationLayer.jsx'
@@ -113,6 +114,7 @@ const writeStoredString = (key, value) => {
 }
 
 function App() {
+  const { theme, toggleTheme } = useTheme()
   const reactFlowWrapper = useRef(null)
   const [reactFlowInstance, setReactFlowInstance] = useState(null)
   // Stable ref-based bridge to break the circular dependency between useModelState
@@ -919,6 +921,8 @@ function App() {
         )}
         <div className="flex h-full flex-col">
           <Navbar
+            theme={theme}
+            onToggleTheme={toggleTheme}
             modelName={modelName}
             onRenameModel={setModelName}
             onNewModel={onRequestNewModel}
@@ -1041,7 +1045,7 @@ function App() {
                 showAreas={showAreas}
               />
             ) : null}
-            <main className="flex-1 min-w-0 bg-base-100">
+            <main className="flex-1 min-w-0 bg-background">
               <div
                 className={`group/flow relative h-full w-full ${isConnecting ? 'is-connecting' : ''}`}
                 ref={reactFlowWrapper}
@@ -1073,7 +1077,7 @@ function App() {
                   <div data-no-export="true">
                     <Controls position="bottom-right" />
                   </div>
-                  {showBackground ? <Background gap={16} size={1} /> : null}
+                  {showBackground ? <Background gap={16} size={1} color="rgb(var(--color-grid))" /> : null}
                   {showAnnotations ? (
                     <>
                       <AnnotationLayer

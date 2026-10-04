@@ -165,7 +165,7 @@ export default function ClassesPanelItem({
             <button
               ref={setActivatorNodeRef}
               type="button"
-              className="inline-flex h-6 w-6 items-center justify-center rounded-md text-base-content/50 transition-opacity hover:bg-base-200 hover:text-base-content cursor-grab active:cursor-grabbing"
+              className="inline-flex h-6 w-6 items-center justify-center rounded-md text-subtle transition-opacity hover:bg-base-200 hover:text-base-content cursor-grab active:cursor-grabbing"
               onClick={(event) => event.stopPropagation()}
               onMouseDown={(event) => event.stopPropagation()}
               aria-label={`Reorder ${entityNoun}`}

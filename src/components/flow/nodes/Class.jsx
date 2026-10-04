@@ -92,7 +92,7 @@ export function Class({ data, id, selected }) {
         : '0px'
     columnTemplate = `minmax(0, 1fr) ${typeColumnWidth} ${constraintsColumnWidth}`
   }
-  const borderClass = selected ? 'border-primary' : 'border-base-content/70'
+  const borderClass = selected ? 'stroke-primary' : 'stroke-base-content/70'
   useLayoutEffect(() => {
     if (!showAttributeHandles) {
       return
@@ -116,8 +116,21 @@ export function Class({ data, id, selected }) {
       className="group/node min-w-[180px] text-base-content"
     >
       <div
-        className={`rounded-lg border-2 bg-base-100 shadow-sm hover:border-primary ${borderClass}`}
+        className="group/class-frame relative rounded-lg bg-base-100 p-[2px] shadow-sm"
       >
+        <svg
+          className={`pointer-events-none absolute inset-0 h-full w-full overflow-visible fill-none group-hover/class-frame:stroke-primary ${borderClass}`}
+          aria-hidden="true"
+          focusable="false"
+        >
+          <rect
+            x="1"
+            y="1"
+            rx="7"
+            strokeWidth="2"
+            style={{ width: 'calc(100% - 2px)', height: 'calc(100% - 2px)' }}
+          />
+        </svg>
         <div
           data-accent-bar="true"
           className="h-2 w-full rounded-t-[6px]"

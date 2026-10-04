@@ -19,10 +19,19 @@ It is intentionally **not** a smart assistant:
 - **File**: New, Open, Save, Save As, Import (Java Modelizer / MySQL), Export as PNG.
 - **Edit**: Undo and Redo recorded modeling changes.
 - **Settings**: toggle composite aggregation, conceptual operations compartment, confirmation dialogs, PNG accent colors, Notes, Areas, and Annotations.
-- **View**: background, accent colors, fullscreen, view-specific settings toggle, constraint display mode.
+- **View**: dark mode, background, accent colors, fullscreen, view-specific settings toggle, constraint display mode.
 - **Help**: opens this dialog plus the About tab.
 
+In **Settings** and **View**, a checkmark means an option is enabled; select it to
+toggle it. Labels stay the same in either state. The **Constraints** submenu uses
+radio dots because exactly one display mode is selected at a time.
+
 ### Header
+Use **View > Dark mode** to switch the whole editor to a dark appearance. Light is
+the default and your preference is remembered in this browser. It does not change
+your model or undo history. PNG exports always use light styling; user-selected
+class, area, and annotation colors remain unchanged.
+
 - The model name appears in the center of the header.
 - Hover the model name and use the edit button to rename it.
 - A `*` next to the model name means there are unsaved changes.
@@ -44,7 +53,7 @@ It is intentionally **not** a smart assistant:
 - Shows classes and associations.
 - Relationships are hidden.
 - Attribute handles are hidden.
-- Optional operations compartment can be shown with `Settings > Enable operations compartment`.
+- Optional operations compartment can be shown with `Settings > Operations compartment`.
 
 ### Logical
 - Shows tables and relationships.
@@ -84,15 +93,15 @@ It is intentionally **not** a smart assistant:
   - delete
 
 ### View-specific settings
-- Enable with `View > Show only view-specific settings`.
+- Enable with `View > View-specific settings only`.
 - In conceptual view, class and attribute logical names and physical-only fields are hidden.
 - In logical view, physical-only fields are hidden.
 - In physical view, all attribute/column settings are shown.
 
 ### Constraint display mode
-- `View > Constraints > Show Null`: nullable attributes show `N`.
-- `View > Constraints > Show Not Null` (default): non-nullable attributes show `NN`.
-- `View > Constraints > Show Null as ?`: nullable attributes append `?` to type in physical class/table rendering.
+- `View > Constraints > Null`: nullable attributes show `N`.
+- `View > Constraints > Not Null` (default): non-nullable attributes show `NN`.
+- `View > Constraints > Null as ?`: nullable attributes append `?` to type in physical class/table rendering.
 
 In physical class/table rendering, attributes with a default value are marked with `*` after the name.
 
@@ -129,7 +138,7 @@ Reflexive associations can be resized when selected:
 - vertical handle: adjusts loop height
 
 ### Composition
-- Enable via `Settings > Enable composite aggregation`.
+- Enable via `Settings > Composite aggregation`.
 - Created by toggling **Composite aggregation** in an association item in Refs.
 - Uses association data (name, multiplicities, roles, comments) and keeps it when toggled.
 - Hidden from conceptual canvas and Refs when composition setting is disabled.
@@ -152,20 +161,20 @@ Reflexive associations can be resized when selected:
 ## Notes, Areas, and Annotations
 
 ### Notes
-- Disabled by default (`Settings > Enable notes`).
+- Disabled by default (`Settings > Notes`).
 - Notes panel allows add, rename, focus, visibility per view group, text editing, and delete.
 - Notes are draggable on the canvas.
 - Positions are stored per view and synchronized to later views until manually moved there.
 
 ### Areas
-- Disabled by default (`Settings > Enable areas`).
+- Disabled by default (`Settings > Areas`).
 - Areas are colored, resizable regions for visual grouping.
 - Areas panel allows add, rename, focus, color, visibility per view group, and delete.
 - Areas render behind classes/edges and above the background.
 - Position and size are stored per view and synchronized similarly to classes/notes.
 
 ### Annotations
-- Disabled by default (`Settings > Enable annotations`).
+- Disabled by default (`Settings > Annotations`).
 - Annotations are stored separately for conceptual, logical, and physical views.
 - Tools: pointer, pen, marker, text, eraser, clear current view.
 - Pen and marker support color and thickness; marker also supports opacity.
@@ -217,10 +226,11 @@ MySQL importer notes:
 
 ## View options
 
-- **Show/Hide background**
-- **Show/Hide accent colors**
-- **Show/Hide fullscreen**: hides sidebar and information panel.
-- **Show only view-specific settings / Show all the settings**
+- **Dark mode**
+- **Background grid**
+- **Accent colors**
+- **Fullscreen**: hides sidebar and information panel.
+- **View-specific settings only**
 - **Constraints**: choose how nullable and non-nullable attributes are displayed.
 
 ## Shortcuts
@@ -264,9 +274,9 @@ MySQL importer notes:
 - Background: enabled
 - Accent colors: enabled
 - Conceptual operations compartment: disabled
-- Constraint display: Show Not Null
+- Constraint display: Not Null
 - Confirmation dialogs: enabled
-- Include accent colors in PNG export: enabled
+- Accent colors in PNG exports: enabled
 - View-specific settings only: disabled
 - Fullscreen: disabled
 - Composite aggregation: disabled

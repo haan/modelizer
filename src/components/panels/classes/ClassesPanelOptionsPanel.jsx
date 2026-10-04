@@ -90,7 +90,7 @@ export default function ClassesPanelOptionsPanel({
               strokeWidth="2"
               strokeLinecap="round"
               strokeLinejoin="round"
-              className="lucide lucide-trash2 lucide-trash-2 mr-1 h-3.5 w-3.5 text-red-700"
+              className="lucide lucide-trash2 lucide-trash-2 mr-1 h-3.5 w-3.5 text-danger"
               aria-hidden="true"
             >
               <path d="M10 11v6" />
@@ -99,7 +99,7 @@ export default function ClassesPanelOptionsPanel({
               <path d="M3 6h18" />
               <path d="M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2" />
             </svg>
-            <div className="text-red-700">Delete</div>
+            <div className="text-danger">Delete</div>
           </button>
         </div>
       </div>

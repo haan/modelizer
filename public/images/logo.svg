@@ -1,0 +1,33 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 50 50" fill="none">
+  <defs>
+    <linearGradient id="database" x1="17" y1="10" x2="33" y2="10" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#1677b8"/>
+      <stop offset=".45" stop-color="#73c5ef"/>
+      <stop offset="1" stop-color="#166ba6"/>
+    </linearGradient>
+    <linearGradient id="lid" x1="25" y1="2" x2="25" y2="8" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#d5efff"/>
+      <stop offset="1" stop-color="#50a8dc"/>
+    </linearGradient>
+  </defs>
+
+  <!-- The pale outer stroke keeps the original dark connectors visible on slate. -->
+  <path d="M25 17v9M8 35V26h34v9M25 26v9" stroke="#e2e8f0" stroke-width="3.5" stroke-linecap="round" stroke-linejoin="round"/>
+  <path d="M25 17v9M8 35V26h34v9M25 26v9" stroke="#475569" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+
+  <!-- Database cylinder. -->
+  <path d="M17 5c0-1.7 3.6-3 8-3s8 1.3 8 3v11c0 1.7-3.6 3-8 3s-8-1.3-8-3Z" fill="url(#database)" stroke="#cbd5e1" stroke-width="1.5"/>
+  <path d="M17.5 10c1.4 1.5 4.3 2.2 7.5 2.2s6.1-.7 7.5-2.2M17.5 14c1.4 1.5 4.3 2.2 7.5 2.2s6.1-.7 7.5-2.2" stroke="#d5efff" stroke-width="1"/>
+  <ellipse cx="25" cy="5" rx="8" ry="3" fill="url(#lid)" stroke="#e2e8f0" stroke-width="1.2"/>
+
+  <!-- Three related tables retain the original blue, amber, and green headers. -->
+  <g stroke="#94a3b8" stroke-width="1">
+    <rect x="1.5" y="34.5" width="13" height="14" rx="1.5" fill="#f8fafc"/>
+    <rect x="18.5" y="34.5" width="13" height="14" rx="1.5" fill="#f8fafc"/>
+    <rect x="35.5" y="34.5" width="13" height="14" rx="1.5" fill="#f8fafc"/>
+  </g>
+  <path d="M2 36a1 1 0 0 1 1-1h10a1 1 0 0 1 1 1v3H2Z" fill="#38a4dd"/>
+  <path d="M19 36a1 1 0 0 1 1-1h10a1 1 0 0 1 1 1v3H19Z" fill="#f0ac36"/>
+  <path d="M36 36a1 1 0 0 1 1-1h10a1 1 0 0 1 1 1v3H36Z" fill="#86b83e"/>
+  <path d="M5.5 39v9M22.5 39v9M39.5 39v9M2 42h12M2 45h12M19 42h12M19 45h12M36 42h12M36 45h12" stroke="#94a3b8" stroke-width=".75"/>
+</svg>

@@ -44,6 +44,7 @@ export function shouldIncludePngExportNode(node, includeAccentColorsInExport) {
 
 function createOffscreenContainer(width, height) {
   const container = document.createElement('div')
+  container.dataset.theme = 'light'
   container.setAttribute('aria-hidden', 'true')
   container.style.position = 'fixed'
   container.style.left = '0'

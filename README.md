@@ -71,6 +71,13 @@ It does not help you make the "right" modeling decisions — you do.
 - Models must be downloaded manually (no server-side storage)
 - Settings are stored in browser localStorage
 
+## Appearance
+
+Use **View > Dark mode** to switch the entire editor between light and dark.
+Light is the default; your choice is remembered in this browser independently of
+your model files. PNG exports always use light styling. User-selected class,
+area, and annotation colors stay unchanged in either theme.
+
 ## Acknowledgments
 
 - ChartDB (interface design inspiration): https://github.com/chartdb/chartdb/

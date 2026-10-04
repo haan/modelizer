@@ -70,6 +70,29 @@ describe('pngExport', () => {
   afterEach(() => {
     vi.useRealTimers()
     vi.unstubAllGlobals()
+    document.documentElement.dataset.theme = 'light'
+  })
+
+  it('scopes exports to light without changing a dark editor', async () => {
+    document.documentElement.dataset.theme = 'dark'
+    toPng.mockImplementationOnce(async (container, options) => {
+      expect(container.dataset.theme).toBe('light')
+      expect(container).toBeInTheDocument()
+      expect(options.backgroundColor).toBe('#ffffff')
+      expect(document.documentElement.dataset.theme).toBe('dark')
+      return 'data:image/png;base64,light'
+    })
+    expect(await exportFlowPng(getExportArgs())).toBe('data:image/png;base64,light')
+    expect(document.documentElement.dataset.theme).toBe('dark')
+    expect(document.querySelector('[aria-hidden="true"][data-theme="light"]')).toBeNull()
+  })
+
+  it('leaves the dark editor unchanged and removes the export canvas on failure', async () => {
+    document.documentElement.dataset.theme = 'dark'
+    toPng.mockRejectedValueOnce(new Error('capture failed'))
+    await expect(exportFlowPng(getExportArgs())).rejects.toThrow('capture failed')
+    expect(document.documentElement.dataset.theme).toBe('dark')
+    expect(document.querySelector('[aria-hidden="true"][data-theme="light"]')).toBeNull()
   })
 
   it('exports full content bounds instead of the fallback viewport size', async () => {
