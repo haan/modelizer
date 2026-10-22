@@ -2240,6 +2240,9 @@ export function useModelState({
     (edgeId) => {
       const edgeToFocus = edgesRef.current.find((edge) => edge.id === edgeId)
       focusEdge(edgeToFocus)
+      setNodes((current) =>
+        current.map((node) => node.selected ? { ...node, selected: false } : node),
+      )
       setEdges((current) =>
         current.map((edge) => {
           return {
@@ -2250,7 +2253,7 @@ export function useModelState({
         }),
       )
     },
-    [focusEdge, setEdges],
+    [focusEdge, setEdges, setNodes],
   )
 
   const onReorderClasses = useCallback(
@@ -2480,8 +2483,20 @@ export function useModelState({
     [updateEdgesAndPanel, updateNodesAndPanel],
   )
 
+  const clearAssociationHighlight = useCallback(() => {
+    setEdges((current) =>
+      current.map((edge) => {
+        if (!edge.selected) {
+          return edge
+        }
+        return { ...edge, selected: false, data: edge.data }
+      }),
+    )
+  }, [setEdges])
+
   const onHighlightClass = useCallback(
     (nodeId) => {
+      clearAssociationHighlight()
       setNodes((current) =>
         current.map((node) => ({
           ...node,
@@ -2514,11 +2529,12 @@ export function useModelState({
         duration: 300,
       })
     },
-    [reactFlowInstance, setNodes],
+    [clearAssociationHighlight, reactFlowInstance, setNodes],
   )
 
   const onHighlightNote = useCallback(
     (noteId) => {
+      clearAssociationHighlight()
       setNodes((current) =>
         current.map((node) => ({
           ...node,
@@ -2551,11 +2567,12 @@ export function useModelState({
         duration: 300,
       })
     },
-    [reactFlowInstance, setNodes],
+    [clearAssociationHighlight, reactFlowInstance, setNodes],
   )
 
   const onHighlightArea = useCallback(
     (areaId) => {
+      clearAssociationHighlight()
       setNodes((current) =>
         current.map((node) => ({
           ...node,
@@ -2588,19 +2605,8 @@ export function useModelState({
         duration: 300,
       })
     },
-    [reactFlowInstance, setNodes],
+    [clearAssociationHighlight, reactFlowInstance, setNodes],
   )
-
-  const clearAssociationHighlight = useCallback(() => {
-    setEdges((current) =>
-      current.map((edge) => {
-        if (!edge.selected) {
-          return edge
-        }
-        return { ...edge, selected: false, data: edge.data }
-      }),
-    )
-  }, [setEdges])
 
   const onPaneClick = useCallback(() => {
     clearAssociationHighlight()
@@ -2687,6 +2693,9 @@ export function useModelState({
             },
             width: ASSOCIATION_NODE_SIZE,
             height: ASSOCIATION_NODE_SIZE,
+            // Fixed-size derived nodes must retain measurements so React Flow
+            // preserves their handle bounds when rebuilding controlled nodes.
+            measured: { width: ASSOCIATION_NODE_SIZE, height: ASSOCIATION_NODE_SIZE },
             data: { edgeId: edge.id },
             className: 'association-helper-node',
             style: {
@@ -2729,6 +2738,7 @@ export function useModelState({
           },
           width: ASSOCIATION_NODE_SIZE,
           height: ASSOCIATION_NODE_SIZE,
+          measured: { width: ASSOCIATION_NODE_SIZE, height: ASSOCIATION_NODE_SIZE },
           data: { edgeId: edge.id },
           className: 'association-helper-node',
           style: {

@@ -1,5 +1,5 @@
 import { act, renderHook } from '@testing-library/react'
-import { describe, expect, it } from 'vitest'
+import { describe, expect, it, vi } from 'vitest'
 
 import { useModelState } from '../useModelState.js'
 
@@ -20,6 +20,45 @@ const flushHistoryPush = async () => {
     await Promise.resolve()
   })
 }
+
+describe.each(['conceptual', 'logical', 'physical'])('exclusive focus in %s view', (activeView) => {
+  const setup = () => {
+    const reactFlowInstance = { getInternalNode: vi.fn(), setCenter: vi.fn() }
+    const hook = renderHook(() => useModelState({ activeView, reactFlowInstance }))
+    const nodes = ['class', 'note', 'area'].map((type) => ({
+      id: type, type, position: { x: 100, y: 200 }, selected: true, data: {},
+    }))
+    const type = activeView === 'conceptual' ? 'association' : 'relationship'
+    const edges = ['first', 'second'].map((id) => ({
+      id, type, source: 'class', target: 'class', selected: true, data: {},
+    }))
+    act(() => hook.result.current.setModel(nodes, edges))
+    return { ...hook, reactFlowInstance }
+  }
+
+  it.each([
+    ['class', 'onHighlightClass'],
+    ['note', 'onHighlightNote'],
+    ['area', 'onHighlightArea'],
+  ])('focusing a %s clears every other diagram selection', async (id, handler) => {
+    const { result, reactFlowInstance } = setup()
+    act(() => result.current[handler](id))
+    await flushHistoryPush()
+    expect(result.current.nodes.filter((node) => node.selected).map((node) => node.id)).toEqual([id])
+    expect(result.current.edges.every((edge) => !edge.selected)).toBe(true)
+    expect(reactFlowInstance.setCenter).toHaveBeenCalledOnce()
+    expect(result.current.canUndo).toBe(false)
+  })
+
+  it('focusing an edge clears all nodes and other edges', async () => {
+    const { result } = setup()
+    act(() => result.current.onHighlightAssociation('first'))
+    await flushHistoryPush()
+    expect(result.current.nodes.every((node) => !node.selected)).toBe(true)
+    expect(result.current.edges.filter((edge) => edge.selected).map((edge) => edge.id)).toEqual(['first'])
+    expect(result.current.canUndo).toBe(false)
+  })
+})
 
 describe('useModelState model name history', () => {
   it('undoes and redoes model renames', async () => {

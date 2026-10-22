@@ -22,10 +22,6 @@ function getEndpointLabelTransform(position, x, y) {
   }
 }
 
-function getDiamondTransform(x, y, rotationDeg = 0) {
-  return `translate(-50%, -50%) translate(${x}px, ${y}px) rotate(${rotationDeg}deg)`
-}
-
 export function Composition({
   id,
   source,
@@ -51,8 +47,7 @@ export function Composition({
   const onDeleteControlPoint = data?.onDeleteControlPoint
   const onControlPointDragStart = data?.onControlPointDragStart
   const onControlPointDragEnd = data?.onControlPointDragEnd
-  const strokeClass = selected ? 'text-primary' : 'text-base-content/70'
-  const diamondClass = selected ? 'text-primary' : 'text-base-content'
+  const strokeClass = selected ? 'text-primary' : 'text-base-content'
   const {
     edgePath,
     labelX,
@@ -137,14 +132,26 @@ export function Composition({
 
   return (
     <>
-      <path
-        id={id}
-        className={`react-flow__edge-path fill-none ${strokeClass}`}
-        d={edgePath}
-        markerEnd={markerEnd}
-        stroke="currentColor"
-        style={style}
-      />
+      {/* Composite opaque geometry first, so the line cannot show through the diamond. */}
+      <g className={strokeClass} opacity={selected ? 1 : 0.7}>
+        <path
+          id={id}
+          className="react-flow__edge-path fill-none"
+          d={edgePath}
+          markerEnd={markerEnd}
+          stroke="currentColor"
+          style={style}
+        />
+        <polygon
+          transform={`translate(${diamondX}, ${diamondY}) rotate(${diamondRotationDeg})`}
+          points={`0,${-diamondHalfHeight} ${diamondHalfWidth},0 0,${diamondHalfHeight} ${-diamondHalfWidth},0`}
+          fill="currentColor"
+          stroke="currentColor"
+          strokeWidth="1"
+          pointerEvents="none"
+          aria-hidden="true"
+        />
+      </g>
       <path className="react-flow__edge-interaction" d={edgePath} fill="none" />
       <EdgeControlPoints
         edgeId={id}
@@ -182,33 +189,6 @@ export function Composition({
             label={name}
           />
         ) : null}
-        <div
-          style={{
-            transform: getDiamondTransform(
-              diamondX,
-              diamondY,
-              diamondRotationDeg,
-            ),
-          }}
-          className={`nodrag nopan absolute ${diamondClass}`}
-        >
-          <svg
-            width={diamondWidth}
-            height={diamondHeight}
-            viewBox={`0 0 ${diamondWidth} ${diamondHeight}`}
-            className="block"
-            aria-hidden="true"
-          >
-            <polygon
-              points={`${diamondHalfWidth},0 ${diamondWidth},${diamondHalfHeight} ${diamondHalfWidth},${diamondHeight} 0,${diamondHalfHeight}`}
-              fill="currentColor"
-              stroke="currentColor"
-              strokeWidth="1"
-              fillOpacity="1"
-              strokeOpacity="1"
-            />
-          </svg>
-        </div>
       </EdgeLabelRenderer>
     </>
   )

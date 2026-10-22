@@ -1,3 +1,4 @@
+import ControlTooltip from '../../ui/ControlTooltip.jsx'
 import { useEffect, useRef, useState } from 'react'
 import * as Accordion from '@radix-ui/react-accordion'
 import * as Tooltip from '@radix-ui/react-tooltip'
@@ -224,38 +225,40 @@ export default function AssociationsPanelItem({
               )}
             </div>
             <div className="flex items-center gap-1">
-              <button
-                className="inline-flex h-6 w-6 items-center justify-center rounded-md text-base-content/60 opacity-0 transition-opacity hover:bg-base-300 hover:text-base-content group-hover:opacity-100"
-                type="button"
-                onClick={(event) => {
-                  event.stopPropagation()
-                  onHighlightAssociation?.(edge.id)
-                }}
-                onMouseDown={(event) => event.stopPropagation()}
-                aria-label="Highlight association"
-              >
-                <svg
-                  xmlns="http://www.w3.org/2000/svg"
-                  viewBox="0 0 24 24"
-                  fill="none"
-                  stroke="currentColor"
-                  strokeWidth="2"
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  className="h-3.5 w-3.5"
-                  aria-hidden="true"
+              <ControlTooltip label="Focus association on diagram">
+                <button
+                  className="inline-flex h-6 w-6 items-center justify-center rounded-md text-base-content/60 opacity-0 transition-opacity hover:bg-base-300 hover:text-base-content group-hover:opacity-100 focus-visible:opacity-100"
+                  type="button"
+                  onClick={(event) => {
+                    event.stopPropagation()
+                    onHighlightAssociation?.(edge.id)
+                  }}
+                  onMouseDown={(event) => event.stopPropagation()}
+                  aria-label="Highlight association"
                 >
-                  <path d="M10.1 2.18a9.93 9.93 0 0 1 3.8 0" />
-                  <path d="M17.6 3.71a9.95 9.95 0 0 1 2.69 2.7" />
-                  <path d="M21.82 10.1a9.93 9.93 0 0 1 0 3.8" />
-                  <path d="M20.29 17.6a9.95 9.95 0 0 1-2.7 2.69" />
-                  <path d="M13.9 21.82a9.94 9.94 0 0 1-3.8 0" />
-                  <path d="M6.4 20.29a9.95 9.95 0 0 1-2.69-2.7" />
-                  <path d="M2.18 13.9a9.93 9.93 0 0 1 0-3.8" />
-                  <path d="M3.71 6.4a9.95 9.95 0 0 1 2.7-2.69" />
-                  <circle cx="12" cy="12" r="1" />
-                </svg>
-              </button>
+                  <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    strokeWidth="2"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    className="h-3.5 w-3.5"
+                    aria-hidden="true"
+                  >
+                    <path d="M10.1 2.18a9.93 9.93 0 0 1 3.8 0" />
+                    <path d="M17.6 3.71a9.95 9.95 0 0 1 2.69 2.7" />
+                    <path d="M21.82 10.1a9.93 9.93 0 0 1 0 3.8" />
+                    <path d="M20.29 17.6a9.95 9.95 0 0 1-2.7 2.69" />
+                    <path d="M13.9 21.82a9.94 9.94 0 0 1-3.8 0" />
+                    <path d="M6.4 20.29a9.95 9.95 0 0 1-2.69-2.7" />
+                    <path d="M2.18 13.9a9.93 9.93 0 0 1 0-3.8" />
+                    <path d="M3.71 6.4a9.95 9.95 0 0 1 2.7-2.69" />
+                    <circle cx="12" cy="12" r="1" />
+                  </svg>
+                </button>
+              </ControlTooltip>
               {canRename ? (
                 <button
                   className="inline-flex h-6 w-6 items-center justify-center rounded-md text-base-content/60 opacity-0 transition-opacity hover:bg-base-300 hover:text-base-content group-hover:opacity-100"
