@@ -1,5 +1,5 @@
 import { memo } from 'react'
-import { Position } from 'reactflow'
+import { Position } from '@xyflow/react'
 import { formatAttributeType } from '../../../attributes.js'
 import AttributeHandle from '../handles/AttributeHandle.jsx'
 

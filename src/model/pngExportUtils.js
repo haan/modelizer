@@ -63,10 +63,10 @@ function getNodeSize(node) {
   const fallback = getFallbackSize(node)
   return {
     width:
-      positiveNumber(node?.width, node?.measured?.width, node?.style?.width) ??
+      positiveNumber(node?.measured?.width, node?.width, node?.style?.width) ??
       fallback.width,
     height:
-      positiveNumber(node?.height, node?.measured?.height, node?.style?.height) ??
+      positiveNumber(node?.measured?.height, node?.height, node?.style?.height) ??
       fallback.height,
   }
 }

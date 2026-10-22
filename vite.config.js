@@ -33,7 +33,7 @@ export default defineConfig({
           ) {
             return 'mysql-parser'
           }
-          if (id.includes('reactflow')) {
+          if (id.includes('@xyflow/')) {
             return 'reactflow'
           }
           if (id.includes('@radix-ui')) {

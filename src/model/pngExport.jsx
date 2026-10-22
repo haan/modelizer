@@ -140,9 +140,9 @@ export async function exportFlowPng({
       container.style.width = `${width}px`
       container.style.height = `${height}px`
       renderCanvas()
-      // React Flow 11 only reads defaultViewport on mount. Apply subsequent
+      // defaultViewport is read on mount. Apply subsequent
       // bounds adjustments through its instance so annotations move with nodes.
-      flow.setViewport({ x: -bounds.x, y: -bounds.y, zoom: 1 })
+      await waitForExportInitialization(Promise.resolve(flow.setViewport({ x: -bounds.x, y: -bounds.y, zoom: 1 })))
       await waitForFrame()
       await waitForFrame()
     }

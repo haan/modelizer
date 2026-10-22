@@ -3,7 +3,7 @@ import { afterEach, describe, expect, it, vi } from 'vitest'
 
 import AnnotationLayer from '../AnnotationLayer.jsx'
 
-vi.mock('reactflow', () => ({
+vi.mock('@xyflow/react', () => ({
   useViewport: () => ({ x: 0, y: 0, zoom: 1 }),
 }))
 

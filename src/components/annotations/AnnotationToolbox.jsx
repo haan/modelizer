@@ -1,5 +1,5 @@
 import { forwardRef, useState } from 'react'
-import { Panel } from 'reactflow'
+import { Panel } from '@xyflow/react'
 import * as AlertDialog from '@radix-ui/react-alert-dialog'
 import * as Popover from '@radix-ui/react-popover'
 import * as Tooltip from '@radix-ui/react-tooltip'

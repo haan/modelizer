@@ -1,3 +1,8 @@
+/* Keep the application's canvas color, including its existing dark palette. */
+.react-flow {
+    --xy-background-color: transparent;
+}
+
 /* React Flow's built-in controls use fixed light colors by default. */
 .react-flow__controls-button {
     color: rgb(var(--color-base-content));

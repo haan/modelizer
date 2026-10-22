@@ -1,4 +1,4 @@
-import { Handle } from 'reactflow'
+import { Handle } from '@xyflow/react'
 import HandleDot from './HandleDot.jsx'
 
 const HANDLE_BASE_CLASS =

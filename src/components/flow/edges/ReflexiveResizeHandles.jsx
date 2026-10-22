@@ -1,16 +1,8 @@
 import { useEffect, useRef } from 'react'
-import { EdgeLabelRenderer, useReactFlow } from 'reactflow'
+import { EdgeLabelRenderer, useReactFlow } from '@xyflow/react'
 
 function toFlowPosition(reactFlow, clientX, clientY) {
-  if (reactFlow?.screenToFlowPosition) {
-    return reactFlow.screenToFlowPosition({ x: clientX, y: clientY })
-  }
-
-  if (reactFlow?.project) {
-    return reactFlow.project({ x: clientX, y: clientY })
-  }
-
-  return { x: clientX, y: clientY }
+  return reactFlow.screenToFlowPosition({ x: clientX, y: clientY })
 }
 
 export function ReflexiveResizeHandles({

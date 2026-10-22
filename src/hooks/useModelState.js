@@ -6,7 +6,7 @@ import {
   applyNodeChanges,
   useEdgesState,
   useNodesState,
-} from 'reactflow'
+} from '@xyflow/react'
 import { CLASS_COLOR_PALETTE, getRandomPaletteColor } from '../classPalette.js'
 import { createAttribute, normalizeAttributes } from '../attributes.js'
 import { getAssociationLayout } from '../components/flow/utils/associationUtils.js'
@@ -453,8 +453,8 @@ export function useModelState({
             updatedAreaIds.add(change.id)
             updatedNoteIds.add(change.id)
           }
-          if (change.type === 'dimensions') {
-            updatedAreaSizeIds.add(change.id)
+          if (change.type === 'dimensions' && (change.resizing !== undefined || change.setAttributes)) {
+            if (change.dimensions && change.setAttributes) updatedAreaSizeIds.add(change.id)
             const node = nextNodes.find((n) => n.id === change.id)
             if (node?.resizing && !isResizingRef.current.has(change.id)) {
               isResizingRef.current.add(change.id)
@@ -764,7 +764,7 @@ export function useModelState({
       }
 
       const node =
-        reactFlowInstance?.getNode(nodeId) ??
+        reactFlowInstance?.getInternalNode(nodeId) ??
         nodes.find((entry) => entry.id === nodeId)
       return node?.type === ASSOCIATION_HELPER_NODE_TYPE
     },
@@ -775,7 +775,7 @@ export function useModelState({
     (params) => {
       const getNodeLabel = (nodeId) => {
         const node =
-          reactFlowInstance?.getNode(nodeId) ??
+          reactFlowInstance?.getInternalNode(nodeId) ??
           nodes.find((entry) => entry.id === nodeId)
         return node?.data?.label
       }
@@ -1011,13 +1011,7 @@ export function useModelState({
     const toFlowPosition =
       reactFlowInstance?.screenToFlowPosition && wrapperBounds
         ? (point) => reactFlowInstance.screenToFlowPosition(point)
-        : reactFlowInstance?.project && wrapperBounds
-          ? (point) =>
-              reactFlowInstance.project({
-                x: point.x - wrapperBounds.left,
-                y: point.y - wrapperBounds.top,
-              })
-          : null
+        : null
     const centerPosition =
       wrapperBounds && toFlowPosition
         ? toFlowPosition({
@@ -1222,13 +1216,7 @@ export function useModelState({
     const toFlowPosition =
       reactFlowInstance?.screenToFlowPosition && wrapperBounds
         ? (point) => reactFlowInstance.screenToFlowPosition(point)
-        : reactFlowInstance?.project && wrapperBounds
-          ? (point) =>
-              reactFlowInstance.project({
-                x: point.x - wrapperBounds.left,
-                y: point.y - wrapperBounds.top,
-              })
-          : null
+        : null
     const centerPosition =
       wrapperBounds && toFlowPosition
         ? toFlowPosition({
@@ -1283,13 +1271,7 @@ export function useModelState({
     const toFlowPosition =
       reactFlowInstance?.screenToFlowPosition && wrapperBounds
         ? (point) => reactFlowInstance.screenToFlowPosition(point)
-        : reactFlowInstance?.project && wrapperBounds
-          ? (point) =>
-              reactFlowInstance.project({
-                x: point.x - wrapperBounds.left,
-                y: point.y - wrapperBounds.top,
-              })
-          : null
+        : null
     const centerPosition =
       wrapperBounds && toFlowPosition
         ? toFlowPosition({
@@ -1844,10 +1826,10 @@ export function useModelState({
 
             if (!sourceAnchor || !targetAnchor) {
               const sourceNode =
-                reactFlowInstance?.getNode(edge.source) ??
+                reactFlowInstance?.getInternalNode(edge.source) ??
                 nodesRef.current.find((node) => node.id === edge.source)
               const targetNode =
-                reactFlowInstance?.getNode(edge.target) ??
+                reactFlowInstance?.getInternalNode(edge.target) ??
                 nodesRef.current.find((node) => node.id === edge.target)
               const layout = getRelationshipLayoutFromNodes(
                 edge,
@@ -1911,7 +1893,7 @@ export function useModelState({
           }
 
           const sourceNode =
-            reactFlowInstance?.getNode(edge.source) ??
+            reactFlowInstance?.getInternalNode(edge.source) ??
             nodesRef.current.find((node) => node.id === edge.source)
           const layout = getReflexiveAssociationLayout(sourceNode, edge.data)
           if (!layout) {
@@ -2081,10 +2063,10 @@ export function useModelState({
         }
 
         const sourceNode =
-          reactFlowInstance?.getNode(edge.source) ??
+          reactFlowInstance?.getInternalNode(edge.source) ??
           nodesRef.current.find((node) => node.id === edge.source)
         const targetNode =
-          reactFlowInstance?.getNode(edge.target) ??
+          reactFlowInstance?.getInternalNode(edge.target) ??
           nodesRef.current.find((node) => node.id === edge.target)
         const layout = getRelationshipLayoutFromNodes(edge, sourceNode, targetNode)
         if (!layout) {
@@ -2115,10 +2097,10 @@ export function useModelState({
       }
 
       const sourceNode =
-        reactFlowInstance?.getNode(edge.source) ??
+        reactFlowInstance?.getInternalNode(edge.source) ??
         nodesRef.current.find((node) => node.id === edge.source)
       const targetNode =
-        reactFlowInstance?.getNode(edge.target) ??
+        reactFlowInstance?.getInternalNode(edge.target) ??
         nodesRef.current.find((node) => node.id === edge.target)
       const layout = getAssociationLayout(sourceNode, targetNode, edge.data)
       if (!layout) {
@@ -2258,6 +2240,9 @@ export function useModelState({
     (edgeId) => {
       const edgeToFocus = edgesRef.current.find((edge) => edge.id === edgeId)
       focusEdge(edgeToFocus)
+      setNodes((current) =>
+        current.map((node) => node.selected ? { ...node, selected: false } : node),
+      )
       setEdges((current) =>
         current.map((edge) => {
           return {
@@ -2268,7 +2253,7 @@ export function useModelState({
         }),
       )
     },
-    [focusEdge, setEdges],
+    [focusEdge, setEdges, setNodes],
   )
 
   const onReorderClasses = useCallback(
@@ -2498,8 +2483,20 @@ export function useModelState({
     [updateEdgesAndPanel, updateNodesAndPanel],
   )
 
+  const clearAssociationHighlight = useCallback(() => {
+    setEdges((current) =>
+      current.map((edge) => {
+        if (!edge.selected) {
+          return edge
+        }
+        return { ...edge, selected: false, data: edge.data }
+      }),
+    )
+  }, [setEdges])
+
   const onHighlightClass = useCallback(
     (nodeId) => {
+      clearAssociationHighlight()
       setNodes((current) =>
         current.map((node) => ({
           ...node,
@@ -2508,7 +2505,7 @@ export function useModelState({
       )
 
       const node =
-        reactFlowInstance?.getNode(nodeId) ??
+        reactFlowInstance?.getInternalNode(nodeId) ??
         nodesRef.current.find((entry) => entry.id === nodeId)
       if (!node || !reactFlowInstance?.setCenter) {
         return
@@ -2532,11 +2529,12 @@ export function useModelState({
         duration: 300,
       })
     },
-    [reactFlowInstance, setNodes],
+    [clearAssociationHighlight, reactFlowInstance, setNodes],
   )
 
   const onHighlightNote = useCallback(
     (noteId) => {
+      clearAssociationHighlight()
       setNodes((current) =>
         current.map((node) => ({
           ...node,
@@ -2545,7 +2543,7 @@ export function useModelState({
       )
 
       const node =
-        reactFlowInstance?.getNode(noteId) ??
+        reactFlowInstance?.getInternalNode(noteId) ??
         nodesRef.current.find((entry) => entry.id === noteId)
       if (!node || !reactFlowInstance?.setCenter) {
         return
@@ -2569,11 +2567,12 @@ export function useModelState({
         duration: 300,
       })
     },
-    [reactFlowInstance, setNodes],
+    [clearAssociationHighlight, reactFlowInstance, setNodes],
   )
 
   const onHighlightArea = useCallback(
     (areaId) => {
+      clearAssociationHighlight()
       setNodes((current) =>
         current.map((node) => ({
           ...node,
@@ -2582,7 +2581,7 @@ export function useModelState({
       )
 
       const node =
-        reactFlowInstance?.getNode(areaId) ??
+        reactFlowInstance?.getInternalNode(areaId) ??
         nodesRef.current.find((entry) => entry.id === areaId)
       if (!node || !reactFlowInstance?.setCenter) {
         return
@@ -2606,19 +2605,8 @@ export function useModelState({
         duration: 300,
       })
     },
-    [reactFlowInstance, setNodes],
+    [clearAssociationHighlight, reactFlowInstance, setNodes],
   )
-
-  const clearAssociationHighlight = useCallback(() => {
-    setEdges((current) =>
-      current.map((edge) => {
-        if (!edge.selected) {
-          return edge
-        }
-        return { ...edge, selected: false, data: edge.data }
-      }),
-    )
-  }, [setEdges])
 
   const onPaneClick = useCallback(() => {
     clearAssociationHighlight()
@@ -2667,7 +2655,7 @@ export function useModelState({
 
     const nodeMap = new Map(nodes.map((node) => [node.id, node]))
     const getNode = (nodeId) =>
-      reactFlowInstance?.getNode(nodeId) ?? nodeMap.get(nodeId)
+      reactFlowInstance?.getInternalNode(nodeId) ?? nodeMap.get(nodeId)
 
     return edges
       .filter(
@@ -2705,6 +2693,9 @@ export function useModelState({
             },
             width: ASSOCIATION_NODE_SIZE,
             height: ASSOCIATION_NODE_SIZE,
+            // Fixed-size derived nodes must retain measurements so React Flow
+            // preserves their handle bounds when rebuilding controlled nodes.
+            measured: { width: ASSOCIATION_NODE_SIZE, height: ASSOCIATION_NODE_SIZE },
             data: { edgeId: edge.id },
             className: 'association-helper-node',
             style: {
@@ -2747,6 +2738,7 @@ export function useModelState({
           },
           width: ASSOCIATION_NODE_SIZE,
           height: ASSOCIATION_NODE_SIZE,
+          measured: { width: ASSOCIATION_NODE_SIZE, height: ASSOCIATION_NODE_SIZE },
           data: { edgeId: edge.id },
           className: 'association-helper-node',
           style: {

@@ -1,4 +1,4 @@
-import { Position, getSmoothStepPath, getStraightPath } from 'reactflow'
+import { Position, getSmoothStepPath, getStraightPath } from '@xyflow/react'
 import {
   ASSOCIATION_LINE_STYLE_MANUAL,
   ASSOCIATION_LINE_STYLE_STRAIGHT,

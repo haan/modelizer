@@ -1,4 +1,4 @@
-import { getStraightPath } from 'reactflow'
+import { getStraightPath } from '@xyflow/react'
 
 export function AssociativeAssociation({
   id,

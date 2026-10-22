@@ -3,7 +3,7 @@ import { afterEach, describe, expect, it, vi } from 'vitest'
 
 import AnnotationToolbox from '../AnnotationToolbox.jsx'
 
-vi.mock('reactflow', () => ({
+vi.mock('@xyflow/react', () => ({
   Panel: ({ children, className, style }) => (
     <div data-testid="annotation-toolbar" className={className} style={style}>
       {children}

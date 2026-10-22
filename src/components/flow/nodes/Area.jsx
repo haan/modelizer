@@ -1,4 +1,4 @@
-import { NodeResizer } from 'reactflow'
+import { NodeResizer } from '@xyflow/react'
 import { CLASS_COLOR_PALETTE } from '../../../classPalette.js'
 
 const withAlpha = (hex, alpha) => {
