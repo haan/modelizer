@@ -1,5 +1,5 @@
 import { useLayoutEffect, useRef } from 'react'
-import { Position, useUpdateNodeInternals } from 'reactflow'
+import { Position, useUpdateNodeInternals } from '@xyflow/react'
 import { CLASS_COLOR_PALETTE } from '../../../classPalette.js'
 import {
   getClassDisplayName,

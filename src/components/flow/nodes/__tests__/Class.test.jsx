@@ -8,7 +8,7 @@ import {
 } from '../../../../model/constants.js'
 import { Class } from '../Class.jsx'
 
-vi.mock('reactflow', () => ({
+vi.mock('@xyflow/react', () => ({
   Handle: () => null,
   Position: {
     Bottom: 'bottom',

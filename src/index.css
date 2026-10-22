@@ -1,6 +1,6 @@
 @config "../tailwind.config.js";
-@import "reactflow/dist/style.css";
 @import "tailwindcss";
+@import "@xyflow/react/dist/style.css";
 @import "./xy-theme.css";
 
 :root,

@@ -1,4 +1,4 @@
-import { EdgeLabelRenderer, useStore } from 'reactflow'
+import { EdgeLabelRenderer, useInternalNode } from '@xyflow/react'
 import { AssociationLabel } from '../labels/AssociationLabel.jsx'
 import { MultiplicityLabel } from '../labels/MultiplicityLabel.jsx'
 import { getAssociationLayout } from '../utils/associationUtils.js'
@@ -35,8 +35,8 @@ export function Composition({
   data,
   selected,
 }) {
-  const sourceNode = useStore((state) => state.nodeInternals.get(source))
-  const targetNode = useStore((state) => state.nodeInternals.get(target))
+  const sourceNode = useInternalNode(source)
+  const targetNode = useInternalNode(target)
 
   const layout = getAssociationLayout(sourceNode, targetNode, data)
   if (!layout) {

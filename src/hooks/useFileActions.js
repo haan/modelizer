@@ -32,11 +32,12 @@ const normalizeNodeForPayload = (node) => {
     return node
   }
 
-  // Strip ReactFlow-internal computed properties that must not affect dirty-state
-  // comparisons: positionAbsolute is added after setNodes(), width/height are
-  // measured from the DOM for class/note nodes and vary between renders.
+  // Keep runtime measurements out of saved files and dirty-state comparisons.
+  // Persist explicit area dimensions below; class/note dimensions are automatic.
   const {
     positionAbsolute: _pa,
+    measured: _measured,
+    internals: _internals,
     dragging: _dragging,
     resizing: _resizing,
     width: _width,
@@ -233,6 +234,13 @@ export const getHiddenContentState = ({
 
 function prepareLoadedModel(payload) {
   const nextNodes = (payload?.nodes ?? []).map((node, index) => {
+    // Legacy class/note dimensions were DOM measurements, not fixed sizes.
+    const { measured: _measured, internals: _internals, positionAbsolute: _pa, ...loadedNode } = node
+    node = loadedNode
+    if ([CLASS_NODE_TYPE, NOTE_NODE_TYPE, 'umlClass'].includes(node.type) || !node.type) {
+      const { width: _width, height: _height, ...autoSizedNode } = node
+      node = autoSizedNode
+    }
     const nodeId = node?.id ?? `class-${Date.now()}-${index}`
     const data = node?.data ?? {}
     const nodeType = node?.type === 'umlClass' ? CLASS_NODE_TYPE : node?.type ?? CLASS_NODE_TYPE

@@ -1,10 +1,11 @@
 import { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react'
-import ReactFlow, {
+import {
+  ReactFlow,
   Background,
   ConnectionMode,
   ConnectionLineType,
   Controls,
-} from 'reactflow'
+} from '@xyflow/react'
 import * as Toast from '@radix-ui/react-toast'
 import { edgeTypes, nodeTypes } from './flowTypes.js'
 import {
@@ -1028,6 +1029,7 @@ function App() {
                 ref={reactFlowWrapper}
               >
                 <ReactFlow
+                  colorMode={theme}
                   nodes={visibleFlowNodes}
                   edges={flowEdges}
                   onNodesChange={onNodesChange}

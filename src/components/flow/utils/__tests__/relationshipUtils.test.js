@@ -1,6 +1,6 @@
 import { describe, it, expect, vi } from "vitest";
 
-vi.mock("reactflow", () => ({
+vi.mock("@xyflow/react", () => ({
   Position: { Left: "left", Right: "right", Top: "top", Bottom: "bottom" },
   getStraightPath: ({ sourceX, sourceY, targetX, targetY }) => [
     `M ${sourceX} ${sourceY} L ${targetX} ${targetY}`,

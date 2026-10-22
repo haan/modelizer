@@ -7,6 +7,7 @@ import {
 
 const reactFlowMockState = vi.hoisted(() => ({
   skipInit: false,
+  nodesInitialized: true,
   setViewport: vi.fn(),
 }))
 
@@ -14,11 +15,11 @@ vi.mock('html-to-image', () => ({
   toPng: vi.fn(() => Promise.resolve('data:image/png;base64,exported')),
 }))
 
-vi.mock('reactflow', async () => {
+vi.mock('@xyflow/react', async () => {
   const React = await import('react')
 
   return {
-    default: function MockReactFlow({ children, onInit, nodes, defaultViewport }) {
+    ReactFlow: function MockReactFlow({ children, onInit, defaultNodes: nodes, defaultViewport }) {
       React.useEffect(() => {
         if (reactFlowMockState.skipInit) {
           return
@@ -30,6 +31,8 @@ vi.mock('reactflow', async () => {
         {children}
       </div>
     },
+    useNodesInitialized: () => reactFlowMockState.nodesInitialized,
+    useReactFlow: () => ({ viewportInitialized: !reactFlowMockState.skipInit, setViewport: reactFlowMockState.setViewport }),
     ConnectionLineType: { Straight: 'straight' },
     ConnectionMode: { Loose: 'loose' },
     useViewport: () => ({ x: 0, y: 0, zoom: 1 }),
@@ -65,6 +68,7 @@ describe('pngExport', () => {
   beforeEach(() => {
     vi.clearAllMocks()
     reactFlowMockState.skipInit = false
+    reactFlowMockState.nodesInitialized = true
     vi.stubGlobal('requestAnimationFrame', (callback) => {
       callback()
       return 1
@@ -168,6 +172,36 @@ describe('pngExport', () => {
     try {
       await exportFlowPng(getExportArgs({ padding: 64 }))
       expect(toPng.mock.lastCall[1]).toMatchObject({ width: 628, height: 728 })
+    } finally {
+      rect.mockRestore()
+    }
+  })
+
+  it('does not capture an initialized viewport before its nodes are measured', async () => {
+    vi.useFakeTimers()
+    reactFlowMockState.nodesInitialized = false
+    const pending = exportFlowPng(getExportArgs()).catch(error => error)
+    await vi.advanceTimersByTimeAsync(5000)
+    expect(await pending).toBeInstanceOf(Error)
+    expect(toPng).not.toHaveBeenCalled()
+    expect(document.querySelector('[aria-hidden="true"][data-theme="light"]')).toBeNull()
+  })
+
+  it('waits for asynchronous viewport adjustments before capturing expanded content', async () => {
+    const rect = vi.spyOn(HTMLElement.prototype, 'getBoundingClientRect').mockImplementation(function () {
+      return this.classList.contains('react-flow__node')
+        ? { left: 0, top: 0, right: 1000, bottom: 900, width: 1000, height: 900 }
+        : { left: 0, top: 0, right: 0, bottom: 0, width: 0, height: 0 }
+    })
+    let finishViewport
+    reactFlowMockState.setViewport.mockImplementationOnce(() => new Promise(resolve => { finishViewport = resolve }))
+    try {
+      const pending = exportFlowPng(getExportArgs())
+      await vi.waitFor(() => expect(finishViewport).toBeTypeOf('function'))
+      expect(toPng).not.toHaveBeenCalled()
+      finishViewport(true)
+      await pending
+      expect(toPng).toHaveBeenCalledOnce()
     } finally {
       rect.mockRestore()
     }

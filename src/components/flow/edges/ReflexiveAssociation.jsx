@@ -1,4 +1,4 @@
-import { EdgeLabelRenderer, useStore } from 'reactflow'
+import { EdgeLabelRenderer, useInternalNode } from '@xyflow/react'
 import { AssociationLabel } from '../labels/AssociationLabel.jsx'
 import { MultiplicityLabel } from '../labels/MultiplicityLabel.jsx'
 import { RoleLabel } from '../labels/RoleLabel.jsx'
@@ -40,7 +40,7 @@ export function ReflexiveAssociation({
   data,
   selected,
 }) {
-  const node = useStore((state) => state.nodeInternals.get(source))
+  const node = useInternalNode(source)
   const layout = getReflexiveAssociationLayout(node, data)
   if (!layout) {
     return null

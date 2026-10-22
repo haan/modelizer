@@ -9,6 +9,12 @@ import {
 } from '../pngExportUtils.js'
 
 describe('pngExportUtils', () => {
+  it('uses v12 measured bounds before stale fixed dimensions', () => {
+    expect(getPngExportContentBounds({ nodes: [{ id: 'note', position: { x: -200, y: -100 },
+      width: 10, height: 10, measured: { width: 400, height: 300 } }], padding: 32,
+    })).toEqual({ x: -232, y: -132, width: 464, height: 364 })
+  })
+
   it('computes padded bounds from visible nodes and edge routing hints', () => {
     const bounds = getPngExportContentBounds({
       nodes: [

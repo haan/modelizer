@@ -6,7 +6,7 @@ import { getPngExportContentBounds } from '../pngExportUtils.js'
 
 vi.mock('html-to-image', () => ({ toPng: vi.fn() }))
 
-afterEach(() => { vi.clearAllMocks() })
+afterEach(() => { vi.clearAllMocks(); vi.restoreAllMocks(); vi.unstubAllGlobals() })
 
 describe('PNG export with the installed React Flow viewport', () => {
   it.each([
@@ -40,4 +40,37 @@ describe('PNG export with the installed React Flow viewport', () => {
       padding, resolution: 'standard', includeAccentColorsInExport: true,
     })).resolves.toBe('data:image/png;base64,annotations')
   })
+})
+
+
+it.each(['conceptual', 'logical', 'physical'])('measures newly visible nodes and exports mixed content in %s', async (activeView) => {
+  // jsdom has no layout engine: supply browser measurements, keeping React Flow real.
+  vi.spyOn(HTMLElement.prototype, 'offsetWidth', 'get').mockReturnValue(240)
+  vi.spyOn(HTMLElement.prototype, 'offsetHeight', 'get').mockReturnValue(160)
+  vi.stubGlobal('DOMMatrixReadOnly', class { m22 = 1 })
+  vi.stubGlobal('ResizeObserver', class {
+    constructor(callback) { this.callback = callback; this.elements = new Set() }
+    observe(element) {
+      this.elements.add(element)
+      queueMicrotask(() => {
+        if (this.elements.has(element)) this.callback([{ target: element, contentRect: { width: 240, height: 160 } }])
+      })
+    }
+    unobserve(element) { this.elements.delete(element) }
+    disconnect() { this.elements.clear() }
+  })
+  const nodes = [{ id: 'new-note', type: 'default', position: { x: -500, y: -300 }, data: { label: 'Newly visible note' } }]
+  const annotations = { [activeView]: { items: [{ id: 'feedback', kind: 'text', x: 500, y: 500, text: 'Feedback', fontSize: 22, color: '#ef4444' }] } }
+  toPng.mockImplementationOnce(async (container) => {
+    const node = container.querySelector('.react-flow__node')
+    expect(node).toBeVisible()
+    expect(node.style.visibility).not.toBe('hidden')
+    expect(container.querySelector('[data-annotation-id="feedback"]')).not.toBeNull()
+    expect(container.querySelector('.react-flow')).toHaveClass('light')
+    return 'data:image/png;base64,mixed'
+  })
+  await expect(exportFlowPng({ nodes, edges: [], annotations, activeView, showAnnotations: true,
+    nodeTypes: {}, edgeTypes: {}, defaultValueEntries: [], fallbackWidth: 800, fallbackHeight: 600,
+    padding: 32, resolution: 'standard', includeAccentColorsInExport: true,
+  })).resolves.toBe('data:image/png;base64,mixed')
 })

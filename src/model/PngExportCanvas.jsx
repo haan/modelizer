@@ -1,12 +1,25 @@
-import ReactFlow, {
+import { useEffect } from 'react'
+import {
+  ReactFlow,
+  useNodesInitialized,
+  useReactFlow,
   ConnectionLineType,
   ConnectionMode,
-} from 'reactflow'
+} from '@xyflow/react'
 import AnnotationLayer from '../components/annotations/AnnotationLayer.jsx'
 import DefaultValuesPanel from '../components/flow/overlays/DefaultValuesPanel.jsx'
 import { VIEW_PHYSICAL } from './constants.js'
 
 const noop = () => {}
+
+function ExportReady({ hasNodes, onReady }) {
+  const nodesInitialized = useNodesInitialized()
+  const flow = useReactFlow()
+  useEffect(() => {
+    if (flow.viewportInitialized && (!hasNodes || nodesInitialized)) onReady?.(flow)
+  }, [flow, hasNodes, nodesInitialized, onReady])
+  return null
+}
 
 export default function PngExportCanvas({
   nodes,
@@ -23,6 +36,7 @@ export default function PngExportCanvas({
   defaultValueEntries,
   onInit,
 }) {
+  // defaultNodes lets React Flow keep measurements local to the export canvas.
   const viewport = {
     x: -bounds.x,
     y: -bounds.y,
@@ -36,9 +50,10 @@ export default function PngExportCanvas({
     >
       <div style={{ width, height }}>
         <ReactFlow
+          colorMode="light"
           style={{ background: 'transparent' }}
-          nodes={nodes}
-          edges={edges}
+          defaultNodes={nodes}
+          defaultEdges={edges}
           nodeTypes={nodeTypes}
           edgeTypes={edgeTypes}
           defaultViewport={viewport}
@@ -60,8 +75,8 @@ export default function PngExportCanvas({
           zoomOnDoubleClick={false}
           preventScrolling={false}
           proOptions={{ hideAttribution: true }}
-          onInit={onInit}
         >
+          <ExportReady hasNodes={nodes.some((node) => !node.hidden)} onReady={onInit} />
           {showAnnotations ? (
             <AnnotationLayer
               annotations={annotations}

@@ -1,4 +1,4 @@
-import { Position } from 'reactflow'
+import { Position } from '@xyflow/react'
 import { EdgeControlPoints } from './EdgeControlPoints.jsx'
 import { getRelationshipLayout } from '../utils/relationshipUtils.js'
 

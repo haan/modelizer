@@ -1,8 +1,8 @@
 import { useState } from 'react'
 import { act, cleanup, renderHook, waitFor } from '@testing-library/react'
-import { ReactFlowProvider, useStoreApi } from 'reactflow'
+import { ReactFlowProvider, useStoreApi } from '@xyflow/react'
 import { afterEach, describe, expect, it, vi } from 'vitest'
-import { useFileActions } from '../useFileActions.js'
+import { buildHashPayload, useFileActions } from '../useFileActions.js'
 import { useModelState } from '../useModelState.js'
 import { useAnnotations } from '../useAnnotations.js'
 
@@ -344,5 +344,42 @@ describe('shared model opening', () => {
     expect(original.createWritable).toHaveBeenCalledOnce()
     expect(window.showSaveFilePicker).toHaveBeenCalledOnce()
     expect(replacement.createWritable).toHaveBeenCalledOnce()
+  })
+})
+
+
+describe('React Flow 12 file compatibility', () => {
+  it.each([undefined, 1, 2])('opens version %s without freezing automatic node dimensions or dirtying the model', async (version) => {
+    const { result } = setup()
+    const nodes = ['class', 'note', 'area'].map((type) => ({ id: type, type,
+      position: { x: 10, y: 20 }, width: 280, height: 180,
+      measured: { width: 999, height: 999 }, internals: { positionAbsolute: { x: 9, y: 9 } }, data: {},
+    }))
+    await act(async () => result.current.onOpenModelFile(fileFor({ version, nodes, edges: [] })))
+    for (const node of result.current.nodes) {
+      expect(node.measured).toBeUndefined()
+      expect(node.internals).toBeUndefined()
+      if (node.type !== 'area') {
+        expect(node.width).toBeUndefined()
+        expect(node.height).toBeUndefined()
+      } else {
+        expect(node.width).toBe(280)
+        expect(node.data.viewSizes.conceptual).toEqual({ width: 280, height: 180 })
+      }
+    }
+    const before = buildHashPayload({ nodes: result.current.nodes, edges: [] })
+    for (const height of [250, 350]) {
+      act(() => result.current.onNodesChange(nodes.map(node => ({ id: node.id, type: 'dimensions', dimensions: { width: 300, height } }))))
+    }
+    expect(result.current.isDirty).toBe(false)
+    expect(result.current.canUndo).toBe(false)
+    expect(result.current.nodes[0].measured.height).toBe(350)
+    expect(result.current.nodes[0].height).toBeUndefined()
+    const saved = buildHashPayload({ nodes: result.current.nodes, edges: [] })
+    expect(saved).toEqual(before)
+    expect(saved.version).toBe(2)
+    await act(async () => result.current.onOpenModelFile(fileFor(saved)))
+    expect(result.current.isDirty).toBe(false)
+    expect(result.current.nodes.find(node => node.type === 'area').width).toBe(280)
   })
 })

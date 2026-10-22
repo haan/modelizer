@@ -1,5 +1,5 @@
 import { useEffect, useId, useRef, useState } from 'react'
-import { useViewport } from 'reactflow'
+import { useViewport } from '@xyflow/react'
 import { arrowPoints, getAnnotationBounds, getTextLayout, strokePath } from '../../model/annotationGeometry.js'
 
 function buildCircleCursor(diameter, color, fillOpacity = 0) {
