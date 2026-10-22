@@ -55,7 +55,7 @@ describe('AnnotationToolbox', () => {
     expect(screen.getByRole('button', { name: 'Pen (P)' })).toBeInTheDocument()
     expect(screen.getByRole('button', { name: 'Marker (M)' })).toBeInTheDocument()
     expect(screen.getByRole('button', { name: 'Text (T)' })).toBeInTheDocument()
-    expect(screen.getByRole('button', { name: 'Eraser (E)' })).toBeInTheDocument()
+    expect(screen.getByRole('button', { name: 'Ink eraser (E)' })).toBeInTheDocument()
   })
 
   it('keeps tool options out of the inline toolbar until the active tool swatch is opened', () => {
@@ -64,8 +64,7 @@ describe('AnnotationToolbox', () => {
     expect(screen.getByTestId('annotation-toolbar')).toBeInTheDocument()
     const penOptions = screen.getByRole('button', { name: 'Pen options' })
     expect(penOptions).toBeInTheDocument()
-    expect(penOptions.parentElement).toHaveClass('transition-[max-height,opacity,transform,padding-top]')
-    expect(penOptions.parentElement).toHaveClass('max-h-10')
+    expect(penOptions.parentElement).toHaveClass('h-9')
     expect(screen.queryByText('Thickness')).not.toBeInTheDocument()
 
     fireEvent.click(penOptions)
@@ -131,10 +130,11 @@ describe('AnnotationToolbox', () => {
     expect(onEraserSettingsChange).toHaveBeenCalledWith({ mode: 'partial' })
   })
 
-  it('opens a clear annotations confirmation dialog from the trash button', () => {
+  it('opens a clear annotations confirmation dialog from the actions menu', () => {
     const onClearView = vi.fn()
     renderToolbox({ onClearView })
 
+    fireEvent.click(screen.getByRole('button', { name: 'More annotation actions' }))
     fireEvent.click(screen.getByRole('button', { name: 'Clear annotations in this view' }))
 
     expect(screen.getByText('Clear annotations?')).toBeInTheDocument()
@@ -144,10 +144,29 @@ describe('AnnotationToolbox', () => {
     expect(onClearView).not.toHaveBeenCalled()
   })
 
+  it('keeps shortcuts collapsed when the actions menu opens and expands them inline on request', () => {
+    renderToolbox()
+
+    fireEvent.click(screen.getByRole('button', { name: 'More annotation actions' }))
+
+    expect(screen.getByRole('button', { name: 'Export PNG…' })).toHaveFocus()
+    expect(screen.queryByRole('tooltip')).not.toBeInTheDocument()
+    expect(screen.getByText('Space + drag')).not.toBeVisible()
+
+    const shortcuts = screen.getByText('Keyboard shortcuts')
+    fireEvent.click(shortcuts)
+    expect(screen.getByText('Space + drag')).toBeVisible()
+    expect(screen.getByRole('button', { name: 'Export PNG…' })).toBeVisible()
+
+    fireEvent.click(shortcuts)
+    expect(screen.getByText('Space + drag')).not.toBeVisible()
+  })
+
   it('does not clear annotations when the confirmation dialog is cancelled', () => {
     const onClearView = vi.fn()
     renderToolbox({ onClearView })
 
+    fireEvent.click(screen.getByRole('button', { name: 'More annotation actions' }))
     fireEvent.click(screen.getByRole('button', { name: 'Clear annotations in this view' }))
     fireEvent.click(screen.getByRole('button', { name: 'Cancel' }))
 
@@ -159,6 +178,7 @@ describe('AnnotationToolbox', () => {
     const onClearView = vi.fn()
     renderToolbox({ onClearView })
 
+    fireEvent.click(screen.getByRole('button', { name: 'More annotation actions' }))
     fireEvent.click(screen.getByRole('button', { name: 'Clear annotations in this view' }))
     fireEvent.click(screen.getByRole('button', { name: 'Clear' }))
 

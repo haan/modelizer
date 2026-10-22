@@ -22,9 +22,9 @@ import { useModelState } from './hooks/useModelState.js'
 import DefaultValuesPanel from './components/flow/overlays/DefaultValuesPanel.jsx'
 import AnnotationLayer from './components/annotations/AnnotationLayer.jsx'
 import AnnotationToolbox from './components/annotations/AnnotationToolbox.jsx'
+import PngExportDialog from './components/dialogs/PngExportDialog.jsx'
 import { useAnnotations } from './hooks/useAnnotations.js'
 import { sanitizeFileName } from './model/fileUtils.js'
-import { exportFlowPng } from './model/pngExport.jsx'
 import { getClassDisplayName } from './model/viewUtils.js'
 import {
   ASSOCIATION_EDGE_TYPE,
@@ -117,6 +117,7 @@ function App() {
   const { theme, toggleTheme } = useTheme()
   const reactFlowWrapper = useRef(null)
   const [reactFlowInstance, setReactFlowInstance] = useState(null)
+  const [annotationsVisible, setAnnotationsVisible] = useState(true)
   // Stable ref-based bridge to break the circular dependency between useModelState
   // and useAnnotations: each hook needs something the other produces.
   const annotationsSnapshotRef = useRef(null)
@@ -425,6 +426,15 @@ function App() {
 
   const {
     annotations,
+    displayAnnotations,
+    selectedId,
+    selectedItem,
+    updateSelected: onSelectedAnnotationChange,
+    onSelectItem: onSelectAnnotation,
+    onItemPointerDown: onAnnotationItemPointerDown,
+    onDeleteSelected: onDeleteSelectedAnnotation,
+    onDuplicateSelected: onDuplicateSelectedAnnotation,
+    onPointerCancel: onAnnotationPointerCancel,
     activeTool: activeAnnotationTool,
     penSettings,
     markerSettings,
@@ -455,7 +465,7 @@ function App() {
     activeView,
     reactFlowInstance,
     pushHistorySnapshot,
-    enabled: showAnnotations,
+    enabled: showAnnotations && annotationsVisible,
   })
 
   // Wire stable ref callbacks after every render so useModelState can read/restore
@@ -818,61 +828,30 @@ function App() {
     [flowNodes, showAreas, showNotes],
   )
 
-  const onExportPng = useCallback(async () => {
-    if (!reactFlowWrapper.current) {
-      return
-    }
-
-    const container = reactFlowWrapper.current
-    const containerRect = container.getBoundingClientRect()
-    if (!containerRect.width || !containerRect.height) {
-      return
-    }
-
-    const fallbackWidth = Math.round(containerRect.width)
-    const fallbackHeight = Math.round(containerRect.height)
-
-    try {
-      const dataUrl = await exportFlowPng({
-        nodes: visibleFlowNodes,
-        edges: flowEdges,
-        nodeTypes,
-        edgeTypes,
-        annotations,
-        activeView,
-        showAnnotations,
-        currentStroke,
-        defaultValueEntries,
-        fallbackWidth,
-        fallbackHeight,
-        includeAccentColorsInExport,
-      })
-
-      const normalizedName = sanitizeFileName(modelName ?? 'Untitled model')
-      const viewLabel = activeView?.trim() ? activeView.trim() : 'conceptual'
-      const viewSuffix = sanitizeFileName(viewLabel)
-      const baseName = normalizedName || 'untitled-model'
-      const fileName = viewSuffix
-        ? `${baseName}-${viewSuffix}.png`
-        : `${baseName}.png`
-      const link = document.createElement('a')
-      link.href = dataUrl
-      link.download = fileName
-      link.click()
-    } catch (error) {
-      console.error('Failed to export PNG', error)
-    }
-  }, [
-    activeView,
-    annotations,
-    currentStroke,
-    defaultValueEntries,
-    flowEdges,
-    includeAccentColorsInExport,
-    modelName,
-    showAnnotations,
-    visibleFlowNodes,
-  ])
+  const [pngExport, setPngExport] = useState(null)
+  const onExportPng = useCallback(() => {
+    const rect = reactFlowWrapper.current?.getBoundingClientRect()
+    const baseName = sanitizeFileName(modelName ?? 'Untitled model') || 'untitled-model'
+    setPngExport({
+      nodes: flowNodes,
+      edges: flowEdges,
+      nodeTypes,
+      edgeTypes,
+      annotations,
+      activeView,
+      defaultValueEntries,
+      fallbackWidth: Math.max(1, Math.round(rect?.width || 800)),
+      fallbackHeight: Math.max(1, Math.round(rect?.height || 600)),
+      fileName: baseName + '-' + sanitizeFileName(activeView) + '.png',
+      defaults: {
+        includeAnnotations: showAnnotations && annotationsVisible,
+        includeNotes: showNotes,
+        includeAreas: showAreas,
+        includeAccentColors: includeAccentColorsInExport,
+      },
+    })
+  }, [activeView, annotations, annotationsVisible, defaultValueEntries, flowEdges,
+    flowNodes, includeAccentColorsInExport, modelName, showAnnotations, showAreas, showNotes])
 
   const onSidebarSelect = useCallback(
     (item) => {
@@ -964,8 +943,6 @@ function App() {
             onNullDisplayModeChange={setNullDisplayMode}
             confirmDelete={confirmDelete}
             onToggleConfirmDelete={setConfirmDelete}
-            includeAccentColorsInExport={includeAccentColorsInExport}
-            onToggleIncludeAccentColorsInExport={setIncludeAccentColorsInExport}
             isDirty={isDirty}
             onUndo={onUndo}
             onRedo={onRedo}
@@ -1080,8 +1057,8 @@ function App() {
                   {showBackground ? <Background gap={16} size={1} color="rgb(var(--color-grid))" /> : null}
                   {showAnnotations ? (
                     <>
-                      <AnnotationLayer
-                        annotations={annotations}
+                      {annotationsVisible && <AnnotationLayer
+                        annotations={displayAnnotations}
                         activeView={activeView}
                         activeTool={activeAnnotationTool}
                         penSettings={penSettings}
@@ -1099,11 +1076,26 @@ function App() {
                         editingTextId={editingTextId}
                         onTextPointerDown={onAnnotationTextPointerDown}
                         onTextDoubleClick={onAnnotationTextDoubleClick}
-                      />
+                        selectedId={selectedId}
+                        onItemPointerDown={onAnnotationItemPointerDown}
+                        onSelectItem={onSelectAnnotation}
+                        onPointerCancel={onAnnotationPointerCancel}
+                      />}
                       <div data-no-export="true">
                         <AnnotationToolbox
                           activeTool={activeAnnotationTool}
-                          onSetTool={onSetAnnotationTool}
+                          onSetTool={(tool) => { setAnnotationsVisible(true); onSetAnnotationTool(tool) }}
+                          selectedItem={selectedItem}
+                          onSelectedChange={onSelectedAnnotationChange}
+                          onDeleteSelected={onDeleteSelectedAnnotation}
+                          onDuplicateSelected={onDuplicateSelectedAnnotation}
+                          canUndo={canUndo}
+                          canRedo={canRedo}
+                          onUndo={onUndo}
+                          onRedo={onRedo}
+                          annotationsVisible={annotationsVisible}
+                          onToggleVisibility={() => { onSetAnnotationTool("pointer"); setAnnotationsVisible((visible) => !visible) }}
+                          onExportPng={onExportPng}
                           penSettings={penSettings}
                           onPenSettingsChange={onPenSettingsChange}
                           markerSettings={markerSettings}
@@ -1125,6 +1117,7 @@ function App() {
             </main>
           </div>
         </div>
+        {pngExport && <PngExportDialog source={pngExport} onAccentColorsChange={setIncludeAccentColorsInExport} onClose={() => setPngExport(null)} />}
         <ConfirmDiscardDialog
           open={isConfirmDialogOpen}
           onOpenChange={onConfirmDialogOpenChange}

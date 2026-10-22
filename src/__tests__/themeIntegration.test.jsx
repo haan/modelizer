@@ -85,7 +85,6 @@ describe('consistent menu preferences', () => {
       ['Settings', 'Areas', 'showAreas'],
       ['Settings', 'Annotations', 'showAnnotations'],
       ['Settings', 'Confirmation dialogs', 'confirmDelete'],
-      ['Settings', 'Accent colors in PNG exports', 'includeAccentColorsInExport'],
       ['View', 'Background grid', 'showBackground'],
       ['View', 'Accent colors', 'showAccentColors'],
       ['View', 'Fullscreen', 'showFullscreen'],

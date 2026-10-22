@@ -5,6 +5,7 @@ import {
   getPngExportContentBounds,
   getPngExportDimensions,
   getPngExportPixelRatio,
+  PNG_EXPORT_PADDING,
 } from './pngExportUtils.js'
 
 const BACKGROUND_COLOR = '#ffffff'
@@ -21,9 +22,9 @@ function waitForExportInitialization(initializedPromise) {
     }, EXPORT_RENDER_TIMEOUT_MS)
 
     initializedPromise.then(
-      () => {
+      (instance) => {
         window.clearTimeout(timeoutId)
-        resolve()
+        resolve(instance)
       },
       (error) => {
         window.clearTimeout(timeoutId)
@@ -42,7 +43,7 @@ export function shouldIncludePngExportNode(node, includeAccentColorsInExport) {
   )
 }
 
-function createOffscreenContainer(width, height) {
+function createOffscreenContainer(width, height, backgroundColor) {
   const container = document.createElement('div')
   container.dataset.theme = 'light'
   container.setAttribute('aria-hidden', 'true')
@@ -52,7 +53,7 @@ function createOffscreenContainer(width, height) {
   container.style.zIndex = '-1'
   container.style.width = `${width}px`
   container.style.height = `${height}px`
-  container.style.background = BACKGROUND_COLOR
+  container.style.background = backgroundColor
   container.style.pointerEvents = 'none'
   container.style.overflow = 'hidden'
   document.body.appendChild(container)
@@ -72,8 +73,12 @@ export async function exportFlowPng({
   fallbackWidth,
   fallbackHeight,
   includeAccentColorsInExport,
+  background = 'white',
+  padding = PNG_EXPORT_PADDING,
+  resolution = 'high',
 }) {
-  const bounds =
+  const backgroundColor = background === 'transparent' ? 'transparent' : BACKGROUND_COLOR
+  let bounds =
     getPngExportContentBounds({
       nodes,
       edges,
@@ -81,17 +86,17 @@ export async function exportFlowPng({
       activeView,
       includeAnnotations: showAnnotations,
       currentStroke,
+      padding,
     }) ?? { x: 0, y: 0, width: fallbackWidth, height: fallbackHeight }
-  const { width, height } = getPngExportDimensions(
+  let { width, height } = getPngExportDimensions(
     bounds,
     fallbackWidth,
     fallbackHeight,
   )
-  const pixelRatio = getPngExportPixelRatio(width, height)
-  const container = createOffscreenContainer(width, height)
+  const container = createOffscreenContainer(width, height, backgroundColor)
   const root = createRoot(container)
 
-  const initializedPromise = new Promise((resolve) => {
+  const renderCanvas = (onInit) => {
     root.render(
       <PngExportCanvas
         nodes={nodes}
@@ -106,24 +111,54 @@ export async function exportFlowPng({
         showAnnotations={showAnnotations}
         currentStroke={currentStroke}
         defaultValueEntries={defaultValueEntries}
-        onInit={() => {
-          resolve()
-        }}
+        onInit={onInit}
       />,
     )
-  })
+  }
+  const initializedPromise = new Promise((resolve) => renderCanvas(resolve))
 
   try {
-    await waitForExportInitialization(initializedPromise)
+    const flow = await waitForExportInitialization(initializedPromise)
     await waitForFrame()
     await waitForFrame()
 
+    // Previously hidden notes may not have measured sizes yet. Expand to the
+    // rendered content, including edge labels, before capturing the image.
+    const origin = container.getBoundingClientRect()
+    let left = 0, top = 0, right = width, bottom = height
+    container.querySelectorAll('.react-flow__node, .react-flow__edge, .react-flow__edgelabel-renderer > *').forEach((element) => {
+      const rect = element.getBoundingClientRect()
+      if (!rect.width && !rect.height) return
+      left = Math.min(left, rect.left - origin.left - padding)
+      top = Math.min(top, rect.top - origin.top - padding)
+      right = Math.max(right, rect.right - origin.left + padding)
+      bottom = Math.max(bottom, rect.bottom - origin.top + padding)
+    })
+    if (left < 0 || top < 0 || right > width || bottom > height) {
+      bounds = { x: bounds.x + left, y: bounds.y + top, width: right - left, height: bottom - top }
+      ;({ width, height } = getPngExportDimensions(bounds))
+      container.style.width = `${width}px`
+      container.style.height = `${height}px`
+      renderCanvas()
+      // React Flow 11 only reads defaultViewport on mount. Apply subsequent
+      // bounds adjustments through its instance so annotations move with nodes.
+      flow.setViewport({ x: -bounds.x, y: -bounds.y, zoom: 1 })
+      await waitForFrame()
+      await waitForFrame()
+    }
+
+    // Keep the physical-view legend below the diagram, inside the exported image.
+    const footerHeight = Math.ceil(container.querySelector('[data-export-footer]')?.getBoundingClientRect().height ?? 0)
+    const exportHeight = height + footerHeight
+    container.style.height = `${exportHeight}px`
+    const pixelRatio = getPngExportPixelRatio(width, exportHeight, { baseRatio: resolution === 'high' ? 2 : 1 })
+
     return await toPng(container, {
-      backgroundColor: BACKGROUND_COLOR,
+      backgroundColor,
       filter: (node) =>
         shouldIncludePngExportNode(node, includeAccentColorsInExport),
       width,
-      height,
+      height: exportHeight,
       pixelRatio,
     })
   } finally {

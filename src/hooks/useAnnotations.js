@@ -1,4 +1,6 @@
-import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
+import { useCallback, useEffect, useRef, useState } from 'react'
+
+import { SHAPE_TOOLS, constrainPoint, eraseStroke, moveAnnotation, resizeAnnotation } from '../model/annotationGeometry.js'
 
 const STORAGE_KEY_TOOL_SETTINGS = 'modelizer.annotationToolSettings'
 
@@ -13,7 +15,7 @@ const DEFAULT_TOOL_SETTINGS = {
 }
 
 const TOOL_HOTKEYS = {
-  v: 'pointer',
+  v: 'pointer', s: 'select', l: 'laser',
   p: 'pen',
   m: 'marker',
   t: 'text',
@@ -36,7 +38,7 @@ function isSpaceKey(event) {
 }
 
 function isAnnotationTool(tool) {
-  return tool === 'pen' || tool === 'marker' || tool === 'text' || tool === 'eraser'
+  return tool !== 'pointer'
 }
 
 function readToolSettings() {
@@ -49,7 +51,7 @@ function readToolSettings() {
       marker: { ...DEFAULT_TOOL_SETTINGS.marker, ...parsed.marker },
       text: { ...DEFAULT_TOOL_SETTINGS.text, ...parsed.text },
       eraser: { ...DEFAULT_TOOL_SETTINGS.eraser, ...parsed.eraser },
-      activeTool: parsed.activeTool ?? DEFAULT_TOOL_SETTINGS.activeTool,
+      activeTool: ['pointer', 'select', 'laser', 'pen', 'marker', 'text', 'eraser', ...SHAPE_TOOLS].includes(parsed.activeTool) ? parsed.activeTool : 'pointer',
     }
   } catch {
     return DEFAULT_TOOL_SETTINGS
@@ -98,7 +100,8 @@ function normalizeStrokeItem(item) {
     points,
     color: typeof item.color === 'string' && item.color ? item.color : defaults.color,
     thickness: isFiniteNumber(item.thickness) && item.thickness > 0 ? item.thickness : defaults.thickness,
-    opacity: isFiniteNumber(item.opacity) ? item.opacity : tool === 'marker' ? DEFAULT_TOOL_SETTINGS.marker.opacity : 1,
+    ...(item.linear === true ? { linear: true } : {}),
+    opacity: isFiniteNumber(item.opacity) ? Math.max(0, Math.min(1, item.opacity)) : tool === 'marker' ? DEFAULT_TOOL_SETTINGS.marker.opacity : 1,
   }
 }
 
@@ -113,6 +116,10 @@ function normalizeTextItem(item) {
     text: typeof item.text === 'string' ? item.text : '',
     color: typeof item.color === 'string' && item.color ? item.color : DEFAULT_TOOL_SETTINGS.text.color,
     fontSize: isFiniteNumber(item.fontSize) && item.fontSize > 0 ? item.fontSize : DEFAULT_TOOL_SETTINGS.text.fontSize,
+    ...(isFiniteNumber(item.width) && item.width > 0 ? { width: Math.max(28, item.width) } : {}),
+    ...(isFiniteNumber(item.padding) ? { padding: Math.max(0, Math.min(32, item.padding)) } : {}),
+    ...(typeof item.background === 'string' ? { background: item.background } : {}),
+    ...(typeof item.border === 'boolean' ? { border: item.border } : {}),
   }
 }
 
@@ -133,46 +140,22 @@ export function normalizeAnnotations(raw) {
         const text = normalizeTextItem(item)
         return text ? [text] : []
       }
+      if (item.kind === 'shape' && SHAPE_TOOLS.includes(item.shape) &&
+          [item.x1, item.y1, item.x2, item.y2].every(isFiniteNumber)) {
+        return [{ id: item.id, kind: 'shape', shape: item.shape,
+          x1: item.x1, y1: item.y1, x2: item.x2, y2: item.y2,
+          color: typeof item.color === 'string' && item.color ? item.color : DEFAULT_TOOL_SETTINGS.pen.color,
+          thickness: isFiniteNumber(item.thickness) && item.thickness > 0 ? item.thickness : 2 }]
+      }
       return []
     })
   }
   return result
 }
 
-function dist(p1, p2) {
-  const dx = p1.x - p2.x
-  const dy = p1.y - p2.y
-  return Math.sqrt(dx * dx + dy * dy)
-}
-
-function strokeIntersectsEraser(stroke, center, radius) {
-  return stroke.points.some((p) => dist(p, center) <= radius)
-}
-
-function partialEraseStroke(stroke, center, radius) {
-  const segments = []
-  let current = []
-  for (const pt of stroke.points) {
-    if (dist(pt, center) > radius) {
-      current.push(pt)
-    } else {
-      if (current.length >= 2) {
-        segments.push(current)
-      }
-      current = []
-    }
-  }
-  if (current.length >= 2) segments.push(current)
-  return segments.map((points) => ({
-    ...stroke,
-    id: crypto.randomUUID(),
-    points,
-  }))
-}
 
 export function useAnnotations({ activeView, reactFlowInstance, pushHistorySnapshot, enabled = true }) {
   const [initialSettings] = useState(readToolSettings)
-
   const [annotations, setAnnotations] = useState(makeEmptyAnnotations)
   const [activeTool, setActiveTool] = useState(initialSettings.activeTool)
   const [penSettings, setPenSettings] = useState(initialSettings.pen)
@@ -180,608 +163,313 @@ export function useAnnotations({ activeView, reactFlowInstance, pushHistorySnaps
   const [textSettings, setTextSettings] = useState(initialSettings.text)
   const [eraserSettings, setEraserSettings] = useState(initialSettings.eraser)
   const [currentStroke, setCurrentStroke] = useState(null)
+  const [previewItems, setPreviewItems] = useState(null)
   const [pendingText, setPendingText] = useState(null)
-  const [selectedTextId, setSelectedTextId] = useState(null)
+  const [selectedId, setSelectedId] = useState(null)
   const [editingTextId, setEditingTextId] = useState(null)
   const [isTemporaryPanMode, setTemporaryPanMode] = useState(false)
   const [dirtySignal, setDirtySignal] = useState(0)
-
   const annotationsRef = useRef(annotations)
-  const isDrawingRef = useRef(false)
-  const textDragRef = useRef(null)
-  const panDragRef = useRef(null)
-  const isTemporaryPanModeRef = useRef(false)
-
-  useEffect(() => {
-    annotationsRef.current = annotations
-  }, [annotations])
-
-  const bumpDirty = useCallback(() => setDirtySignal((n) => n + 1), [])
-
+  const gestureRef = useRef(null)
+  const panRef = useRef(false)
   const getAnnotationsSnapshot = useCallback(() => annotationsRef.current, [])
+  const selectedItem = annotations[activeView]?.items.find((item) => item.id === selectedId) ?? null
+  const selectedTextItem = selectedItem?.kind === 'text' ? selectedItem : null
+  const editingTextItem = annotations[activeView]?.items.find((item) => item.kind === 'text' && item.id === editingTextId)
 
-  const setTemporaryPanModeActive = useCallback((active) => {
-    isTemporaryPanModeRef.current = active
-    setTemporaryPanMode(active)
-  }, [])
-
-  const selectedTextItem = useMemo(() => {
-    if (!selectedTextId) return null
-    return annotations[activeView]?.items.find(
-      (item) => item.kind === 'text' && item.id === selectedTextId,
-    ) ?? null
-  }, [activeView, annotations, selectedTextId])
-
-  const editingTextItem = useMemo(() => {
-    if (!editingTextId) return null
-    return annotations[activeView]?.items.find(
-      (item) => item.kind === 'text' && item.id === editingTextId,
-    ) ?? null
-  }, [activeView, annotations, editingTextId])
-
-  const setTool = useCallback((tool) => {
-    setActiveTool(tool)
-    const settings = readToolSettings()
-    writeToolSettings({ ...settings, activeTool: tool })
-    setPendingText(null)
+  const cancelGesture = useCallback(() => {
+    gestureRef.current = null
     setCurrentStroke(null)
-    setEditingTextId(null)
-    if (tool !== 'text') {
-      setSelectedTextId(null)
-    }
-    isDrawingRef.current = false
-    textDragRef.current = null
-    panDragRef.current = null
-    setTemporaryPanModeActive(false)
-  }, [setTemporaryPanModeActive])
-
-  const updatePenSettings = useCallback((updates) => {
-    setPenSettings((cur) => {
-      const next = { ...cur, ...updates }
-      const settings = readToolSettings()
-      writeToolSettings({ ...settings, pen: next })
-      return next
-    })
+    setPreviewItems(null)
   }, [])
-
-  const updateMarkerSettings = useCallback((updates) => {
-    setMarkerSettings((cur) => {
-      const next = { ...cur, ...updates }
-      const settings = readToolSettings()
-      writeToolSettings({ ...settings, marker: next })
-      return next
-    })
-  }, [])
-
-  const updateSelectedText = useCallback(
-    (id, updates, { pushHistory = true } = {}) => {
-      const currentItem = annotationsRef.current[activeView].items.find(
-        (item) => item.kind === 'text' && item.id === id,
-      )
-      if (!currentItem) {
-        return false
-      }
-      const changed = Object.keys(updates).some((key) => updates[key] !== currentItem[key])
-      if (!changed) {
-        return false
-      }
-      if (pushHistory) {
-        pushHistorySnapshot?.()
-      }
-      setAnnotations((cur) => {
-        const nextItems = cur[activeView].items.map((item) =>
-          item.kind === 'text' && item.id === id ? { ...item, ...updates } : item,
-        )
-        return { ...cur, [activeView]: { items: nextItems } }
-      })
-      bumpDirty()
-      return true
-    },
-    [activeView, bumpDirty, pushHistorySnapshot],
-  )
-
-  const updateTextSettings = useCallback(
-    (updates) => {
-      if (activeTool === 'text' && selectedTextItem) {
-        updateSelectedText(selectedTextItem.id, updates)
-        return
-      }
-
-      setTextSettings((cur) => {
-        const next = { ...cur, ...updates }
-        const settings = readToolSettings()
-        writeToolSettings({ ...settings, text: next })
-        return next
-      })
-    },
-    [activeTool, selectedTextItem, updateSelectedText],
-  )
-
-  const updateEraserSettings = useCallback((updates) => {
-    setEraserSettings((cur) => {
-      const next = { ...cur, ...updates }
-      const settings = readToolSettings()
-      writeToolSettings({ ...settings, eraser: next })
-      return next
-    })
-  }, [])
-
-  const screenToFlow = useCallback(
-    (clientX, clientY) => {
-      if (!reactFlowInstance) return { x: clientX, y: clientY }
-      return reactFlowInstance.screenToFlowPosition({ x: clientX, y: clientY })
-    },
-    [reactFlowInstance],
-  )
-
-  const startTemporaryPanDrag = useCallback(
-    (e) => {
-      if (
-        !enabled ||
-        !isTemporaryPanModeRef.current ||
-        !reactFlowInstance?.getViewport ||
-        !reactFlowInstance?.setViewport
-      ) {
-        return false
-      }
-      const viewport = reactFlowInstance.getViewport()
-      if (!viewport) return false
-
-      e.preventDefault()
-      e.stopPropagation()
-      setSelectedTextId(null)
-      setEditingTextId(null)
-      setPendingText(null)
-      setCurrentStroke(null)
-      isDrawingRef.current = false
-      textDragRef.current = null
-      panDragRef.current = {
-        startClient: { x: e.clientX, y: e.clientY },
-        startViewport: viewport,
-      }
-      return true
-    },
-    [enabled, reactFlowInstance],
-  )
-
-  const onEraseAt = useCallback(
-    (flowPt) => {
-      const radius = eraserSettings.size / 2
-      if (eraserSettings.mode === 'whole') {
-        setAnnotations((cur) => {
-          const items = cur[activeView].items.filter((item) => {
-            if (item.kind !== 'stroke') return true
-            return !strokeIntersectsEraser(item, flowPt, radius)
-          })
-          if (items.length === cur[activeView].items.length) return cur
-          bumpDirty()
-          return { ...cur, [activeView]: { items } }
-        })
-      } else {
-        setAnnotations((cur) => {
-          const nextItems = []
-          let changed = false
-          for (const item of cur[activeView].items) {
-            if (item.kind !== 'stroke') {
-              nextItems.push(item)
-              continue
-            }
-            if (!strokeIntersectsEraser(item, flowPt, radius)) {
-              nextItems.push(item)
-              continue
-            }
-            const segments = partialEraseStroke(item, flowPt, radius)
-            nextItems.push(...segments)
-            changed = true
-          }
-          if (!changed) return cur
-          bumpDirty()
-          return { ...cur, [activeView]: { items: nextItems } }
-        })
-      }
-    },
-    [activeView, eraserSettings, bumpDirty],
-  )
-
-  const onPointerDown = useCallback(
-    (e) => {
-      if (activeTool === 'pointer') return
-      if (startTemporaryPanDrag(e)) return
-      e.preventDefault()
-      e.stopPropagation()
-      const flowPt = screenToFlow(e.clientX, e.clientY)
-
-      if (activeTool === 'pen' || activeTool === 'marker') {
-        setSelectedTextId(null)
-        setEditingTextId(null)
-        isDrawingRef.current = true
-        const settings = activeTool === 'pen' ? penSettings : markerSettings
-        setCurrentStroke({
-          id: crypto.randomUUID(),
-          kind: 'stroke',
-          tool: activeTool,
-          points: [flowPt],
-          color: settings.color,
-          thickness: settings.thickness,
-          opacity: activeTool === 'pen' ? 1 : markerSettings.opacity,
-        })
-      } else if (activeTool === 'eraser') {
-        setSelectedTextId(null)
-        setEditingTextId(null)
-        pushHistorySnapshot?.()
-        onEraseAt(flowPt)
-        isDrawingRef.current = true
-      } else if (activeTool === 'text') {
-        if (selectedTextItem || editingTextItem) {
-          setSelectedTextId(null)
-          setEditingTextId(null)
-          return
-        }
-        // Don't create a new input while one is already open - let blur commit it first.
-        if (!pendingText) {
-          setPendingText({ x: flowPt.x, y: flowPt.y, text: '', color: textSettings.color, fontSize: textSettings.fontSize })
-        }
-      }
-    },
-    [activeTool, editingTextItem, penSettings, markerSettings, textSettings, pendingText, screenToFlow, selectedTextItem, pushHistorySnapshot, onEraseAt, startTemporaryPanDrag],
-  )
-
-  const onPointerMove = useCallback(
-    (e) => {
-      const panDrag = panDragRef.current
-      if (panDrag && reactFlowInstance?.setViewport) {
-        e.preventDefault()
-        e.stopPropagation()
-        const dx = e.clientX - panDrag.startClient.x
-        const dy = e.clientY - panDrag.startClient.y
-        reactFlowInstance.setViewport(
-          {
-            x: panDrag.startViewport.x + dx,
-            y: panDrag.startViewport.y + dy,
-            zoom: panDrag.startViewport.zoom,
-          },
-          { duration: 0 },
-        )
-        return
-      }
-
-      const textDrag = textDragRef.current
-      if (textDrag) {
-        e.preventDefault()
-        const flowPt = screenToFlow(e.clientX, e.clientY)
-        const dx = flowPt.x - textDrag.start.x
-        const dy = flowPt.y - textDrag.start.y
-        if (!textDrag.historyPushed && (Math.abs(dx) > 0.5 || Math.abs(dy) > 0.5)) {
-          pushHistorySnapshot?.()
-          textDrag.historyPushed = true
-        }
-        if (textDrag.historyPushed) {
-          textDrag.moved = true
-          setAnnotations((cur) => ({
-            ...cur,
-            [activeView]: {
-              items: cur[activeView].items.map((item) =>
-                item.kind === 'text' && item.id === textDrag.id
-                  ? {
-                      ...item,
-                      x: textDrag.origin.x + dx,
-                      y: textDrag.origin.y + dy,
-                    }
-                  : item,
-              ),
-            },
-          }))
-        }
-        return
-      }
-
-      if (!isDrawingRef.current) return
-      e.preventDefault()
-      const flowPt = screenToFlow(e.clientX, e.clientY)
-
-      if (activeTool === 'pen' || activeTool === 'marker') {
-        setCurrentStroke((cur) => {
-          if (!cur) return cur
-          return { ...cur, points: [...cur.points, flowPt] }
-        })
-      } else if (activeTool === 'eraser') {
-        onEraseAt(flowPt)
-      }
-    },
-    [activeTool, activeView, pushHistorySnapshot, reactFlowInstance, screenToFlow, onEraseAt],
-  )
-
-  const onPointerUp = useCallback(
-    () => {
-      panDragRef.current = null
-      if (textDragRef.current) {
-        if (textDragRef.current.moved) {
-          bumpDirty()
-        }
-        textDragRef.current = null
-      }
-      if (activeTool === 'pen' || activeTool === 'marker') {
-        if (isDrawingRef.current && currentStroke) {
-          pushHistorySnapshot?.()
-          const stroke = currentStroke
-          setAnnotations((cur) => ({
-            ...cur,
-            [activeView]: {
-              items: [...cur[activeView].items, stroke],
-            },
-          }))
-          bumpDirty()
-        }
-        setCurrentStroke(null)
-      }
-      isDrawingRef.current = false
-    },
-    [activeTool, activeView, currentStroke, pushHistorySnapshot, bumpDirty],
-  )
-
-  const onCommitText = useCallback(
-    (text) => {
-      if (!pendingText) return
-      if (text.trim()) {
-        pushHistorySnapshot?.()
-        const id = crypto.randomUUID()
-        const item = {
-          id,
-          kind: 'text',
-          x: pendingText.x,
-          y: pendingText.y,
-          text: text.trim(),
-          color: pendingText.color,
-          fontSize: pendingText.fontSize,
-        }
-        setAnnotations((cur) => ({
-          ...cur,
-          [activeView]: { items: [...cur[activeView].items, item] },
-        }))
-        setSelectedTextId(id)
-        setEditingTextId(null)
-        bumpDirty()
-      } else {
-        setSelectedTextId(null)
-        setEditingTextId(null)
-      }
-      setPendingText(null)
-    },
-    [activeView, pendingText, pushHistorySnapshot, bumpDirty],
-  )
-
-  const onCommitTextEdit = useCallback(
-    (id, text) => {
-      setEditingTextId(null)
-      if (text === null) {
-        return
-      }
-      const nextText = text.trim()
-      const currentItem = annotationsRef.current[activeView].items.find(
-        (item) => item.kind === 'text' && item.id === id,
-      )
-      if (!currentItem) {
-        return
-      }
-      if (!nextText) {
-        pushHistorySnapshot?.()
-        setAnnotations((cur) => ({
-          ...cur,
-          [activeView]: {
-            items: cur[activeView].items.filter((i) => i.id !== id),
-          },
-        }))
-        setSelectedTextId(null)
-        bumpDirty()
-        return
-      }
-      if (nextText === currentItem.text) {
-        return
-      }
-      pushHistorySnapshot?.()
-      setAnnotations((cur) => ({
-        ...cur,
-        [activeView]: {
-          items: cur[activeView].items.map((i) =>
-            i.id === id ? { ...i, text: nextText } : i,
-          ),
-        },
-      }))
-      setSelectedTextId(id)
-      bumpDirty()
-    },
-    [activeView, pushHistorySnapshot, bumpDirty],
-  )
-
-  const onStartTextEdit = useCallback(
-    (id) => {
-      if (activeTool !== 'text') return
-      setPendingText(null)
-      setSelectedTextId(id)
-      setEditingTextId(id)
-      textDragRef.current = null
-    },
-    [activeTool],
-  )
-
-  const onTextPointerDown = useCallback(
-    (id, e) => {
-      if (activeTool !== 'text') return
-      if (startTemporaryPanDrag(e)) return
-      e.preventDefault()
-      e.stopPropagation()
-      const item = annotationsRef.current[activeView].items.find(
-        (entry) => entry.kind === 'text' && entry.id === id,
-      )
-      if (!item) return
-      const flowPt = screenToFlow(e.clientX, e.clientY)
-      setPendingText(null)
-      setEditingTextId(null)
-      setSelectedTextId(id)
-      textDragRef.current =
-        selectedTextId === id
-          ? {
-              id,
-              start: flowPt,
-              origin: { x: item.x, y: item.y },
-              moved: false,
-              historyPushed: false,
-            }
-          : null
-    },
-    [activeTool, activeView, screenToFlow, selectedTextId, startTemporaryPanDrag],
-  )
-
-  const onTextDoubleClick = useCallback(
-    (id, e) => {
-      if (activeTool !== 'text') return
-      e.preventDefault()
-      e.stopPropagation()
-      onStartTextEdit(id)
-    },
-    [activeTool, onStartTextEdit],
-  )
-
-  const onDeleteSelectedText = useCallback(() => {
-    if (!selectedTextItem) return false
-    pushHistorySnapshot?.()
-    setAnnotations((cur) => ({
-      ...cur,
-      [activeView]: {
-        items: cur[activeView].items.filter(
-          (item) => item.kind !== 'text' || item.id !== selectedTextItem.id,
-        ),
-      },
-    }))
-    setSelectedTextId(null)
-    setEditingTextId(null)
-    textDragRef.current = null
-    panDragRef.current = null
-    bumpDirty()
-    return true
-  }, [activeView, bumpDirty, pushHistorySnapshot, selectedTextItem])
-
-  const onClearAnnotations = useCallback(
-    (view) => {
-      pushHistorySnapshot?.()
-      setAnnotations((cur) => ({ ...cur, [view ?? activeView]: { items: [] } }))
-      setPendingText(null)
-      setSelectedTextId(null)
-      setEditingTextId(null)
-      textDragRef.current = null
-      bumpDirty()
-    },
-    [activeView, pushHistorySnapshot, bumpDirty],
-  )
-
-  const onLoadAnnotations = useCallback((raw) => {
-    setAnnotations(normalizeAnnotations(raw))
-    setDirtySignal(0)
+  const resetTransient = useCallback(() => {
+    cancelGesture()
     setPendingText(null)
-    setSelectedTextId(null)
+    setSelectedId(null)
     setEditingTextId(null)
-    textDragRef.current = null
-    panDragRef.current = null
-    setTemporaryPanModeActive(false)
-  }, [setTemporaryPanModeActive])
+    panRef.current = false
+    setTemporaryPanMode(false)
+  }, [cancelGesture])
+  useEffect(() => {
+    // A view switch must not carry unfinished gestures into the new view.
+    // eslint-disable-next-line react-hooks/set-state-in-effect
+    resetTransient()
+  }, [activeView, enabled, resetTransient])
 
+  const commitItems = useCallback((items, view = activeView) => {
+    const old = annotationsRef.current
+    if (items === old[view].items) return false
+    pushHistorySnapshot?.()
+    const next = { ...old, [view]: { items } }
+    annotationsRef.current = next
+    setAnnotations(next)
+    setDirtySignal((n) => n + 1)
+    return true
+  }, [activeView, pushHistorySnapshot])
+  const setTool = useCallback((tool) => {
+    resetTransient()
+    setActiveTool(tool)
+    writeToolSettings({ ...readToolSettings(), activeTool: tool })
+  }, [resetTransient])
+  const updateSelected = useCallback((updates) => {
+    const items = annotationsRef.current[activeView].items
+    const item = items.find((entry) => entry.id === selectedId)
+    if (!item || !Object.keys(updates).some((key) => item[key] !== updates[key])) return
+    commitItems(items.map((entry) => entry.id === selectedId ? { ...entry, ...updates } : entry))
+  }, [activeView, selectedId, commitItems])
+  const onSelectItem = useCallback((id) => {
+    cancelGesture()
+    setPendingText(null)
+    setEditingTextId(null)
+    setSelectedId(id)
+  }, [cancelGesture])
+  const updateSettings = useCallback((key, setter, updates) => {
+    setter((cur) => {
+      const next = { ...cur, ...updates }
+      writeToolSettings({ ...readToolSettings(), [key]: next })
+      return next
+    })
+  }, [])
+  const updatePenSettings = useCallback((updates) => updateSettings('pen', setPenSettings, updates), [updateSettings])
+  const updateMarkerSettings = useCallback((updates) => updateSettings('marker', setMarkerSettings, updates), [updateSettings])
+  const updateEraserSettings = useCallback((updates) => updateSettings('eraser', setEraserSettings, updates), [updateSettings])
+  const updateTextSettings = useCallback((updates) => {
+    if (selectedTextItem && (activeTool === 'text' || activeTool === 'select')) updateSelected(updates)
+    else updateSettings('text', setTextSettings, updates)
+  }, [activeTool, selectedTextItem, updateSelected, updateSettings])
+  const screenToFlow = useCallback((e) =>
+    reactFlowInstance?.screenToFlowPosition({ x: e.clientX, y: e.clientY }) ?? { x: e.clientX, y: e.clientY },
+  [reactFlowInstance])
+  const capture = (e) => {
+    e.preventDefault()
+    e.stopPropagation()
+    if (e.pointerId !== undefined) e.currentTarget?.setPointerCapture?.(e.pointerId)
+  }
+  const startPan = useCallback((e) => {
+    if (!enabled || !panRef.current || !reactFlowInstance?.getViewport || !reactFlowInstance?.setViewport) return false
+    capture(e)
+    setPendingText(null)
+    setSelectedId(null)
+    setEditingTextId(null)
+    gestureRef.current = { type: 'pan', start: { x: e.clientX, y: e.clientY }, viewport: reactFlowInstance.getViewport() }
+    return true
+  }, [enabled, reactFlowInstance])
+  const eraseAt = useCallback((gesture, point) => {
+    const next = gesture.items.flatMap((item) =>
+      item.kind === 'stroke' ? eraseStroke(item, gesture.last, point, eraserSettings.size / 2, eraserSettings.mode) : [item])
+    if (next.length !== gesture.items.length || next.some((item, i) => item !== gesture.items[i])) {
+      gesture.items = next
+      gesture.changed = true
+      setPreviewItems(next)
+    }
+    gesture.last = point
+  }, [eraserSettings])
+  const onPointerDown = useCallback((e) => {
+    if (!enabled || activeTool === 'pointer' || (e.button !== undefined && e.button !== 0) || gestureRef.current) return
+    if (startPan(e)) return
+    if (activeTool === 'laser') return
+    capture(e)
+    const point = screenToFlow(e)
+    if (activeTool === 'select') { setSelectedId(null); return }
+    if (activeTool === 'text') {
+      if (selectedItem || editingTextItem) { setSelectedId(null); setEditingTextId(null); return }
+      if (!pendingText) setPendingText({ ...textSettings, x: point.x, y: point.y, text: '' })
+      return
+    }
+    setSelectedId(null)
+    setEditingTextId(null)
+    if (activeTool === 'eraser') {
+      const gesture = { type: 'erase', view: activeView, items: annotationsRef.current[activeView].items, last: point, changed: false }
+      gestureRef.current = gesture
+      eraseAt(gesture, point)
+      return
+    }
+    const settings = activeTool === 'marker' ? markerSettings : penSettings
+    const item = SHAPE_TOOLS.includes(activeTool)
+      ? { id: crypto.randomUUID(), kind: 'shape', shape: activeTool, x1: point.x, y1: point.y, x2: point.x, y2: point.y, ...penSettings }
+      : { id: crypto.randomUUID(), kind: 'stroke', tool: activeTool, points: [point], ...settings, opacity: activeTool === 'marker' ? markerSettings.opacity : 1 }
+    gestureRef.current = { type: 'draw', view: activeView, start: point, item, straight: activeTool === 'marker' && e.shiftKey }
+    setCurrentStroke(item)
+  }, [enabled, activeTool, activeView, startPan, screenToFlow, selectedItem, editingTextItem, pendingText, textSettings, eraseAt, markerSettings, penSettings])
+  const onItemPointerDown = useCallback((id, e, handle = null) => {
+    if (!enabled || (activeTool !== 'select' && activeTool !== 'text') || (e.button !== undefined && e.button !== 0)) return
+    if (startPan(e)) return
+    capture(e)
+    const item = annotationsRef.current[activeView].items.find((entry) => entry.id === id)
+    if (!item || (activeTool === 'text' && item.kind !== 'text')) return
+    setPendingText(null)
+    setEditingTextId(null)
+    setSelectedId(id)
+    if (activeTool === 'select' || selectedId === id || handle) {
+      gestureRef.current = { type: 'transform', view: activeView, item, handle, start: screenToFlow(e), changed: false }
+    }
+  }, [enabled, activeTool, activeView, selectedId, screenToFlow, startPan])
+  const onPointerMove = useCallback((e) => {
+    const g = gestureRef.current
+    if (!g) return
+    if (g.view && g.view !== activeView) { cancelGesture(); return }
+    e.preventDefault()
+    if (g.type === 'pan') {
+      reactFlowInstance.setViewport({ x: g.viewport.x + e.clientX - g.start.x, y: g.viewport.y + e.clientY - g.start.y, zoom: g.viewport.zoom }, { duration: 0 })
+      return
+    }
+    const point = screenToFlow(e)
+    if (g.type === 'erase') { eraseAt(g, point); return }
+    if (g.type === 'transform') {
+      const dx = point.x - g.start.x, dy = point.y - g.start.y
+      if (!g.changed && Math.hypot(dx, dy) <= 0.5) return
+      g.changed = true
+      g.result = g.handle ? resizeAnnotation(g.item, g.handle, point) : moveAnnotation(g.item, dx, dy)
+      setPreviewItems(annotationsRef.current[g.view].items.map((item) => item.id === g.item.id ? g.result : item))
+      return
+    }
+    if (g.item.kind === 'shape') {
+      const end = e.shiftKey ? constrainPoint(g.start, point, g.item.shape) : point
+      g.item = { ...g.item, x2: end.x, y2: end.y }
+    } else if (g.item.tool === 'marker' && (g.straight || e.shiftKey)) {
+      g.straight = true
+      g.item = { ...g.item, linear: true, points: [g.start, constrainPoint(g.start, point, 'line')] }
+    } else {
+      const last = g.item.points.at(-1)
+      if (last.x === point.x && last.y === point.y) return
+      g.item = { ...g.item, points: [...g.item.points, point] }
+    }
+    setCurrentStroke(g.item)
+  }, [activeView, cancelGesture, reactFlowInstance, screenToFlow, eraseAt])
+  const onPointerUp = useCallback((e) => {
+    const g = gestureRef.current
+    if (!g) return
+    if (e && Number.isFinite(e.clientX) && g.type !== 'pan') onPointerMove(e)
+    if (g.view === activeView) {
+      const items = annotationsRef.current[g.view].items
+      if (g.type === 'draw' && (g.item.kind !== 'shape' || Math.hypot(g.item.x2 - g.item.x1, g.item.y2 - g.item.y1) > 0.5)) commitItems([...items, g.item], g.view)
+      if (g.type === 'erase' && g.changed) commitItems(g.items, g.view)
+      if (g.type === 'transform' && g.changed) commitItems(items.map((item) => item.id === g.item.id ? g.result : item), g.view)
+    }
+    cancelGesture()
+  }, [activeView, onPointerMove, commitItems, cancelGesture])
+  const onCommitText = useCallback((text) => {
+    if (!pendingText) return
+    if (text?.trim()) {
+      const item = { ...pendingText, id: crypto.randomUUID(), kind: 'text', text: text.trim() }
+      commitItems([...annotationsRef.current[activeView].items, item])
+      setSelectedId(item.id)
+    } else setSelectedId(null)
+    setPendingText(null)
+  }, [activeView, pendingText, commitItems])
+  const onCommitTextEdit = useCallback((id, text) => {
+    setEditingTextId(null)
+    if (text === null) return
+    const items = annotationsRef.current[activeView].items
+    const item = items.find((entry) => entry.id === id)
+    if (!item || item.text === text.trim()) return
+    commitItems(text.trim() ? items.map((entry) => entry.id === id ? { ...entry, text: text.trim() } : entry) : items.filter((entry) => entry.id !== id))
+    setSelectedId(text.trim() ? id : null)
+  }, [activeView, commitItems])
+  const onStartTextEdit = useCallback((id) => {
+    if (activeTool !== 'text' && activeTool !== 'select') return
+    cancelGesture()
+    setPendingText(null)
+    setSelectedId(id)
+    setEditingTextId(id)
+  }, [activeTool, cancelGesture])
+  const onTextDoubleClick = useCallback((id, e) => {
+    if (activeTool !== 'text' && activeTool !== 'select') return
+    e.preventDefault()
+    e.stopPropagation()
+    onStartTextEdit(id)
+  }, [activeTool, onStartTextEdit])
+  const onDeleteSelected = useCallback(() => {
+    if (!selectedItem) return false
+    commitItems(annotationsRef.current[activeView].items.filter((item) => item.id !== selectedItem.id))
+    resetTransient()
+    return true
+  }, [activeView, selectedItem, commitItems, resetTransient])
+  const onDuplicateSelected = useCallback(() => {
+    if (!selectedItem) return
+    const item = { ...moveAnnotation(selectedItem, 20, 20), id: crypto.randomUUID() }
+    commitItems([...annotationsRef.current[activeView].items, item])
+    setSelectedId(item.id)
+  }, [activeView, selectedItem, commitItems])
+  const onClearAnnotations = useCallback((view = activeView) => {
+    if (annotationsRef.current[view].items.length) commitItems([], view)
+    resetTransient()
+  }, [activeView, commitItems, resetTransient])
+  const onLoadAnnotations = useCallback((raw) => {
+    const next = normalizeAnnotations(raw)
+    annotationsRef.current = next
+    setAnnotations(next)
+    setDirtySignal(0)
+    resetTransient()
+  }, [resetTransient])
   useEffect(() => {
     const handleKeyDown = (event) => {
-      if (!enabled || event.defaultPrevented || isEditableTarget(event.target)) return
-
+      if (!enabled || event.defaultPrevented || isEditableTarget(event.target) || event.target?.closest?.('[role="dialog"], [role="alertdialog"], [role="menu"]')) return
       const key = event.key?.toLowerCase()
+      if ((isSpaceKey(event) || key === 'enter') && event.target?.closest?.('button, a, [role="button"]')) return
       if (isSpaceKey(event)) {
         if (isAnnotationTool(activeTool) && !event.ctrlKey && !event.metaKey && !event.altKey) {
           event.preventDefault()
-          if (!event.repeat) {
-            setTemporaryPanModeActive(true)
-          }
+          event.stopPropagation()
+          if (!event.repeat) { panRef.current = true; setTemporaryPanMode(true) }
         }
         return
       }
-
       if (!event.ctrlKey && !event.metaKey && !event.altKey && TOOL_HOTKEYS[key]) {
-        event.preventDefault()
-        setTool(TOOL_HOTKEYS[key])
-        return
+        event.preventDefault(); setTool(TOOL_HOTKEYS[key]); return
       }
-
-      if (key === 'delete' || key === 'backspace') {
-        if (activeTool === 'text' && onDeleteSelectedText()) {
-          event.preventDefault()
-        }
-        return
+      if ((event.ctrlKey || event.metaKey) && key === 'd' && selectedItem && activeTool !== 'pointer') {
+        event.preventDefault(); onDuplicateSelected(); return
+      }
+      if ((key === 'delete' || key === 'backspace') && activeTool !== 'pointer') {
+        event.preventDefault(); event.stopPropagation(); onDeleteSelected(); return
+      }
+      if (activeTool === 'select' && selectedItem && ['ArrowLeft', 'ArrowRight', 'ArrowUp', 'ArrowDown'].includes(event.key)) {
+        event.preventDefault()
+        event.stopPropagation()
+        const step = event.shiftKey ? 10 : 1
+        updateSelected(moveAnnotation(selectedItem, event.key === 'ArrowLeft' ? -step : event.key === 'ArrowRight' ? step : 0,
+          event.key === 'ArrowUp' ? -step : event.key === 'ArrowDown' ? step : 0))
       }
       if (key === 'escape') {
-        if (pendingText || selectedTextItem || editingTextItem) {
-          event.preventDefault()
-          setPendingText(null)
-          setSelectedTextId(null)
-          setEditingTextId(null)
-          textDragRef.current = null
-          panDragRef.current = null
-          setTemporaryPanModeActive(false)
-          return
-        }
-        if (activeTool !== 'pointer') {
-          event.preventDefault()
-          setTool('pointer')
-        }
-        return
-      }
-      if (activeTool === 'text' && key === 'enter' && selectedTextItem && !editingTextItem) {
         event.preventDefault()
-        onStartTextEdit(selectedTextItem.id)
+        if (pendingText || selectedItem || editingTextItem || gestureRef.current) resetTransient()
+        else if (activeTool !== 'pointer') setTool('pointer')
+      }
+      if ((activeTool === 'text' || activeTool === 'select') && key === 'enter' && selectedTextItem && !editingTextItem) {
+        event.preventDefault(); onStartTextEdit(selectedTextItem.id)
       }
     }
-
     const handleKeyUp = (event) => {
       if (isSpaceKey(event)) {
-        panDragRef.current = null
-        setTemporaryPanModeActive(false)
+        if (gestureRef.current?.type === 'pan') gestureRef.current = null
+        panRef.current = false
+        setTemporaryPanMode(false)
       }
     }
-
+    const handleBlur = () => { cancelGesture(); panRef.current = false; setTemporaryPanMode(false) }
     window.addEventListener('keydown', handleKeyDown, true)
     window.addEventListener('keyup', handleKeyUp, true)
+    window.addEventListener('blur', handleBlur)
     return () => {
       window.removeEventListener('keydown', handleKeyDown, true)
       window.removeEventListener('keyup', handleKeyUp, true)
+      window.removeEventListener('blur', handleBlur)
     }
-  }, [activeTool, editingTextItem, enabled, onDeleteSelectedText, onStartTextEdit, pendingText, selectedTextItem, setTemporaryPanModeActive, setTool])
-
+  }, [enabled, activeTool, pendingText, selectedItem, editingTextItem, selectedTextItem, setTool, resetTransient, cancelGesture, onDeleteSelected, onDuplicateSelected, onStartTextEdit, updateSelected])
   const effectiveTextSettings = selectedTextItem
-    ? { color: selectedTextItem.color, fontSize: selectedTextItem.fontSize }
+    ? Object.fromEntries(['color', 'fontSize', 'width', 'padding', 'background', 'border'].filter((key) => selectedTextItem[key] !== undefined).map((key) => [key, selectedTextItem[key]]))
     : textSettings
-
   return {
-    annotations,
-    activeTool,
-    penSettings,
-    markerSettings,
-    textSettings: effectiveTextSettings,
-    eraserSettings,
-    currentStroke,
-    pendingText,
-    selectedTextId: selectedTextItem ? selectedTextItem.id : null,
-    editingTextId: editingTextItem ? editingTextItem.id : null,
-    isTemporaryPanMode: enabled && isTemporaryPanMode,
-    dirtySignal,
-    getAnnotationsSnapshot,
-    setTool,
-    updatePenSettings,
-    updateMarkerSettings,
-    updateTextSettings,
-    updateEraserSettings,
-    onPointerDown,
-    onPointerMove,
-    onPointerUp,
-    onCommitText,
-    onCommitTextEdit,
-    onTextPointerDown,
-    onTextDoubleClick,
-    onDeleteSelectedText,
-    onClearAnnotations,
-    onLoadAnnotations,
+    annotations, displayAnnotations: previewItems ? { ...annotations, [activeView]: { items: previewItems } } : annotations,
+    activeTool, penSettings, markerSettings, textSettings: effectiveTextSettings, eraserSettings,
+    currentStroke, pendingText, selectedItem, selectedId: selectedItem?.id ?? null,
+    selectedTextId: selectedTextItem?.id ?? null, editingTextId: editingTextItem?.id ?? null,
+    isTemporaryPanMode: enabled && isTemporaryPanMode, dirtySignal, getAnnotationsSnapshot,
+    setTool, updatePenSettings, updateMarkerSettings, updateTextSettings, updateEraserSettings,
+    updateSelected, onSelectItem, onPointerDown, onPointerMove, onPointerUp, onPointerCancel: cancelGesture,
+    onCommitText, onCommitTextEdit, onTextPointerDown: onItemPointerDown, onItemPointerDown,
+    onTextDoubleClick, onDeleteSelectedText: onDeleteSelected, onDeleteSelected, onDuplicateSelected,
+    onClearAnnotations, onLoadAnnotations,
   }
 }

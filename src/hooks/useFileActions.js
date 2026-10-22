@@ -384,6 +384,7 @@ export function useFileActions({
   const prevNodesRef = useRef(nodes)
   const prevEdgesRef = useRef(edges)
   const prevModelNameRef = useRef(modelName)
+  const prevAnnotationsRef = useRef(annotations)
   const lastSavedRef = useRef(
     JSON.stringify(
       buildHashPayload({
@@ -463,9 +464,11 @@ export function useFileActions({
   }, [edges, getSerializedModelForDirty, isDragging, modelName, nodes])
 
   useEffect(() => {
-    if (annotationsDirtySignal === 0) return
+    const annotationsChanged = prevAnnotationsRef.current !== annotations
+    prevAnnotationsRef.current = annotations
+    if (!annotationsChanged && annotationsDirtySignal === 0) return
     setIsDirty(getSerializedModelForDirty() !== lastSavedRef.current)
-  }, [annotationsDirtySignal, getSerializedModelForDirty])
+  }, [annotations, annotationsDirtySignal, getSerializedModelForDirty])
 
   const applyLoadedModel = useCallback(
     (payload, handle, prepared) => {

@@ -127,7 +127,7 @@ export default function Sidebar({
                   </SidebarTooltip>
                 </li>
                 <li data-sidebar="menu-item" className="group/menu-item relative">
-                  <SidebarTooltip label="Export as PNG">
+                  <SidebarTooltip label="Export PNG…">
                     <button
                       data-sidebar="menu-button"
                       data-size="default"

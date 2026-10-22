@@ -1,4 +1,4 @@
-import { cleanup, fireEvent, render, screen } from '@testing-library/react'
+import { act, cleanup, fireEvent, render, screen } from '@testing-library/react'
 import { afterEach, describe, expect, it, vi } from 'vitest'
 
 import AnnotationLayer from '../AnnotationLayer.jsx'
@@ -267,5 +267,52 @@ describe('AnnotationLayer', () => {
     expect(container.querySelector('.react-flow__annotation-layer')).toHaveStyle({
       cursor: 'grab',
     })
+  })
+})
+
+describe('annotation selection and laser rendering', () => {
+  it('renders wrapped text boxes and interactive width handles in the selection tool', () => {
+    const onItemPointerDown = vi.fn()
+    const item = { ...baseProps.annotations.conceptual.items[0], text: 'A long explanation of the association', width: 90, padding: 6, background: '#ffffff', border: true }
+    const { container } = renderLayer({ activeTool: 'select', annotations: { conceptual: { items: [item] } }, selectedId: item.id, onItemPointerDown })
+    expect(container.querySelectorAll('tspan').length).toBeGreaterThan(1)
+    expect(container.querySelector('rect[fill="#ffffff"]')).toHaveAttribute('width', '90')
+    const handle = container.querySelector('[data-resize-handle="e"]')
+    fireEvent.pointerDown(handle, { button: 0, pointerId: 1 })
+    expect(onItemPointerDown).toHaveBeenCalledWith(item.id, expect.anything(), 'e')
+    expect(container.querySelector('[data-resize-handle="se"]')).not.toBeInTheDocument()
+  })
+  it('captures gestures, does not finish on leaving, and cancels on pointer cancellation', () => {
+    const onPointerUp = vi.fn(), onPointerCancel = vi.fn()
+    const { container } = renderLayer({ activeTool: 'pen', onPointerUp, onPointerCancel })
+    const layer = container.querySelector('.react-flow__annotation-layer')
+    layer.setPointerCapture = vi.fn()
+    fireEvent.pointerDown(layer, { button: 0, pointerId: 7 })
+    expect(layer.setPointerCapture).toHaveBeenCalledWith(7)
+    fireEvent.pointerLeave(layer, { pointerId: 7 })
+    expect(onPointerUp).not.toHaveBeenCalled()
+    fireEvent.pointerCancel(layer, { pointerId: 7 })
+    expect(onPointerCancel).toHaveBeenCalledTimes(1)
+  })
+  it('fades the laser trail and removes it when switching tools', async () => {
+    vi.useFakeTimers()
+    try {
+      const { container, rerender } = renderLayer({ activeTool: 'laser' })
+      const laser = container.querySelector('[data-laser-surface]')
+      fireEvent.pointerDown(laser, { button: 0, buttons: 1, clientX: 10, clientY: 10, pointerId: 1 })
+      await act(async () => vi.advanceTimersByTime(100))
+      fireEvent.pointerMove(laser, { buttons: 1, clientX: 50, clientY: 50, pointerId: 1 })
+      fireEvent.pointerUp(laser, { clientX: 50, clientY: 50, pointerId: 1 })
+      expect(laser.querySelector('[data-laser-trail]')).toBeInTheDocument()
+      expect(laser.querySelectorAll('circle')).toHaveLength(2)
+      const stops = laser.querySelectorAll('linearGradient stop')
+      expect(Number(stops[0].getAttribute('stop-opacity'))).toBeLessThan(Number(stops[1].getAttribute('stop-opacity')))
+      await act(async () => vi.advanceTimersByTime(700))
+      expect(laser.querySelector('[data-laser-trail]')).not.toBeInTheDocument()
+      rerender(<AnnotationLayer {...baseProps} activeTool="pointer" />)
+      expect(container.querySelector('[data-laser-surface]')).not.toBeInTheDocument()
+    } finally {
+      vi.useRealTimers()
+    }
   })
 })

@@ -14,7 +14,7 @@ export function parseModelFile(text) {
   if (!isObject(payload) || !Array.isArray(payload.nodes) || !Array.isArray(payload.edges)) {
     throw new Error('Invalid model: nodes and edges must be arrays.')
   }
-  if (payload.version !== undefined && payload.version !== MODEL_VERSION) {
+  if (payload.version !== undefined && payload.version !== 1 && payload.version !== MODEL_VERSION) {
     throw new Error(`Unsupported model version: ${String(payload.version)}.`)
   }
   const normalizeEntries = (entries, kind) => {

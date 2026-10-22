@@ -58,8 +58,6 @@ export default function Navbar({
   onNullDisplayModeChange,
   confirmDelete,
   onToggleConfirmDelete,
-  includeAccentColorsInExport,
-  onToggleIncludeAccentColorsInExport,
   isDirty,
   onUndo,
   onRedo,
@@ -198,7 +196,7 @@ export default function Navbar({
                     className="cursor-pointer rounded-sm px-2 py-1 text-xs text-base-content transition-colors hover:bg-base-200 data-[highlighted]:bg-base-200 focus:outline-none"
                     onSelect={() => onExportPng?.()}
                   >
-                    Export as PNG
+                    Export PNG…
                   </Menubar.Item>
                 </Menubar.Content>
               </Menubar.Portal>
@@ -265,9 +263,6 @@ export default function Navbar({
                   <Menubar.Separator className="my-1 h-px bg-base-content/20" />
                   <MenuCheckbox checked={confirmDelete} onCheckedChange={onToggleConfirmDelete}>
                     Confirmation dialogs
-                  </MenuCheckbox>
-                  <MenuCheckbox checked={includeAccentColorsInExport} onCheckedChange={onToggleIncludeAccentColorsInExport}>
-                    Accent colors in PNG exports
                   </MenuCheckbox>
                 </Menubar.Content>
               </Menubar.Portal>

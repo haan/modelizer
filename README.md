@@ -71,6 +71,27 @@ It does not help you make the "right" modeling decisions — you do.
 - Models must be downloaded manually (no server-side storage)
 - Settings are stored in browser localStorage
 
+## Teaching annotations
+
+Enable **Settings > Annotations** to show the annotation toolbar. Use **Pointer**
+to interact with the diagram, or choose a drawing tool to mark it. The toolbar
+includes pen, highlighter, text, arrows, lines, rectangles, ellipses, ink erasing,
+and a temporary laser pointer. **Select annotation** moves, resizes, styles,
+duplicates, and deletes individual annotations. Text supports wrapping and an
+optional background, padding, and border.
+
+Hold **Space** and drag to pan while using an annotation tool; use the wheel to
+zoom. **Shift** constrains shapes and draws straight highlights. Annotations scale
+with the diagram and are saved separately for each model view. The laser is never
+saved or exported.
+
+**Export PNG…** previews the full current view with options for annotations,
+notes, areas, accent colors, and resolution. More options offers white or
+transparent backgrounds, margins, and an editable filename. Include annotations
+appears only for marked views and can include marks hidden on the canvas.
+Preview settings do not alter the model; normal saving includes all annotations. Saved models now use file format version 2;
+version 1 files still open, but older Modelizer versions cannot open version 2.
+
 ## Appearance
 
 Use **View > Dark mode** to switch the entire editor between light and dark.

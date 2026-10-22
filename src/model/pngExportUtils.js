@@ -1,3 +1,4 @@
+import { getAnnotationBounds } from './annotationGeometry.js'
 import { AREA_NODE_TYPE, NOTE_NODE_TYPE } from './constants.js'
 
 export const PNG_EXPORT_PADDING = 96
@@ -8,7 +9,15 @@ export const PNG_EXPORT_MAX_PIXELS = 36_000_000
 const DEFAULT_NODE_SIZE = { width: 220, height: 140 }
 const DEFAULT_NOTE_SIZE = { width: 180, height: 80 }
 const DEFAULT_AREA_SIZE = { width: 280, height: 180 }
-const LINE_HEIGHT_RATIO = 1.3
+
+export function getPngExportNodes(nodes, { includeNotes, includeAreas, includeAccentColors }) {
+  return nodes.filter((node) => !node.hidden &&
+    (node.type !== NOTE_NODE_TYPE || includeNotes) &&
+    (node.type !== AREA_NODE_TYPE || includeAreas))
+    .map((node) => ({ ...node, selected: false,
+      data: { ...node.data, showAccentColors: includeAccentColors },
+    }))
+}
 
 function toFiniteNumber(value) {
   if (typeof value === 'number' && Number.isFinite(value)) {
@@ -151,31 +160,9 @@ function getAnnotationItems({ annotations, activeView, currentStroke }) {
 
 function extendAnnotationBounds(bounds, items) {
   items.forEach((item) => {
-    if (item?.kind === 'stroke') {
-      const radius = Math.max(1, (toFiniteNumber(item.thickness) ?? 1) / 2)
-      const points = Array.isArray(item.points) ? item.points : []
-      points.forEach((point) => extendPoint(bounds, point, radius))
-      return
-    }
-
-    if (item?.kind === 'text' && typeof item.text === 'string') {
-      const x = toFiniteNumber(item.x)
-      const y = toFiniteNumber(item.y)
-      const fontSize = positiveNumber(item.fontSize) ?? 14
-      if (x === null || y === null) {
-        return
-      }
-
-      const lines = item.text.split('\n')
-      const longestLine = lines.reduce(
-        (max, line) => Math.max(max, line.length),
-        0,
-      )
-      const lineHeight = fontSize * LINE_HEIGHT_RATIO
-      const width = Math.max(fontSize * 2, longestLine * fontSize * 0.62)
-      const height = Math.max(lineHeight, lines.length * lineHeight)
-      extendBounds(bounds, x, y - fontSize * 0.95, width, height)
-    }
+    if (!item || !['stroke', 'shape', 'text'].includes(item.kind)) return
+    const rect = getAnnotationBounds(item, true)
+    extendBounds(bounds, rect.x, rect.y, rect.width, rect.height)
   })
 }
 

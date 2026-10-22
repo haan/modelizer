@@ -30,7 +30,7 @@ describe('model file validation', () => {
     ['[]', 'nodes and edges'], ['{}', 'nodes and edges'],
     ['{"nodes":{},"edges":[]}', 'nodes and edges'],
     ['{"nodes":[],"edges":null}', 'nodes and edges'],
-    ['{"version":2,"nodes":[],"edges":[]}', 'version'],
+    ['{"version":3,"nodes":[],"edges":[]}', 'version'],
     ['{"nodes":[null],"edges":[]}', 'malformed'],
     ['{"nodes":[{"id":2}],"edges":[]}', 'ID'],
     ['{"nodes":[{"id":null}],"edges":[]}', 'ID'],
@@ -47,7 +47,7 @@ describe('model file validation', () => {
   })
 
   it('accepts empty legacy models and generates collision-free missing IDs', () => {
-    expect(parseModelFile('{"nodes":[],"edges":[]}')).toMatchObject({ version: 1, nodes: [], edges: [] })
+    expect(parseModelFile('{"nodes":[],"edges":[]}')).toMatchObject({ version: 2, nodes: [], edges: [] })
     const result = parseModelFile(JSON.stringify({
       nodes: [{}, { id: 'node-loaded-0' }],
       edges: [{ source: 'node-loaded-0', target: 'node-loaded-0' }],

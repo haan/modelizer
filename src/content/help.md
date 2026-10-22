@@ -16,7 +16,7 @@ It is intentionally **not** a smart assistant:
 ## Interface overview
 
 ### Top menu
-- **File**: New, Open, Save, Save As, Import (Java Modelizer / MySQL), Export as PNG.
+- **File**: New, Open, Save, Save As, Import (Java Modelizer / MySQL), Export PNG.
 - **Edit**: Undo and Redo recorded modeling changes.
 - **Settings**: toggle composite aggregation, conceptual operations compartment, confirmation dialogs, PNG accent colors, Notes, Areas, and Annotations.
 - **View**: dark mode, background, accent colors, fullscreen, view-specific settings toggle, constraint display mode.
@@ -176,11 +176,21 @@ Reflexive associations can be resized when selected:
 ### Annotations
 - Disabled by default (`Settings > Annotations`).
 - Annotations are stored separately for conceptual, logical, and physical views.
-- Tools: pointer, pen, marker, text, eraser, clear current view.
+- Tools: Pointer, Select annotation, pen, marker, text, arrow, line, rectangle, ellipse, ink eraser, and laser pointer.
+- Open Shapes to choose an arrow, line, rectangle, or ellipse. Click the color swatch below the drawing tools for colors, stroke widths, and other tool settings.
+- More annotation actions contains duplicate, delete, PNG export, and Clear current view. Expand Keyboard shortcuts at the bottom for navigation and editing shortcuts.
+- Pointer interacts with the diagram. Other tools capture canvas input; there is no separate annotation mode.
+- Select annotation moves, resizes, recolors, duplicates, and deletes one annotation at a time. Line and arrow endpoints can be dragged independently.
 - Pen and marker support color and thickness; marker also supports opacity.
-- Text supports color, font size, selection, drag repositioning, double-click editing, and delete.
+- Text supports color, font size, wrapping, box width, optional background, padding, and border. Double-click text to edit it using Text or Select annotation. Side handles adjust wrapping width.
 - Eraser supports whole-stroke and partial erase modes.
+- Ink erasing only affects pen and marker strokes. Select text or shapes to delete them.
+- Hold Shift while drawing shapes to constrain angles/proportions, or while using the marker for a straight highlight.
 - Hold `Space` while an annotation tool is active to temporarily pan the diagram.
+- Use the wheel to zoom. Annotations scale with the diagram, so zoom in for readability.
+- The laser pointer shows a halo and fading drag trail; it does not affect saved content, exports, or undo history.
+- Toolbar Undo and Redo use the shared model history. Clear view asks for confirmation and can be undone.
+- Hide annotations temporarily hides the marks while keeping the toolbar available. Selecting a drawing tool shows them again.
 - Annotation tool settings are stored in `localStorage`.
 
 ## Import, save, and export
@@ -189,6 +199,7 @@ Reflexive associations can be resized when selected:
 - Models are local files.
 - No server-side storage.
 - `.mdlz` saves model name, classes/tables, attributes/columns, associations, relationships, notes, areas, and annotations.
+- Saved models use format version 2 for shapes and styled text boxes. Version 1 files still open; older Modelizer versions cannot open version 2 files.
 - Creating a new model resets to conceptual view and resets the viewport.
 - Opening or importing a model switches to conceptual view and runs fit view.
 - You can also drop one `.mdlz` file anywhere on the Modelizer page. Folders and multiple files are not supported.
@@ -215,14 +226,17 @@ MySQL importer notes:
 - foreign keys are imported as relationships
 - composite foreign keys are ignored
 
-### Export as PNG
-- Exports the full active view with a white background.
-- Respects current view and visibility.
-- Includes visible annotations when annotations are enabled.
-- Includes the Default Values overlay when visible.
-- Excludes React Flow controls, annotation toolbox, app toasts, and canvas background grid.
-- Accent bars can be included/excluded via Settings.
-- Export filename uses the model name and active view.
+### Export PNG
+- Opens one preview from File, the sidebar, or the annotation toolbar, labeled with the active conceptual, logical, or physical view.
+- Fits the full included content, independently of canvas zoom and pan.
+- Include notes and Include areas appear only when the current view contains those items, including temporarily hidden ones, and start with current visibility. Accent colors remembers your last export choice in this browser.
+- Include annotations appears only when the current view has annotations and starts with current visibility. Enable it to include hidden marks. Laser effects are never exported.
+- Resolution offers Standard (1×) or High (2×), subject to image size limits.
+- More options offers a white or transparent background, small/medium/large margins, and an editable filename. White, medium margins, and Standard resolution are the defaults.
+- The preview updates automatically; Download PNG becomes available when the new image is ready. Export errors appear with a Try again action.
+- Transparency is shown on a checkerboard that is not included in the downloaded image. Annotation colors are preserved; check pale marks for readability.
+- Includes physical-view Default Values below the diagram. Excludes controls, annotation toolbox, toasts, and canvas grid.
+- Preview changes do not change the model or canvas settings. Saving the model continues to include all annotations.
 
 ## View options
 
@@ -243,11 +257,12 @@ MySQL importer notes:
 - Add class/table: `Ctrl+Alt+C` / `Ctrl+Opt+C`
 - Add attribute/column to selected class/table: `Ctrl+Alt+A` / `Ctrl+Opt+A`
 - Delete selection: `Delete` / `Backspace`
-- Annotation tools when annotations are enabled: `V` pointer, `P` pen, `M` marker, `T` text, `E` eraser
+- Annotation tools when annotations are visible: `V` pointer, `S` select annotation, `P` pen, `M` marker, `T` text, `E` ink eraser, `L` laser
+- Select annotation: Tab to a mark and press Enter to select it; arrow keys nudge it (Shift moves by 10 units); `Ctrl/Cmd+D` duplicates it.
 - Text annotation selected: `Enter` edits selected text, `Delete` / `Backspace` deletes it
 - Text annotation editor: `Enter` commits, `Shift+Enter` inserts a newline, `Esc` cancels
-- Annotation mode: `Esc` clears active annotation text selection/editing first, then returns to pointer
-- Annotation mode: hold `Space` and drag to temporarily pan the diagram
+- Annotation tools: `Esc` cancels a gesture or clears selection/editing first, then returns to Pointer
+- Annotation tools: hold `Space` and drag to temporarily pan the diagram
 
 ## Unsaved changes and persistence
 
@@ -276,7 +291,6 @@ MySQL importer notes:
 - Conceptual operations compartment: disabled
 - Constraint display: Not Null
 - Confirmation dialogs: enabled
-- Accent colors in PNG exports: enabled
 - View-specific settings only: disabled
 - Fullscreen: disabled
 - Composite aggregation: disabled

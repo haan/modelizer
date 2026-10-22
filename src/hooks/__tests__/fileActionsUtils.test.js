@@ -141,7 +141,7 @@ describe("buildHashPayload", () => {
     expect(JSON.stringify(logicalPayload)).toBe(JSON.stringify(conceptualPayload));
   });
 
-  it("preserves class logical names without changing the model version", () => {
+  it("preserves class logical names using the current model version", () => {
     const result = buildHashPayload({
       nodes: [{
         id: "class-1",
@@ -151,7 +151,7 @@ describe("buildHashPayload", () => {
       }],
     });
 
-    expect(result.version).toBe(1);
+    expect(result.version).toBe(2);
     expect(result.nodes[0].data.logicalName).toBe("customer_table");
   });
 });

@@ -7,6 +7,7 @@ import {
 
 const reactFlowMockState = vi.hoisted(() => ({
   skipInit: false,
+  setViewport: vi.fn(),
 }))
 
 vi.mock('html-to-image', () => ({
@@ -17,14 +18,17 @@ vi.mock('reactflow', async () => {
   const React = await import('react')
 
   return {
-    default: function MockReactFlow({ children, onInit }) {
+    default: function MockReactFlow({ children, onInit, nodes, defaultViewport }) {
       React.useEffect(() => {
         if (reactFlowMockState.skipInit) {
           return
         }
-        onInit?.({})
+        onInit?.({ setViewport: reactFlowMockState.setViewport })
       }, [onInit])
-      return <div className="react-flow__viewport">{children}</div>
+      return <div className="react-flow__viewport" data-viewport={JSON.stringify(defaultViewport)}>
+        {nodes.map((node) => <div key={node.id} className="react-flow__node" />)}
+        {children}
+      </div>
     },
     ConnectionLineType: { Straight: 'straight' },
     ConnectionMode: { Loose: 'loose' },
@@ -126,6 +130,47 @@ describe('pngExport', () => {
       'Timed out waiting for the PNG export canvas to render.',
     )
     expect(toPng).not.toHaveBeenCalled()
+  })
+
+  it('renders a transparent background and applies the requested margin and resolution', async () => {
+    toPng.mockImplementationOnce(async (container, options) => {
+      expect(container.style.background).toBe('transparent')
+      expect(container.querySelector('.bg-base-100')).toBeNull()
+      expect(options).toMatchObject({ backgroundColor: 'transparent', width: 364, height: 264, pixelRatio: 1 })
+      return 'data:image/png;base64,transparent'
+    })
+    await exportFlowPng(getExportArgs({ background: 'transparent', padding: 32, resolution: 'standard' }))
+    await exportFlowPng(getExportArgs({ padding: 64, resolution: 'high' }))
+    expect(toPng.mock.lastCall[1]).toMatchObject({ width: 428, height: 328, pixelRatio: 2 })
+  })
+
+  it('reserves space below the diagram for the physical view default-values legend', async () => {
+    const rect = vi.spyOn(HTMLElement.prototype, 'getBoundingClientRect').mockImplementation(function () {
+      const height = this.hasAttribute('data-export-footer') ? 120 : 0
+      return { width: 0, height, x: 0, y: 0, top: 0, left: 0, right: 0, bottom: height }
+    })
+    try {
+      await exportFlowPng(getExportArgs({ activeView: 'physical', defaultValueEntries: [{ key: 'Table.value', value: '0' }] }))
+      expect(toPng.mock.lastCall[1]).toMatchObject({ height: 512 })
+      expect(toPng.mock.lastCall[0].style.height).toBe('512px')
+    } finally {
+      rect.mockRestore()
+    }
+  })
+
+  it('expands the image for newly visible content larger than its estimated bounds', async () => {
+    const rect = vi.spyOn(HTMLElement.prototype, 'getBoundingClientRect').mockImplementation(function () {
+      const isNode = this.classList.contains('react-flow__node')
+      return isNode
+        ? { x: 64, y: 64, left: 64, top: 64, right: 564, bottom: 664, width: 500, height: 600 }
+        : { x: 0, y: 0, left: 0, top: 0, right: 0, bottom: 0, width: 0, height: 0 }
+    })
+    try {
+      await exportFlowPng(getExportArgs({ padding: 64 }))
+      expect(toPng.mock.lastCall[1]).toMatchObject({ width: 628, height: 728 })
+    } finally {
+      rect.mockRestore()
+    }
   })
 
   it('keeps existing export filtering semantics', () => {
