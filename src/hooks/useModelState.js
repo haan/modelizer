@@ -9,7 +9,7 @@ import {
 } from '@xyflow/react'
 import { CLASS_COLOR_PALETTE, getRandomPaletteColor } from '../classPalette.js'
 import { createAttribute, normalizeAttributes } from '../attributes.js'
-import { getAssociationLayout } from '../components/flow/utils/associationUtils.js'
+import { getAssociationLayout, getAssociationEndpointAllocations } from '../components/flow/utils/associationUtils.js'
 import { getRelationshipLayoutFromNodes } from '../components/flow/utils/relationshipUtils.js'
 import {
   getReflexiveAssociationLayout,
@@ -134,6 +134,7 @@ export function useModelState({
   const isResizingRef = useRef(new Set())
   const isDraggingControlPointRef = useRef(false)
   const isTextEditingRef = useRef(false)
+  const textEditRecordedRef = useRef(false)
 
   const {
     pushHistory,
@@ -160,6 +161,15 @@ export function useModelState({
     [pushHistory, getHistorySnapshot],
   )
 
+  const recordHistoryBeforeChange = useCallback(() => {
+    if (isDraggingControlPointRef.current || isRestoringRef.current) return
+    if (isTextEditingRef.current) {
+      if (textEditRecordedRef.current) return
+      textEditRecordedRef.current = true
+    }
+    pushHistory(getHistorySnapshot())
+  }, [getHistorySnapshot, isRestoringRef, pushHistory])
+
   const setModelName = useCallback(
     (nextValue, options = {}) => {
       const resolvedValue =
@@ -171,45 +181,37 @@ export function useModelState({
         return
       }
 
-      if (
-        !options.skipHistory &&
-        !isDraggingControlPointRef.current &&
-        !isTextEditingRef.current &&
-        !isRestoringRef.current
-      ) {
-        pushHistory(getHistorySnapshot())
-      }
+      if (!options.skipHistory) recordHistoryBeforeChange()
 
       modelNameRef.current = resolvedValue
       setModelNameState(resolvedValue)
     },
-    [getHistorySnapshot, isRestoringRef, pushHistory],
+    [recordHistoryBeforeChange],
   )
 
   const updateNodesAndPanel = useCallback(
     (updater) => {
-      if (!isDraggingControlPointRef.current && !isTextEditingRef.current) {
-        pushHistory(getHistorySnapshot())
-      }
       const nextNodes = updater(nodesRef.current)
+      if (nextNodes === nodesRef.current) return
+      recordHistoryBeforeChange()
       nodesRef.current = nextNodes
       setNodes(nextNodes)
       setPanelNodes(nextNodes)
     },
-    [getHistorySnapshot, setNodes, setPanelNodes, pushHistory],
+    [recordHistoryBeforeChange, setNodes, setPanelNodes],
   )
 
   const updateEdgesAndPanel = useCallback(
     (updater) => {
-      if (!isDraggingControlPointRef.current && !isTextEditingRef.current) {
-        pushHistory(getHistorySnapshot())
-      }
-      const nextEdges = normalizeEdges(updater(edgesRef.current))
+      const updatedEdges = updater(edgesRef.current)
+      if (updatedEdges === edgesRef.current) return
+      const nextEdges = normalizeEdges(updatedEdges)
+      recordHistoryBeforeChange()
       edgesRef.current = nextEdges
       setEdges(nextEdges)
       setPanelEdges(nextEdges)
     },
-    [getHistorySnapshot, setEdges, setPanelEdges, pushHistory],
+    [recordHistoryBeforeChange, setEdges, setPanelEdges],
   )
 
   const restoreModel = useCallback(
@@ -321,10 +323,10 @@ export function useModelState({
 
   useEffect(() => {
     const onTextEditStart = () => {
+      // Focusing (including automatic focus after creation) is not an edit.
+      // Record the snapshot lazily on the first change, preserving redo too.
+      if (!isTextEditingRef.current) textEditRecordedRef.current = false
       isTextEditingRef.current = true
-      if (!isRestoringRef.current) {
-        pushHistory(getHistorySnapshot())
-      }
     }
     const onTextEditEnd = () => {
       isTextEditingRef.current = false
@@ -335,7 +337,7 @@ export function useModelState({
       window.removeEventListener('model-text-edit-start', onTextEditStart)
       window.removeEventListener('model-text-edit-end', onTextEditEnd)
     }
-  }, [getHistorySnapshot, pushHistory, isRestoringRef])
+  }, [])
 
   const onNodesChange = useCallback(
     (changes) => {
@@ -1337,6 +1339,8 @@ export function useModelState({
 
   const onRenameClass = useCallback(
     (nodeId, nextLabel) => {
+      const node = nodesRef.current.find(entry => entry.id === nodeId)
+      if (!node || node.data?.label === nextLabel) return
       updateNodesAndPanel((current) =>
         current.map((node) =>
           node.id === nodeId
@@ -2102,7 +2106,9 @@ export function useModelState({
       const targetNode =
         reactFlowInstance?.getInternalNode(edge.target) ??
         nodesRef.current.find((node) => node.id === edge.target)
-      const layout = getAssociationLayout(sourceNode, targetNode, edge.data)
+      const getNode = id => reactFlowInstance?.getInternalNode(id) ?? nodesRef.current.find(node => node.id === id)
+      const allocations = getAssociationEndpointAllocations(reactFlowInstance?.getEdges() ?? edgesRef.current, getNode)
+      const layout = getAssociationLayout(sourceNode, targetNode, edge.data, allocations.get(edge.id))
       if (!layout) {
         return
       }
@@ -2656,6 +2662,9 @@ export function useModelState({
     const nodeMap = new Map(nodes.map((node) => [node.id, node]))
     const getNode = (nodeId) =>
       reactFlowInstance?.getInternalNode(nodeId) ?? nodeMap.get(nodeId)
+    const allocations = getAssociationEndpointAllocations(edges.filter(edge =>
+      visibleClassIds.has(edge.source) && visibleClassIds.has(edge.target) &&
+      (edge.type !== COMPOSITION_EDGE_TYPE || showCompositionAggregation)), getNode)
 
     return edges
       .filter(
@@ -2724,7 +2733,7 @@ export function useModelState({
           return null
         }
 
-        const layout = getAssociationLayout(sourceNode, targetNode, edge.data)
+        const layout = getAssociationLayout(sourceNode, targetNode, edge.data, allocations.get(edge.id))
         if (!layout) {
           return null
         }
@@ -2754,7 +2763,7 @@ export function useModelState({
         }
       })
       .filter(Boolean)
-  }, [edges, nodes, normalizedActiveView, reactFlowInstance, visibleClassIds])
+  }, [edges, nodes, normalizedActiveView, reactFlowInstance, visibleClassIds, showCompositionAggregation])
 
   const flowEdges = useMemo(() => {
     if (normalizedActiveView !== VIEW_CONCEPTUAL) {

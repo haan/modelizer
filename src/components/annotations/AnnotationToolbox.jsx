@@ -1,4 +1,4 @@
-import { forwardRef, useState } from 'react'
+import { forwardRef, useCallback, useEffect, useRef, useState } from 'react'
 import { Panel } from '@xyflow/react'
 import * as AlertDialog from '@radix-ui/react-alert-dialog'
 import * as Popover from '@radix-ui/react-popover'
@@ -73,10 +73,35 @@ function FlyoutContent({ children, label }) {
   </Popover.Portal>
 }
 
-function Slider({ label, min, max, step = 1, value, displayValue = value, onChange }) {
+function Slider({ label, min, max, step = 1, value, displayValue = value, onChange, onGestureStart, onGestureEnd }) {
+  const editing = useRef(false)
+  const begin = () => {
+    if (editing.current) return
+    editing.current = true
+    onGestureStart?.()
+  }
+  const end = useCallback(() => {
+    if (!editing.current) return
+    editing.current = false
+    onGestureEnd?.()
+  }, [onGestureEnd])
+  useEffect(() => {
+    window.addEventListener('pointerup', end)
+    window.addEventListener('pointercancel', end)
+    window.addEventListener('blur', end)
+    return () => {
+      window.removeEventListener('pointerup', end)
+      window.removeEventListener('pointercancel', end)
+      window.removeEventListener('blur', end)
+      end()
+    }
+  }, [end])
   return <label className="mt-3 block text-xs">
     <span className="mb-2 flex items-center justify-between"><span className="text-base-content/70">{label}</span><span className="tabular-nums">{displayValue}</span></span>
     <input aria-label={label} type="range" min={min} max={max} step={step} value={value}
+      onPointerDown={begin} onBlur={end}
+      onKeyDown={(event) => { if (['ArrowLeft', 'ArrowRight', 'ArrowUp', 'ArrowDown', 'Home', 'End', 'PageUp', 'PageDown'].includes(event.key)) begin() }}
+      onKeyUp={end}
       onChange={(e) => onChange(Number(e.target.value))} className="block w-full accent-primary" />
   </label>
 }
@@ -122,6 +147,7 @@ export default function AnnotationToolbox({
   activeTool, onSetTool, penSettings, onPenSettingsChange, markerSettings, onMarkerSettingsChange,
   textSettings, onTextSettingsChange, eraserSettings, onEraserSettingsChange, onClearView,
   selectedItem, onSelectedChange, onDeleteSelected, onDuplicateSelected,
+  onStyleEditStart, onStyleEditEnd,
   canUndo, canRedo, onUndo, onRedo, annotationsVisible = true, onToggleVisibility, onExportPng,
 }) {
   const [isClearDialogOpen, setIsClearDialogOpen] = useState(false)
@@ -134,6 +160,7 @@ export default function AnnotationToolbox({
   const canStyle = isText || isMarker || activeTool === 'pen' || isShape || (activeTool === 'select' && selectedItem)
   const settings = activeTool === 'select' && selectedItem ? selectedItem : isText ? textSettings : isMarker ? markerSettings : penSettings
   const change = activeTool === 'select' && selectedItem ? onSelectedChange : isText ? onTextSettingsChange : isMarker ? onMarkerSettingsChange : onPenSettingsChange
+  const sliderGesture = { onGestureStart: onStyleEditStart, onGestureEnd: onStyleEditEnd }
   const optionLabel = isText ? 'Text options' : isMarker ? 'Marker options' : activeTool === 'pen' ? 'Pen options' : isShape ? 'Shape options' : 'Annotation options'
   const selectedShape = isShape ? activeTool : lastShape
   const action = (callback) => { setActionsOpen(false); callback?.() }
@@ -201,12 +228,12 @@ export default function AnnotationToolbox({
             </> : canStyle ? <>
               <ColorPresetRow color={settings.color} onChange={(color) => change({ color })} />
               {isText ? <>
-                <Slider label="Font size" min={10} max={32} value={settings.fontSize} onChange={(fontSize) => change({ fontSize })} />
+                <Slider {...sliderGesture} label="Font size" min={10} max={32} value={settings.fontSize} onChange={(fontSize) => change({ fontSize })} />
                 <CheckOption label="Wrap text" checked={Boolean(settings.width)} onChange={(checked) => change({ width: checked ? 220 : undefined })} />
-                {settings.width && <Slider label="Text box width" min={60} max={600} step={10} value={settings.width} displayValue={Math.trunc(settings.width)} onChange={(width) => change({ width })} />}
+                {settings.width && <Slider {...sliderGesture} label="Text box width" min={60} max={600} step={10} value={settings.width} displayValue={Math.trunc(settings.width)} onChange={(width) => change({ width })} />}
                 <CheckOption label="Background" checked={Boolean(settings.background)} onChange={(checked) => change({ background: checked ? '#ffffff' : '', ...(checked && !settings.padding ? { padding: 6 } : {}) })} />
                 {settings.background && <label className="mt-3 flex items-center justify-between text-xs">Background color<input aria-label="Text background color" type="color" value={settings.background} onChange={(e) => change({ background: e.target.value })} /></label>}
-                <Slider label="Padding" min={0} max={24} value={settings.padding ?? 0} onChange={(padding) => change({ padding })} />
+                <Slider {...sliderGesture} label="Padding" min={0} max={24} value={settings.padding ?? 0} onChange={(padding) => change({ padding })} />
                 <CheckOption label="Border" checked={Boolean(settings.border)} onChange={(border) => change({ border })} />
               </> : <>
                 <div className="mt-3 grid grid-cols-3 gap-1 rounded-lg bg-base-200 p-1">
@@ -217,8 +244,8 @@ export default function AnnotationToolbox({
                     <span className="w-6 rounded-full bg-base-content/80" style={{ height: [1, 3, 5][index] }} />
                   </button>)}
                 </div>
-                <Slider label="Thickness" min={isMarker ? 8 : 1} max={isMarker ? 40 : 10} value={settings.thickness} onChange={(thickness) => change({ thickness })} />
-                {isMarker && <Slider label="Opacity" min={10} max={80} value={Math.round((settings.opacity ?? 0.35) * 100)} onChange={(opacity) => change({ opacity: opacity / 100 })} />}
+                <Slider {...sliderGesture} label="Thickness" min={isMarker ? 8 : 1} max={isMarker ? 40 : 10} value={settings.thickness} onChange={(thickness) => change({ thickness })} />
+                {isMarker && <Slider {...sliderGesture} label="Opacity" min={10} max={80} value={Math.round((settings.opacity ?? 0.35) * 100)} onChange={(opacity) => change({ opacity: opacity / 100 })} />}
               </>}
             </> : null}
           </FlyoutContent>

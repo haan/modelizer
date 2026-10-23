@@ -1,8 +1,9 @@
 export function AssociationLabel({ transform, label, className = '' }) {
   return (
     <div
+      data-association-label="true"
       style={{ transform }}
-      className={`nodrag nopan absolute rounded-sm bg-background/80 px-1 py-0 text-[12px] backdrop-blur-[1px] ${className}`}
+      className={`nodrag nopan absolute px-1 py-0 text-[12px] ${className}`}
     >
       {label}
     </div>

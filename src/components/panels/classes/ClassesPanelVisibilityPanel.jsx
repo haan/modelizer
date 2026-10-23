@@ -19,13 +19,13 @@ export default function ClassesPanelVisibilityPanel({
   return (
     <div className="w-full">
       <div
-        className="border-l-[6px] px-2 py-2 text-xs"
+        className="grid grid-cols-[76px_minmax(0,1fr)] items-center gap-2 border-l-[6px] px-2 py-1.5 text-xs"
         style={{ borderColor: accentBorderColor }}
       >
-        <div className="text-xs font-semibold uppercase tracking-wide opacity-70">
+        <div className="text-[11px] text-base-content/65">
           Visibility
         </div>
-        <div className="mt-2 flex flex-wrap items-center gap-3 text-[11px]">
+        <div className="flex flex-wrap items-center gap-x-3 gap-y-2 text-[11px]">
           <label className="flex items-center gap-2">
             <CheckboxInput
               checked={isClassConceptual}

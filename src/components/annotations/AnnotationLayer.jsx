@@ -26,19 +26,14 @@ function getCursorForTool(activeTool, penSettings, markerSettings, eraserSetting
 function forwardWheelToReactFlow(e) {
   const overlay = e.currentTarget
   const sourceEvent = e.nativeEvent
-  if (!overlay || sourceEvent.__annotationWheelForwarded) {
+  if (!overlay || sourceEvent.__annotationWheelForwarded || sourceEvent.target?.closest?.('textarea')) {
     return
   }
 
-  // Temporarily opting the overlay out of hit-testing lets the browser resolve
-  // the React Flow element underneath. The style is restored before this handler
-  // returns, so the mutation is scoped to one synchronous event dispatch.
-  const previousPointerEvents = overlay.style.pointerEvents
-  overlay.style.pointerEvents = 'none'
-  const target = document.elementFromPoint(sourceEvent.clientX, sourceEvent.clientY)
-  overlay.style.pointerEvents = previousPointerEvents
-
-  if (!target || overlay.contains(target)) {
+  // Hit targets opt into pointer events independently of the overlay. Forward
+  // directly to this canvas's zoom pane instead of hit-testing through them.
+  const target = overlay.closest('.react-flow')?.querySelector('.react-flow__renderer')
+  if (!target) {
     return
   }
 

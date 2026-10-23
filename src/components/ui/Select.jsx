@@ -13,10 +13,12 @@ export default function SelectField({
   items,
   placeholder,
   disabled,
+  id,
+  'aria-label': ariaLabel,
 }) {
   return (
     <Select.Root value={value} onValueChange={onValueChange} disabled={disabled}>
-      <Select.Trigger className={triggerBase}>
+      <Select.Trigger id={id} aria-label={ariaLabel} className={triggerBase}>
         <Select.Value placeholder={placeholder} />
         <Select.Icon className="ml-2 h-3.5 w-3.5 opacity-60">
           <svg

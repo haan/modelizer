@@ -7,7 +7,8 @@ import { CSS } from '@dnd-kit/utilities'
 import { CLASS_COLOR_PALETTE } from '../../../classPalette.js'
 import { VIEW_CONCEPTUAL } from '../../../model/constants.js'
 import ClassesPanelAttributesPanel from './ClassesPanelAttributesPanel.jsx'
-import ClassesPanelOptionsPanel from './ClassesPanelOptionsPanel.jsx'
+import ClassColorControl from './ClassColorControl.jsx'
+import PanelDeleteButton from '../../ui/PanelDeleteButton.jsx'
 import ClassesPanelVisibilityPanel from './ClassesPanelVisibilityPanel.jsx'
 import ClassesPanelLogicalNamePanel from './ClassesPanelLogicalNamePanel.jsx'
 import Input from '../../ui/Input.jsx'
@@ -134,7 +135,7 @@ export default function ClassesPanelItem({
     >
       <Accordion.Header asChild>
         <div
-          className="w-full rounded-b-md border-b border-base-content/20 group-data-[state=open]:border-b-0"
+          className="group/class-header w-full rounded-b-md border-b border-base-content/20 group-data-[state=open]:border-b-0"
           onClick={toggleOpen}
         >
           <div
@@ -230,10 +231,13 @@ export default function ClassesPanelItem({
                 </span>
               )}
             </div>
-            <div className="ml-auto flex items-center gap-1">
+            <div className="ml-auto flex shrink-0 items-center gap-0.5 opacity-0 pointer-events-none transition-opacity group-data-[state=open]:opacity-100 group-data-[state=open]:pointer-events-auto group-hover/class-header:opacity-100 group-hover/class-header:pointer-events-auto group-has-[:focus-visible]/class-header:opacity-100 group-has-[:focus-visible]/class-header:pointer-events-auto has-[[data-state=open]]:opacity-100 has-[[data-state=open]]:pointer-events-auto [@media(hover:none)]:opacity-100 [@media(hover:none)]:pointer-events-auto">
+              {showAccentColors && (
+                <ClassColorControl color={color} entityNoun={entityNoun} onChange={value => onUpdateClassColor?.(node.id, value)} />
+              )}
               <ControlTooltip label={`Focus ${entityNoun} on diagram`}>
                 <button
-                  className="inline-flex h-6 w-6 items-center justify-center rounded-md text-base-content/60 opacity-0 transition-opacity hover:bg-base-300 hover:text-base-content group-hover:opacity-100 focus-visible:opacity-100"
+                  className="inline-flex h-6 w-6 items-center justify-center rounded-md text-base-content/60 transition-colors hover:bg-base-300 hover:text-base-content focus-visible:ring-2 focus-visible:ring-ring"
                   type="button"
                   onClick={(event) => {
                     event.stopPropagation()
@@ -265,36 +269,39 @@ export default function ClassesPanelItem({
                   </svg>
                 </button>
               </ControlTooltip>
-              <button
-                className="inline-flex h-6 w-6 items-center justify-center rounded-md text-base-content/60 opacity-0 transition-opacity hover:bg-base-300 hover:text-base-content group-hover:opacity-100"
-                type="button"
-                onClick={(event) => {
-                  event.stopPropagation()
-                  startEditing()
-                }}
-                onMouseDown={(event) => event.stopPropagation()}
-                aria-label={`Edit ${entityNoun} name`}
-              >
-                <svg
-                  xmlns="http://www.w3.org/2000/svg"
-                  viewBox="0 0 24 24"
-                  fill="none"
-                  stroke="currentColor"
-                  strokeWidth="2"
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  className="h-3.5 w-3.5"
-                  aria-hidden="true"
+              <ControlTooltip label={`Rename ${entityNoun}`}>
+                <button
+                  className="inline-flex h-6 w-6 items-center justify-center rounded-md text-base-content/60 transition-colors hover:bg-base-300 hover:text-base-content focus-visible:ring-2 focus-visible:ring-ring"
+                  type="button"
+                  onClick={(event) => {
+                    event.stopPropagation()
+                    startEditing()
+                  }}
+                  onMouseDown={(event) => event.stopPropagation()}
+                  aria-label={`Edit ${entityNoun} name`}
                 >
-                  <path d="M21.174 6.812a1 1 0 0 0-3.986-3.987L3.842 16.174a2 2 0 0 0-.5.83l-1.321 4.352a.5.5 0 0 0 .623.622l4.353-1.32a2 2 0 0 0 .83-.497z" />
-                  <path d="m15 5 4 4" />
-                </svg>
-              </button>
+                  <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    strokeWidth="2"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    className="h-3.5 w-3.5"
+                    aria-hidden="true"
+                  >
+                    <path d="M21.174 6.812a1 1 0 0 0-3.986-3.987L3.842 16.174a2 2 0 0 0-.5.83l-1.321 4.352a.5.5 0 0 0 .623.622l4.353-1.32a2 2 0 0 0 .83-.497z" />
+                    <path d="m15 5 4 4" />
+                  </svg>
+                </button>
+              </ControlTooltip>
+              <PanelDeleteButton label={`Delete ${entityNoun}`} onClick={() => onDeleteClass?.(node.id)} />
             </div>
           </div>
         </div>
       </Accordion.Header>
-      <Accordion.Content>
+      <Accordion.Content className="rounded-b-md border-b border-base-content/20">
         <ClassesPanelVisibilityPanel
           accentColor={accentColor}
           showAccentColors={showAccentColors}
@@ -319,7 +326,7 @@ export default function ClassesPanelItem({
             style={{ borderColor: accentBorderColor }}
           >
             <div className="flex items-center justify-between">
-              <span className="text-xs font-semibold uppercase tracking-wide opacity-70">
+              <span className="text-xs font-semibold text-base-content/75">
                 {attributesLabel}
               </span>
               <Tooltip.Root>
@@ -380,15 +387,7 @@ export default function ClassesPanelItem({
             />
           </div>
         </div>
-        <ClassesPanelOptionsPanel
-          accentColor={accentColor}
-          color={color}
-          nodeId={node.id}
-          onChangeColor={onUpdateClassColor}
-          onDeleteClass={onDeleteClass}
-          showAccentColors={showAccentColors}
-          activeView={activeView}
-        />
+
       </Accordion.Content>
     </Accordion.Item>
   )

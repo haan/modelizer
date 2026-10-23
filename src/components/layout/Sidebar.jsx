@@ -6,7 +6,7 @@ import {
 import * as Tooltip from '@radix-ui/react-tooltip'
 
 const SIDEBAR_TOOLTIP_CLASS =
-  'rounded-md border border-base-content/10 bg-base-100 px-2 py-1 text-xs text-base-content shadow-lg'
+  'z-50 max-w-64 rounded-md border border-base-content/10 bg-base-100 px-2 py-1 text-xs text-base-content shadow-lg'
 
 // Keep the compact visual weight of the sidebar, with one size and no transforms.
 function SidebarIcon({ children }) {
@@ -30,13 +30,14 @@ function SidebarIcon({ children }) {
   )
 }
 
-function SidebarTooltip({ label, children }) {
+function SidebarTooltip({ label, shortcut, children }) {
   return (
     <Tooltip.Root>
       <Tooltip.Trigger asChild>{children}</Tooltip.Trigger>
       <Tooltip.Portal>
         <Tooltip.Content side="right" sideOffset={10} className={SIDEBAR_TOOLTIP_CLASS}>
-          {label}
+          <span>{label}</span>
+          {shortcut && <kbd className="ml-2 text-[11px] text-muted-foreground">{shortcut}</kbd>}
           <Tooltip.Arrow className="fill-base-100" />
         </Tooltip.Content>
       </Tooltip.Portal>
@@ -55,28 +56,37 @@ export default function Sidebar({
 }) {
   const appVersion =
     typeof __APP_VERSION__ === 'string' ? `v${__APP_VERSION__}` : 'v0.0.0'
+  const isMac = typeof navigator !== 'undefined' && /Mac|iPhone|iPad|iPod/.test(navigator.platform)
+  const shortcutPrefix = isMac ? 'Cmd' : 'Ctrl'
+  const syncDisabled = activeView === VIEW_CONCEPTUAL
+  const syncTooltip = syncDisabled
+    ? 'Sync is unavailable in conceptual view: there is no previous modeling phase.'
+    : activeView === VIEW_LOGICAL
+      ? 'Sync positions from conceptual view'
+      : 'Sync positions from logical view'
   const sidebarButtonClass =
-    'peer/menu-button flex w-full flex-col items-center justify-center gap-1 rounded-md px-1 py-2 text-[10px] leading-3 text-center outline-none transition-[width,height,padding] focus-visible:ring-2 focus-visible:ring-ring hover:bg-base-300 data-[active=true]:bg-base-300 data-[active=true]:font-medium data-[active=true]:text-primary-label disabled:cursor-not-allowed disabled:opacity-50 disabled:hover:bg-transparent'
+    'peer/menu-button relative flex min-h-12 w-full flex-col items-center justify-center gap-1 rounded-md px-1 py-2 text-[10px] leading-3 text-center outline-none transition-colors focus-visible:ring-2 focus-visible:ring-ring hover:bg-base-300 data-[active=true]:bg-primary/10 before:absolute before:-left-1 before:top-1/2 before:h-6 before:w-0.5 before:-translate-y-1/2 before:rounded-full before:bg-primary before:opacity-0 data-[active=true]:before:opacity-100 data-[active=true]:font-medium data-[active=true]:text-primary-label aria-disabled:cursor-default aria-disabled:opacity-50 aria-disabled:hover:bg-transparent'
 
   return (
     <aside className="box-content w-16 shrink-0 border-r border-base-content/10 bg-base-200">
       <div data-sidebar="sidebar" className="flex h-full flex-col bg-base-200">
         <div
           data-sidebar="content"
-          className="flex min-h-0 flex-1 flex-col gap-2 overflow-auto"
+          className="flex min-h-0 flex-1 flex-col gap-1 overflow-auto"
         >
           <Tooltip.Provider delayDuration={100}>
           <div
             data-sidebar="group"
-            className="relative flex w-full min-w-0 flex-col p-2"
+            className="relative flex w-full min-w-0 flex-col px-2 py-1"
           >
             <div data-sidebar="group-content" className="w-full text-sm">
               <ul
                 data-sidebar="menu"
+                aria-label="File actions"
                 className="flex w-full min-w-0 flex-col gap-1"
               >
                 <li data-sidebar="menu-item" className="group/menu-item relative">
-                  <SidebarTooltip label="New model">
+                  <SidebarTooltip label="New model" shortcut={shortcutPrefix + '+N'}>
                     <button
                       data-sidebar="menu-button"
                       data-size="default"
@@ -93,7 +103,7 @@ export default function Sidebar({
                   </SidebarTooltip>
                 </li>
                 <li data-sidebar="menu-item" className="group/menu-item relative">
-                  <SidebarTooltip label="Open model">
+                  <SidebarTooltip label="Open model" shortcut={shortcutPrefix + '+O'}>
                     <button
                       data-sidebar="menu-button"
                       data-size="default"
@@ -110,7 +120,7 @@ export default function Sidebar({
                   </SidebarTooltip>
                 </li>
                 <li data-sidebar="menu-item" className="group/menu-item relative">
-                  <SidebarTooltip label="Save model">
+                  <SidebarTooltip label="Save model" shortcut={shortcutPrefix + '+S'}>
                     <button
                       data-sidebar="menu-button"
                       data-size="default"
@@ -156,11 +166,12 @@ export default function Sidebar({
           />
           <div
             data-sidebar="group"
-            className="relative flex w-full min-w-0 flex-col p-2"
+            className="relative flex w-full min-w-0 flex-col px-2 py-1"
           >
             <div data-sidebar="group-content" className="w-full text-sm">
               <ul
                 data-sidebar="menu"
+                aria-label="Panels"
                 className="flex w-full min-w-0 flex-col gap-1"
               >
                 <li data-sidebar="menu-item" className="group/menu-item relative">
@@ -169,6 +180,7 @@ export default function Sidebar({
                       data-sidebar="menu-button"
                       data-size="default"
                       data-active={activeItem === 'tables' ? 'true' : 'false'}
+                      aria-pressed={activeItem === 'tables'}
                       className={sidebarButtonClass}
                       onClick={() => onSelect('tables')}
                       type="button"
@@ -184,11 +196,12 @@ export default function Sidebar({
                   </SidebarTooltip>
                 </li>
                 <li data-sidebar="menu-item" className="group/menu-item relative">
-                  <SidebarTooltip label="References panel">
+                  <SidebarTooltip label="Relations panel">
                     <button
                       data-sidebar="menu-button"
                       data-size="default"
                       data-active={activeItem === 'refs' ? 'true' : 'false'}
+                      aria-pressed={activeItem === 'refs'}
                       className={sidebarButtonClass}
                       onClick={() => onSelect('refs')}
                       type="button"
@@ -198,7 +211,7 @@ export default function Sidebar({
                         <path d="M7 11v4a2 2 0 0 0 2 2h4" />
                         <rect width="8" height="8" x="13" y="13" rx="2" />
                       </SidebarIcon>
-                      <span>Refs</span>
+                      <span>Relations</span>
                     </button>
                   </SidebarTooltip>
                 </li>
@@ -209,6 +222,7 @@ export default function Sidebar({
                         data-sidebar="menu-button"
                         data-size="default"
                         data-active={activeItem === 'notes' ? 'true' : 'false'}
+                        aria-pressed={activeItem === 'notes'}
                         className={sidebarButtonClass}
                         onClick={() => onSelect('notes')}
                         type="button"
@@ -232,6 +246,7 @@ export default function Sidebar({
                         data-sidebar="menu-button"
                         data-size="default"
                         data-active={activeItem === 'areas' ? 'true' : 'false'}
+                        aria-pressed={activeItem === 'areas'}
                         className={sidebarButtonClass}
                         onClick={() => onSelect('areas')}
                         type="button"
@@ -256,11 +271,12 @@ export default function Sidebar({
           />
           <div
             data-sidebar="group"
-            className="relative flex w-full min-w-0 flex-col p-2"
+            className="relative flex w-full min-w-0 flex-col px-2 py-1"
           >
             <div data-sidebar="group-content" className="w-full text-sm">
               <ul
                 data-sidebar="menu"
+                aria-label="Model views"
                 className="flex w-full min-w-0 flex-col gap-1"
               >
                 <li data-sidebar="menu-item" className="group/menu-item relative">
@@ -269,6 +285,7 @@ export default function Sidebar({
                       data-sidebar="menu-button"
                       data-size="default"
                       data-active={activeView === VIEW_CONCEPTUAL ? 'true' : 'false'}
+                      aria-pressed={activeView === VIEW_CONCEPTUAL}
                       className={sidebarButtonClass}
                       onClick={() => onViewChange?.(VIEW_CONCEPTUAL)}
                       type="button"
@@ -289,6 +306,7 @@ export default function Sidebar({
                       data-sidebar="menu-button"
                       data-size="default"
                       data-active={activeView === VIEW_LOGICAL ? 'true' : 'false'}
+                      aria-pressed={activeView === VIEW_LOGICAL}
                       className={sidebarButtonClass}
                       onClick={() => onViewChange?.(VIEW_LOGICAL)}
                       type="button"
@@ -309,6 +327,7 @@ export default function Sidebar({
                       data-sidebar="menu-button"
                       data-size="default"
                       data-active={activeView === VIEW_PHYSICAL ? 'true' : 'false'}
+                      aria-pressed={activeView === VIEW_PHYSICAL}
                       className={sidebarButtonClass}
                       onClick={() => onViewChange?.(VIEW_PHYSICAL)}
                       type="button"
@@ -333,23 +352,24 @@ export default function Sidebar({
           />
           <div
             data-sidebar="group"
-            className="relative flex w-full min-w-0 flex-col p-2"
+            className="relative flex w-full min-w-0 flex-col px-2 py-1"
           >
             <div data-sidebar="group-content" className="w-full text-sm">
               <ul
                 data-sidebar="menu"
+                aria-label="Layout actions"
                 className="flex w-full min-w-0 flex-col gap-1"
               >
                 <li data-sidebar="menu-item" className="group/menu-item relative">
-                  <SidebarTooltip label="Sync positions from previous modeling phase">
+                  <SidebarTooltip label={syncTooltip}>
                     <button
                       data-sidebar="menu-button"
                       data-size="default"
                       data-active="false"
                       className={sidebarButtonClass}
-                      onClick={() => onSyncViewPositions?.()}
+                      onClick={() => { if (!syncDisabled) onSyncViewPositions?.() }}
                       type="button"
-                      disabled={activeView === VIEW_CONCEPTUAL}
+                      aria-disabled={syncDisabled}
                     >
                       <SidebarIcon>
                         <path d="M3 12a9 9 0 0 1 15-6.7L21 8" />

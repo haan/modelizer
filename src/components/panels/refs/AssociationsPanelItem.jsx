@@ -1,5 +1,7 @@
+import EndpointConnector from './EndpointConnector.jsx'
 import ControlTooltip from '../../ui/ControlTooltip.jsx'
-import { useEffect, useRef, useState } from 'react'
+import PanelDeleteButton from '../../ui/PanelDeleteButton.jsx'
+import { useEffect, useId, useRef, useState } from 'react'
 import * as Accordion from '@radix-ui/react-accordion'
 import * as Tooltip from '@radix-ui/react-tooltip'
 import SelectField from '../../ui/Select.jsx'
@@ -57,6 +59,7 @@ export default function AssociationsPanelItem({
   const isComposition = edge.type === 'composition'
   const isReflexive = edge.source === edge.target
   const label = edge.data?.name ?? ''
+  const endpointSummary = isReflexive ? `${sourceLabel} (self)` : `${sourceLabel} and ${targetLabel}`
   const multiplicityA = edge.data?.multiplicityA ?? ''
   const multiplicityB = edge.data?.multiplicityB ?? ''
   const roleA = edge.data?.roleA ?? ''
@@ -88,6 +91,7 @@ export default function AssociationsPanelItem({
   const [isEditing, setIsEditing] = useState(false)
   const [draft, setDraft] = useState(label)
   const inputRef = useRef(null)
+  const fieldId = useId()
   const originalLabelRef = useRef(label)
   const isMac =
     typeof navigator !== 'undefined' &&
@@ -136,14 +140,14 @@ export default function AssociationsPanelItem({
     <Accordion.Item value={edge.id} className="group">
       <Accordion.Header asChild>
         <div
-          className="w-full rounded-b-md border-b border-base-content/20 group-data-[state=open]:border-b-0"
+          className="group/ref-header w-full rounded-b-md border-b border-base-content/20 group-data-[state=open]:border-b-transparent"
           onClick={toggleOpen}
         >
-          <div className="flex items-center gap-2 rounded-b-md border-l-[6px] border-transparent px-2 py-2 text-sm font-semibold transition-colors hover:bg-base-200 group-data-[state=open]:rounded-b-none">
+          <div className="flex items-center gap-2 rounded-b-md border-l-[6px] border-transparent px-2 py-1 text-sm font-semibold transition-colors hover:bg-base-200 group-data-[state=open]:rounded-b-none">
             <Accordion.Trigger asChild>
               <button
                 type="button"
-                className="inline-flex h-5 w-5 items-center justify-center rounded-md text-base-content/60 hover:bg-base-200 hover:text-base-content"
+                className="inline-flex h-5 w-5 items-center justify-center rounded-md text-base-content/60 hover:bg-base-200 hover:text-base-content focus-visible:ring-2 focus-visible:ring-ring"
                 aria-label="Toggle association details"
                 onClick={(event) => event.stopPropagation()}
               >
@@ -162,7 +166,7 @@ export default function AssociationsPanelItem({
                 </svg>
               </button>
             </Accordion.Trigger>
-            <div className="flex min-w-0 flex-1 items-center gap-2">
+            <div className="flex min-w-0 flex-1 flex-col items-start">
               {isEditing && canRename ? (
                 <Input
                   ref={inputRef}
@@ -195,7 +199,7 @@ export default function AssociationsPanelItem({
                   }}
                 />
               ) : (
-                <span className="flex min-w-0 items-center gap-1 text-sm">
+                <span className="flex w-full min-w-0 items-center gap-1 text-sm leading-5">
                   {label ? (
                     <span className="truncate">{label}</span>
                   ) : isReflexive ? (
@@ -203,31 +207,27 @@ export default function AssociationsPanelItem({
                   ) : (
                     <>
                       <span className="truncate">{sourceLabel}</span>
-                      <svg
-                        xmlns="http://www.w3.org/2000/svg"
-                        fill="none"
-                        viewBox="0 0 24 24"
-                        strokeWidth="1.5"
-                        stroke="currentColor"
-                        className="h-4 w-4 shrink-0 opacity-70"
-                        aria-hidden="true"
-                      >
-                        <path
-                          strokeLinecap="round"
-                          strokeLinejoin="round"
-                          d="M7.5 21 3 16.5m0 0L7.5 12M3 16.5h13.5m0-13.5L21 7.5m0 0L16.5 12M21 7.5H7.5"
-                        />
-                      </svg>
+                      <EndpointConnector />
                       <span className="truncate">{targetLabel}</span>
                     </>
                   )}
                 </span>
               )}
+              {!isEditing && label && (
+                <span className="flex w-full min-w-0 items-center gap-1 text-[11px] font-normal leading-4 text-muted-foreground" title={endpointSummary}>
+                  <span className="truncate">{sourceLabel}</span>
+                  {isReflexive ? <span>(self)</span> : <>
+                    <EndpointConnector />
+                    <span className="sr-only">and</span>
+                    <span className="truncate">{targetLabel}</span>
+                  </>}
+                </span>
+              )}
             </div>
-            <div className="flex items-center gap-1">
+            <div className="flex shrink-0 items-center gap-0.5 opacity-0 pointer-events-none transition-opacity group-data-[state=open]:opacity-100 group-data-[state=open]:pointer-events-auto group-hover/ref-header:opacity-100 group-hover/ref-header:pointer-events-auto group-has-[:focus-visible]/ref-header:opacity-100 group-has-[:focus-visible]/ref-header:pointer-events-auto [@media(hover:none)]:opacity-100 [@media(hover:none)]:pointer-events-auto">
               <ControlTooltip label="Focus association on diagram">
                 <button
-                  className="inline-flex h-6 w-6 items-center justify-center rounded-md text-base-content/60 opacity-0 transition-opacity hover:bg-base-300 hover:text-base-content group-hover:opacity-100 focus-visible:opacity-100"
+                  className="inline-flex h-6 w-6 items-center justify-center rounded-md text-base-content/60 transition-colors hover:bg-base-300 hover:text-base-content focus-visible:ring-2 focus-visible:ring-ring"
                   type="button"
                   onClick={(event) => {
                     event.stopPropagation()
@@ -259,9 +259,9 @@ export default function AssociationsPanelItem({
                   </svg>
                 </button>
               </ControlTooltip>
-              {canRename ? (
+              <ControlTooltip label={canRename ? 'Rename association' : 'Associative associations cannot be renamed.'}>
                 <button
-                  className="inline-flex h-6 w-6 items-center justify-center rounded-md text-base-content/60 opacity-0 transition-opacity hover:bg-base-300 hover:text-base-content group-hover:opacity-100"
+                  className={`inline-flex h-6 w-6 items-center justify-center rounded-md transition-colors focus-visible:ring-2 focus-visible:ring-ring ${canRename ? 'text-base-content/60 hover:bg-base-300 hover:text-base-content' : 'cursor-default text-base-content/25'}`}
                   type="button"
                   onClick={(event) => {
                     event.stopPropagation()
@@ -269,6 +269,7 @@ export default function AssociationsPanelItem({
                   }}
                   onMouseDown={(event) => event.stopPropagation()}
                   aria-label="Edit association name"
+                  aria-disabled={!canRename}
                 >
                   <svg
                     xmlns="http://www.w3.org/2000/svg"
@@ -285,416 +286,224 @@ export default function AssociationsPanelItem({
                     <path d="m15 5 4 4" />
                   </svg>
                 </button>
-              ) : null}
+              </ControlTooltip>
+              <PanelDeleteButton label="Delete association" onClick={() => onDeleteAssociation?.(edge.id)} />
             </div>
           </div>
-          </div>
-        </Accordion.Header>
-        <Accordion.Content>
-          <div className="w-full">
-            <div className="rounded-l-md border-b border-base-content/20 px-2 pb-3 pt-2">
-              <div className="flex items-center justify-between gap-1 text-xs">
-                <div className="flex basis-1/2 flex-col gap-2 overflow-hidden text-xs">
-                  <div className="flex flex-row items-center gap-1">
-                    <svg
-                      xmlns="http://www.w3.org/2000/svg"
-                      fill="none"
-                      viewBox="0 0 24 24"
-                      strokeWidth="1.5"
-                      stroke="currentColor"
-                      className="h-4 w-4 text-base-content/60"
-                      aria-hidden="true"
-                    >
-                      <path
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        d="M3.375 19.5h17.25m-17.25 0a1.125 1.125 0 0 1-1.125-1.125M3.375 19.5h7.5c.621 0 1.125-.504 1.125-1.125m-9.75 0V5.625m0 12.75v-1.5c0-.621.504-1.125 1.125-1.125m18.375 2.625V5.625m0 12.75c0 .621-.504 1.125-1.125 1.125m1.125-1.125v-1.5c0-.621-.504-1.125-1.125-1.125m0 3.75h-7.5A1.125 1.125 0 0 1 12 18.375m9.75-12.75c0-.621-.504-1.125-1.125-1.125H3.375c-.621 0-1.125.504-1.125 1.125m19.5 0v1.5c0 .621-.504 1.125-1.125 1.125M2.25 5.625v1.5c0 .621.504 1.125 1.125 1.125m0 0h17.25m-17.25 0h7.5c.621 0 1.125.504 1.125 1.125M3.375 8.25c-.621 0-1.125.504-1.125 1.125v1.5c0 .621.504 1.125 1.125 1.125m17.25-3.75h-7.5c-.621 0-1.125.504-1.125 1.125m8.625-1.125c.621 0 1.125.504 1.125 1.125v1.5c0 .621-.504 1.125-1.125 1.125m-17.25 0h7.5m-7.5 0c-.621 0-1.125.504-1.125 1.125v1.5c0 .621.504 1.125 1.125 1.125M12 10.875v-1.5m0 1.5c0 .621-.504 1.125-1.125 1.125M12 10.875c0 .621.504 1.125 1.125 1.125m-2.25 0c.621 0 1.125.504 1.125 1.125M13.125 12h7.5m-7.5 0c-.621 0-1.125.504-1.125 1.125M20.625 12c.621 0 1.125.504 1.125 1.125v1.5c0 .621-.504 1.125-1.125 1.125m-17.25 0h7.5M12 14.625v-1.5m0 1.5c0 .621-.504 1.125-1.125 1.125M12 14.625c0 .621.504 1.125 1.125 1.125m-2.25 0c.621 0 1.125.504 1.125 1.125m0 1.5v-1.5m0 0c0-.621.504-1.125 1.125-1.125m0 0h7.5"
+        </div>
+      </Accordion.Header>
+      <Accordion.Content>
+        <div className="w-full">
+          <div className="rounded-b-md border-b border-base-content/20 px-3 pb-3 pt-1">
+            <div className="grid grid-cols-2 gap-3">
+              {[
+                { side: 'A', name: sourceLabel, isAssociation: sourceIsAssociation, multiplicity: selectMultiplicityAValue, role: roleA },
+                { side: 'B', name: targetLabel, isAssociation: targetIsAssociation, multiplicity: selectMultiplicityBValue, role: roleB },
+              ].map(({ side, name, isAssociation, multiplicity, role }) => (
+                <section key={side} aria-label={`Endpoint ${side}: ${name}`} className="min-w-0 space-y-2">
+                  <div>
+                    <div className="text-[11px] text-base-content/65">{isAssociation ? 'Association' : edge.type === 'associativeAssociation' ? 'Class' : `Class ${side}`}</div>
+                    <div className="mt-0.5 truncate text-sm font-medium" title={name}>{name}</div>
+                  </div>
+                  {canEditMultiplicity && (
+                    <div className="space-y-1">
+                      <label htmlFor={`${fieldId}-multiplicity-${side}`} className="text-[11px] text-base-content/65">Multiplicity</label>
+                      <SelectField
+                        id={`${fieldId}-multiplicity-${side}`}
+                        aria-label={`Multiplicity ${side} (${name})`}
+                        value={multiplicity}
+                        items={MULTIPLICITY_OPTIONS}
+                        placeholder="Select"
+                        onValueChange={value => onUpdateAssociationMultiplicity?.(
+                          edge.id, side, value === UNDEFINED_MULTIPLICITY_VALUE ? '' : value,
+                        )}
                       />
-                    </svg>
-                    <div className="font-bold text-base-content/70">
-                      {sourceIsAssociation ? 'Association' : 'Class A'}
                     </div>
-                  </div>
-                  <button type="button" className="text-left">
-                    <div className="truncate text-left text-sm">
-                      {sourceLabel}
-                    </div>
-                  </button>
-                  {canEditMultiplicity ? (
-                    <>
-                      <div className="flex flex-row items-center gap-1">
-                        <svg
-                          xmlns="http://www.w3.org/2000/svg"
-                          width="24"
-                          height="24"
-                          viewBox="0 0 24 24"
-                          fill="none"
-                          stroke="currentColor"
-                          strokeWidth="2"
-                          strokeLinecap="round"
-                          strokeLinejoin="round"
-                          className="lucide lucide-chevrons-left-right-ellipsis size-4 text-subtitle"
-                          aria-hidden="true"
-                        >
-                          <path d="M12 12h.01" />
-                          <path d="M16 12h.01" />
-                          <path d="m17 7 5 5-5 5" />
-                          <path d="m7 7-5 5 5 5" />
-                          <path d="M8 12h.01" />
-                        </svg>
-                        <div className="font-bold text-subtitle">
-                          Multiplicity
-                        </div>
-                      </div>
-                      <div className="p-1">
-                        <SelectField
-                          value={selectMultiplicityAValue}
-                          items={MULTIPLICITY_OPTIONS}
-                          placeholder="Select"
-                          onValueChange={(nextValue) =>
-                            onUpdateAssociationMultiplicity?.(
-                              edge.id,
-                              'A',
-                              nextValue === UNDEFINED_MULTIPLICITY_VALUE
-                                ? ''
-                                : nextValue,
-                            )
-                          }
-                        />
-                      </div>
-                      {canEditRole ? (
-                        <>
-                          <div className="flex flex-row items-center gap-1">
-                            <div className="font-bold text-subtitle">Role</div>
-                          </div>
-                          <div className="p-1">
-                            <Input
-                              size="xs"
-                              value={roleA}
-                              placeholder="Role"
-                              onFocus={() =>
-                                window.dispatchEvent(
-                                  new CustomEvent('model-text-edit-start'),
-                                )
-                              }
-                              onBlur={() =>
-                                window.dispatchEvent(
-                                  new CustomEvent('model-text-edit-end'),
-                                )
-                              }
-                              onChange={(event) =>
-                                onUpdateAssociationRole?.(
-                                  edge.id,
-                                  'A',
-                                  event.target.value,
-                                )
-                              }
-                            />
-                          </div>
-                        </>
-                      ) : null}
-                    </>
-                  ) : null}
-                </div>
-                <div className="flex basis-1/2 flex-col gap-2 overflow-hidden text-xs">
-                  <div className="flex flex-row items-center gap-1">
-                    <svg
-                      xmlns="http://www.w3.org/2000/svg"
-                      fill="none"
-                      viewBox="0 0 24 24"
-                      strokeWidth="1.5"
-                      stroke="currentColor"
-                      className="h-4 w-4 text-base-content/60"
-                      aria-hidden="true"
-                    >
-                      <path
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        d="M3.375 19.5h17.25m-17.25 0a1.125 1.125 0 0 1-1.125-1.125M3.375 19.5h7.5c.621 0 1.125-.504 1.125-1.125m-9.75 0V5.625m0 12.75v-1.5c0-.621.504-1.125 1.125-1.125m18.375 2.625V5.625m0 12.75c0 .621-.504 1.125-1.125 1.125m1.125-1.125v-1.5c0-.621-.504-1.125-1.125-1.125m0 3.75h-7.5A1.125 1.125 0 0 1 12 18.375m9.75-12.75c0-.621-.504-1.125-1.125-1.125H3.375c-.621 0-1.125.504-1.125 1.125m19.5 0v1.5c0 .621-.504 1.125-1.125 1.125M2.25 5.625v1.5c0 .621.504 1.125 1.125 1.125m0 0h17.25m-17.25 0h7.5c.621 0 1.125.504 1.125 1.125M3.375 8.25c-.621 0-1.125.504-1.125 1.125v1.5c0 .621.504 1.125 1.125 1.125m17.25-3.75h-7.5c-.621 0-1.125.504-1.125 1.125m8.625-1.125c.621 0 1.125.504 1.125 1.125v1.5c0 .621-.504 1.125-1.125 1.125m-17.25 0h7.5m-7.5 0c-.621 0-1.125.504-1.125 1.125v1.5c0 .621.504 1.125 1.125 1.125M12 10.875v-1.5m0 1.5c0 .621-.504 1.125-1.125 1.125M12 10.875c0 .621.504 1.125 1.125 1.125m-2.25 0c.621 0 1.125.504 1.125 1.125M13.125 12h7.5m-7.5 0c-.621 0-1.125.504-1.125 1.125M20.625 12c.621 0 1.125.504 1.125 1.125v1.5c0 .621-.504 1.125-1.125 1.125m-17.25 0h7.5M12 14.625v-1.5m0 1.5c0 .621-.504 1.125-1.125 1.125M12 14.625c0 .621.504 1.125 1.125 1.125m-2.25 0c.621 0 1.125.504 1.125 1.125m0 1.5v-1.5m0 0c0-.621.504-1.125 1.125-1.125m0 0h7.5"
+                  )}
+                  {canEditRole && (
+                    <div className="space-y-1">
+                      <label htmlFor={`${fieldId}-role-${side}`} className="text-[11px] text-base-content/65">Role</label>
+                      <Input
+                        id={`${fieldId}-role-${side}`}
+                        aria-label={`Role ${side} (${name})`}
+                        size="xs" value={role} placeholder="Role"
+                        onFocus={() => window.dispatchEvent(new CustomEvent('model-text-edit-start'))}
+                        onBlur={() => window.dispatchEvent(new CustomEvent('model-text-edit-end'))}
+                        onChange={event => onUpdateAssociationRole?.(edge.id, side, event.target.value)}
                       />
-                    </svg>
-                    <div className="font-bold text-base-content/70">
-                      {targetIsAssociation ? 'Association' : 'Class B'}
                     </div>
-                  </div>
-                  <button type="button" className="text-left">
-                    <div className="truncate text-left text-sm">
-                      {targetLabel}
-                    </div>
-                  </button>
-                  {canEditMultiplicity ? (
-                    <>
-                      <div className="flex flex-row items-center gap-1">
-                        <svg
-                          xmlns="http://www.w3.org/2000/svg"
-                          width="24"
-                          height="24"
-                          viewBox="0 0 24 24"
-                          fill="none"
-                          stroke="currentColor"
-                          strokeWidth="2"
-                          strokeLinecap="round"
-                          strokeLinejoin="round"
-                          className="lucide lucide-chevrons-left-right-ellipsis size-4 text-subtitle"
-                          aria-hidden="true"
-                        >
-                          <path d="M12 12h.01" />
-                          <path d="M16 12h.01" />
-                          <path d="m17 7 5 5-5 5" />
-                          <path d="m7 7-5 5 5 5" />
-                          <path d="M8 12h.01" />
-                        </svg>
-                        <div className="font-bold text-subtitle">
-                          Multiplicity
-                        </div>
-                      </div>
-                      <div className="p-1">
-                        <SelectField
-                          value={selectMultiplicityBValue}
-                          items={MULTIPLICITY_OPTIONS}
-                          placeholder="Select"
-                          onValueChange={(nextValue) =>
-                            onUpdateAssociationMultiplicity?.(
-                              edge.id,
-                              'B',
-                              nextValue === UNDEFINED_MULTIPLICITY_VALUE
-                                ? ''
-                                : nextValue,
-                            )
-                          }
-                        />
-                      </div>
-                      {canEditRole ? (
-                        <>
-                          <div className="flex flex-row items-center gap-1">
-                            <div className="font-bold text-subtitle">Role</div>
-                          </div>
-                          <div className="p-1">
-                            <Input
-                              size="xs"
-                              value={roleB}
-                              placeholder="Role"
-                              onFocus={() =>
-                                window.dispatchEvent(
-                                  new CustomEvent('model-text-edit-start'),
-                                )
-                              }
-                              onBlur={() =>
-                                window.dispatchEvent(
-                                  new CustomEvent('model-text-edit-end'),
-                                )
-                              }
-                              onChange={(event) =>
-                                onUpdateAssociationRole?.(
-                                  edge.id,
-                                  'B',
-                                  event.target.value,
-                                )
-                              }
-                            />
-                          </div>
-                        </>
-                      ) : null}
-                    </>
-                  ) : null}
-                </div>
-              </div>
-              {canToggleComposition ? (
-                <div className="mt-2">
-                  <div className="text-xs font-semibold uppercase tracking-wide opacity-60 py-1">
-                    Composition
-                  </div>
-                  <label className="flex items-center gap-2 text-xs">
-                    <CheckboxInput
-                      checked={isComposition}
-                      onCheckedChange={(checked) =>
-                        onToggleAssociationComposition?.(
-                          edge.id,
-                          Boolean(checked),
-                        )
-                      }
-                      onClick={(event) => event.stopPropagation()}
-                      onMouseDown={(event) => event.stopPropagation()}
-                      aria-label="Toggle composition"
-                    />
-                    <span>Composite aggregation</span>
-                  </label>
-                </div>
-              ) : null}
-              {canEditLineStyle ? (
-                <div className="mt-2">
-                  <div className="text-xs font-semibold uppercase tracking-wide opacity-60 py-1">
-                    Style
-                  </div>
-                  <div
-                    className="grid grid-cols-3 gap-2"
-                    role="radiogroup"
-                    aria-label="Association style"
-                  >
-                    <button
-                      type="button"
-                      role="radio"
-                      aria-checked={
-                        lineStyle === ASSOCIATION_LINE_STYLE_STRAIGHT
-                        && !isManualRouting
-                      }
-                      className={`inline-flex items-center justify-center gap-1 rounded-md border px-2 py-1.5 text-xs transition-colors ${
-                        lineStyle === ASSOCIATION_LINE_STYLE_STRAIGHT && !isManualRouting
-                          ? 'border-primary bg-primary/15 text-base-content'
-                          : 'border-base-content/20 hover:bg-base-200'
-                      }`}
-                      onClick={() => applyAutoStyle(ASSOCIATION_LINE_STYLE_STRAIGHT)}
-                    >
-                      <svg
-                        xmlns="http://www.w3.org/2000/svg"
-                        viewBox="0 0 20 20"
-                        fill="none"
-                        stroke="currentColor"
-                        strokeWidth="1.75"
-                        strokeLinecap="butt"
-                        strokeLinejoin="miter"
-                        className="h-4 w-4"
-                        aria-hidden="true"
-                      >
-                        <line x1="6" y1="14" x2="14" y2="6" />
-                        <rect x="2" y="14" width="4" height="4" />
-                        <rect x="14" y="2" width="4" height="4" />
-                      </svg>
-                      <span>Straight</span>
-                    </button>
-                    <button
-                      type="button"
-                      role="radio"
-                      aria-checked={
-                        lineStyle === ASSOCIATION_LINE_STYLE_ORTHOGONAL
-                        && !isManualRouting
-                      }
-                      className={`inline-flex items-center justify-center gap-1 rounded-md border px-2 py-1.5 text-xs transition-colors ${
-                        lineStyle === ASSOCIATION_LINE_STYLE_ORTHOGONAL && !isManualRouting
-                          ? 'border-primary bg-primary/15 text-base-content'
-                          : 'border-base-content/20 hover:bg-base-200'
-                      }`}
-                      onClick={() => applyAutoStyle(ASSOCIATION_LINE_STYLE_ORTHOGONAL)}
-                    >
-                      <svg
-                        xmlns="http://www.w3.org/2000/svg"
-                        viewBox="0 0 20 20"
-                        fill="none"
-                        stroke="currentColor"
-                        strokeWidth="1.75"
-                        strokeLinecap="butt"
-                        strokeLinejoin="miter"
-                        className="h-4 w-4"
-                        aria-hidden="true"
-                      >
-                        <polyline points="6,14 6,10 14,10 14,6" />
-                        <rect x="2" y="14" width="4" height="4" />
-                        <rect x="14" y="2" width="4" height="4" />
-                      </svg>
-                      <span>Orthogonal</span>
-                    </button>
-                    <Tooltip.Provider delayDuration={100}>
-                      <Tooltip.Root>
-                        <Tooltip.Trigger asChild>
-                          <button
-                            type="button"
-                            role="radio"
-                            aria-checked={isManualRouting}
-                            className={`inline-flex items-center justify-center gap-1 rounded-md border px-2 py-1.5 text-xs transition-colors ${
-                              isManualRouting
-                                ? 'border-primary bg-primary/15 text-base-content'
-                                : 'border-base-content/20 hover:bg-base-200'
-                            }`}
-                            onClick={applyManualStyle}
-                          >
-                            <svg
-                              xmlns="http://www.w3.org/2000/svg"
-                              viewBox="0 0 20 20"
-                              fill="none"
-                              stroke="currentColor"
-                              strokeWidth="1.75"
-                              strokeLinecap="butt"
-                              strokeLinejoin="miter"
-                              className="h-4 w-4"
-                              aria-hidden="true"
-                            >
-                              <polyline points="6,14 6,8 14,14 14,6" />
-                              <rect x="2" y="14" width="4" height="4" />
-                              <rect x="14" y="2" width="4" height="4" />
-                            </svg>
-                            <span>Manual</span>
-                          </button>
-                        </Tooltip.Trigger>
-                        <Tooltip.Portal>
-                          <Tooltip.Content
-                            side="bottom"
-                            align="center"
-                            sideOffset={8}
-                            className={TOOLTIP_CONTENT_CLASS}
-                          >
-                            <div>Double-click a segment: add a handle</div>
-                            <div>{manualDeleteModifierLabel}</div>
-                            <Tooltip.Arrow className="fill-base-100" />
-                          </Tooltip.Content>
-                        </Tooltip.Portal>
-                      </Tooltip.Root>
-                    </Tooltip.Provider>
-                  </div>
-                </div>
-              ) : null}
-              {canComment ? (
-                <div className="mt-2">
-                  <div className="text-xs font-semibold uppercase tracking-wide opacity-60 py-1">
-                    Comment
-                  </div>
-                  <textarea
-                    className="min-h-[96px] w-full rounded-md border border-base-content/20 bg-transparent px-2 py-1 text-xs focus:outline-none focus:ring-1 focus:ring-ring"
-                    placeholder="Write your comment..."
-                    value={comment}
-                    onFocus={() =>
-                      window.dispatchEvent(new CustomEvent('model-text-edit-start'))
+                  )}
+                </section>
+              ))}
+            </div>
+            {canToggleComposition ? (
+              <div className="mt-3">
+                <label className="flex items-center gap-2 text-xs">
+                  <CheckboxInput
+                    checked={isComposition}
+                    onCheckedChange={(checked) =>
+                      onToggleAssociationComposition?.(
+                        edge.id,
+                        Boolean(checked),
+                      )
                     }
-                    onBlur={() =>
-                      window.dispatchEvent(new CustomEvent('model-text-edit-end'))
-                    }
-                    onChange={(event) =>
-                      onUpdateAssociationComment?.(edge.id, event.target.value)
-                    }
+                    onClick={(event) => event.stopPropagation()}
+                    onMouseDown={(event) => event.stopPropagation()}
+                    aria-label="Toggle composition"
                   />
-                </div>
-              ) : null}
-              <div className="flex flex-1 items-center justify-center pt-2">
-                <button
-                  className="inline-flex h-8 items-center justify-center gap-2 whitespace-nowrap rounded-md p-2 text-xs font-medium transition-colors hover:bg-base-300 hover:text-accent-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:pointer-events-none disabled:opacity-50 [&_svg]:pointer-events-none [&_svg]:size-4 [&_svg]:shrink-0"
-                  type="button"
-                  onClick={() => onDeleteAssociation?.(edge.id)}
-                >
-                  <svg
-                    xmlns="http://www.w3.org/2000/svg"
-                    width="24"
-                    height="24"
-                    viewBox="0 0 24 24"
-                    fill="none"
-                    stroke="currentColor"
-                    strokeWidth="2"
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    className="lucide lucide-trash2 lucide-trash-2 mr-1 h-3.5 w-3.5 text-danger"
-                    aria-hidden="true"
-                  >
-                    <path d="M10 11v6" />
-                    <path d="M14 11v6" />
-                    <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6" />
-                    <path d="M3 6h18" />
-                    <path d="M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2" />
-                  </svg>
-                  <div className="text-danger">Delete</div>
-                </button>
+                  <span>Composite aggregation</span>
+                </label>
               </div>
-            </div>
+            ) : null}
+            {canEditLineStyle ? (
+              <div className="mt-3">
+                <div className="mb-1.5 text-[11px] text-base-content/65">
+                  Line style
+                </div>
+                <div
+                  className="grid grid-cols-3 gap-1"
+                  role="radiogroup"
+                  aria-label="Association style"
+                >
+                  <button
+                    type="button"
+                    role="radio"
+                    aria-checked={
+                      lineStyle === ASSOCIATION_LINE_STYLE_STRAIGHT
+                      && !isManualRouting
+                    }
+                    className={`inline-flex items-center justify-center gap-1 rounded-md border px-2 py-1.5 text-xs transition-colors focus-visible:ring-2 focus-visible:ring-ring ${
+                      lineStyle === ASSOCIATION_LINE_STYLE_STRAIGHT && !isManualRouting
+                        ? 'border-primary bg-primary/15 text-base-content'
+                        : 'border-base-content/20 hover:bg-base-200'
+                    }`}
+                    onClick={() => applyAutoStyle(ASSOCIATION_LINE_STYLE_STRAIGHT)}
+                  >
+                    <svg
+                      xmlns="http://www.w3.org/2000/svg"
+                      viewBox="0 0 20 20"
+                      fill="none"
+                      stroke="currentColor"
+                      strokeWidth="1.75"
+                      strokeLinecap="butt"
+                      strokeLinejoin="miter"
+                      className="h-4 w-4"
+                      aria-hidden="true"
+                    >
+                      <line x1="6" y1="14" x2="14" y2="6" />
+                      <rect x="2" y="14" width="4" height="4" />
+                      <rect x="14" y="2" width="4" height="4" />
+                    </svg>
+                    <span>Straight</span>
+                  </button>
+                  <button
+                    type="button"
+                    role="radio"
+                    aria-checked={
+                      lineStyle === ASSOCIATION_LINE_STYLE_ORTHOGONAL
+                      && !isManualRouting
+                    }
+                    className={`inline-flex items-center justify-center gap-1 rounded-md border px-2 py-1.5 text-xs transition-colors focus-visible:ring-2 focus-visible:ring-ring ${
+                      lineStyle === ASSOCIATION_LINE_STYLE_ORTHOGONAL && !isManualRouting
+                        ? 'border-primary bg-primary/15 text-base-content'
+                        : 'border-base-content/20 hover:bg-base-200'
+                    }`}
+                    onClick={() => applyAutoStyle(ASSOCIATION_LINE_STYLE_ORTHOGONAL)}
+                  >
+                    <svg
+                      xmlns="http://www.w3.org/2000/svg"
+                      viewBox="0 0 20 20"
+                      fill="none"
+                      stroke="currentColor"
+                      strokeWidth="1.75"
+                      strokeLinecap="butt"
+                      strokeLinejoin="miter"
+                      className="h-4 w-4"
+                      aria-hidden="true"
+                    >
+                      <polyline points="6,14 6,10 14,10 14,6" />
+                      <rect x="2" y="14" width="4" height="4" />
+                      <rect x="14" y="2" width="4" height="4" />
+                    </svg>
+                    <span>Orthogonal</span>
+                  </button>
+                  <Tooltip.Provider delayDuration={100}>
+                    <Tooltip.Root>
+                      <Tooltip.Trigger asChild>
+                        <button
+                          type="button"
+                          role="radio"
+                          aria-checked={isManualRouting}
+                          className={`inline-flex items-center justify-center gap-1 rounded-md border px-2 py-1.5 text-xs transition-colors focus-visible:ring-2 focus-visible:ring-ring ${
+                            isManualRouting
+                              ? 'border-primary bg-primary/15 text-base-content'
+                              : 'border-base-content/20 hover:bg-base-200'
+                          }`}
+                          onClick={applyManualStyle}
+                        >
+                          <svg
+                            xmlns="http://www.w3.org/2000/svg"
+                            viewBox="0 0 20 20"
+                            fill="none"
+                            stroke="currentColor"
+                            strokeWidth="1.75"
+                            strokeLinecap="butt"
+                            strokeLinejoin="miter"
+                            className="h-4 w-4"
+                            aria-hidden="true"
+                          >
+                            <polyline points="6,14 6,8 14,14 14,6" />
+                            <rect x="2" y="14" width="4" height="4" />
+                            <rect x="14" y="2" width="4" height="4" />
+                          </svg>
+                          <span>Manual</span>
+                        </button>
+                      </Tooltip.Trigger>
+                      <Tooltip.Portal>
+                        <Tooltip.Content
+                          side="bottom"
+                          align="center"
+                          sideOffset={8}
+                          className={TOOLTIP_CONTENT_CLASS}
+                        >
+                          <div>Double-click a segment: add a handle</div>
+                          <div>{manualDeleteModifierLabel}</div>
+                          <Tooltip.Arrow className="fill-base-100" />
+                        </Tooltip.Content>
+                      </Tooltip.Portal>
+                    </Tooltip.Root>
+                  </Tooltip.Provider>
+                </div>
+              </div>
+            ) : null}
+            {canComment ? (
+              <div className="mt-3">
+                <label htmlFor={`${fieldId}-comment`} className="mb-1.5 block text-[11px] text-base-content/65">
+                  Comment
+                </label>
+                <textarea
+                  id={`${fieldId}-comment`}
+                  rows={3}
+                  className="min-h-16 w-full resize-y rounded-md border border-base-content/20 bg-transparent px-2 py-1 text-xs focus:outline-none focus:ring-1 focus:ring-ring"
+                  placeholder="Write your comment..."
+                  value={comment}
+                  onFocus={() =>
+                    window.dispatchEvent(new CustomEvent('model-text-edit-start'))
+                  }
+                  onBlur={() =>
+                    window.dispatchEvent(new CustomEvent('model-text-edit-end'))
+                  }
+                  onChange={(event) =>
+                    onUpdateAssociationComment?.(edge.id, event.target.value)
+                  }
+                />
+              </div>
+            ) : null}
+
           </div>
-        </Accordion.Content>
-      </Accordion.Item>
+        </div>
+      </Accordion.Content>
+    </Accordion.Item>
   )
 }
 

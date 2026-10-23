@@ -315,6 +315,24 @@ describe("hasMeaningfulEdgeChange", () => {
 });
 
 describe("getHiddenContentState", () => {
+  it('does not report intentional view visibility or annotations in other views', () => {
+    const state = getHiddenContentState({
+      nodes: [
+        { type: 'class', data: { visibility: { conceptual: false }, attributes: [{ visibility: { conceptual: false } }] } },
+        { type: 'class', data: { attributes: [{ visibility: { conceptual: false } }, { visibility: { conceptual: true } }] } },
+        { type: 'note', data: { visibility: { conceptual: false } } },
+      ],
+      annotations: { conceptual: { items: [] }, logical: { items: [{ id: 'feedback' }] } },
+      showAnnotations: false,
+      showNotes: false,
+    })
+    expect(state).toEqual({ hiddenNotes: false, hiddenAreas: false, hiddenCompositions: false, hiddenAnnotations: false })
+  })
+
+  it('reports annotations hidden using the toolbar visibility toggle', () => {
+    expect(getHiddenContentState({ annotations: { conceptual: { items: [{ id: 'ink' }] } },
+      showAnnotations: true, annotationsVisible: false }).hiddenAnnotations).toBe(true)
+  })
   const note = { id: "note-1", type: NOTE_NODE_TYPE };
   const area = { id: "area-1", type: AREA_NODE_TYPE };
   const composition = { id: "edge-1", type: COMPOSITION_EDGE_TYPE };
@@ -338,7 +356,7 @@ describe("getHiddenContentState", () => {
         showCompositionAggregation: false,
         showAnnotations: false,
       }),
-    ).toEqual({
+    ).toMatchObject({
       hiddenNotes: true,
       hiddenAreas: true,
       hiddenCompositions: true,
@@ -357,7 +375,7 @@ describe("getHiddenContentState", () => {
         showCompositionAggregation: true,
         showAnnotations: true,
       }),
-    ).toEqual({
+    ).toMatchObject({
       hiddenNotes: false,
       hiddenAreas: false,
       hiddenCompositions: false,

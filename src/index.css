@@ -3,6 +3,77 @@
 @import "@xyflow/react/dist/style.css";
 @import "./xy-theme.css";
 
+@font-face {
+  font-family: 'Sora';
+  src: url('/fonts/sora/Sora-Variable.woff2') format('woff2');
+  font-style: normal;
+  font-weight: 100 800;
+  font-display: swap;
+}
+
+.modelizer-wordmark {
+  font-family: 'Sora', ui-sans-serif, system-ui, sans-serif;
+  font-weight: 550;
+  letter-spacing: -0.02em;
+}
+
+.help-prose {
+  font-size: 0.875rem;
+  line-height: 1.7;
+  overflow-wrap: anywhere;
+}
+
+.help-prose > * + * { margin-top: 1rem; }
+.help-prose h3 {
+  margin-top: 1.75rem;
+  font-size: 0.9375rem;
+  font-weight: 600;
+  line-height: 1.4;
+}
+.help-prose > :first-child { margin-top: 0; }
+.help-prose h3 + * { margin-top: 0.5rem; }
+.help-prose ul { list-style: disc; padding-left: 1.25rem; }
+.help-prose ol { list-style: decimal; padding-left: 1.4rem; }
+.help-prose li + li { margin-top: 0.65rem; }
+.help-prose li::marker { color: rgb(var(--color-base-content) / 0.65); }
+.help-prose strong { font-weight: 600; }
+.help-prose a {
+  color: rgb(var(--color-primary-label));
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+.help-prose a:hover { text-decoration-thickness: 2px; }
+.help-prose a:focus-visible {
+  outline: 2px solid rgb(var(--color-ring));
+  outline-offset: 3px;
+  border-radius: 2px;
+}
+.help-prose code {
+  border-radius: 4px;
+  background: rgb(var(--color-base-200));
+  padding: 0.125rem 0.25rem;
+  font-size: 0.8125rem;
+}
+.help-prose blockquote {
+  border-left: 3px solid rgb(var(--color-primary) / 0.5);
+  border-radius: 0 6px 6px 0;
+  background: rgb(var(--color-primary) / 0.06);
+  padding: 0.875rem 1rem;
+}
+.help-prose table {
+  width: 100%;
+  border-collapse: collapse;
+  text-align: left;
+  font-size: 0.8125rem;
+}
+.help-prose th, .help-prose td {
+  border-bottom: 1px solid rgb(var(--color-base-content) / 0.1);
+  padding: 0.6rem 0.65rem;
+  vertical-align: top;
+}
+.help-prose th { background: rgb(var(--color-base-200)); font-weight: 600; }
+.help-about-intro { font-size: 0.9375rem; }
+
 :root,
 [data-theme='light'] {
   color-scheme: light;
@@ -66,115 +137,6 @@ body,
   background-color: rgb(var(--color-background));
 }
 
-@keyframes toast-slide-in {
-  from {
-    opacity: 0;
-    transform: translateX(calc(100% + var(--toast-viewport-padding)));
-  }
-  to {
-    opacity: 1;
-    transform: translateX(0);
-  }
-}
-
-@keyframes toast-hide {
-  from {
-    opacity: 1;
-  }
-  to {
-    opacity: 0;
-  }
-}
-
-.toast-viewport {
-  --toast-viewport-padding: 16px;
-  position: fixed;
-  bottom: 0;
-  right: 0;
-  display: flex;
-  flex-direction: column;
-  padding: var(--toast-viewport-padding);
-  gap: 10px;
-  width: 360px;
-  max-width: 100vw;
-  margin: 0;
-  list-style: none;
-  z-index: 2147483647;
-  outline: none;
-}
-
-.toast-root {
-  background-color: rgb(var(--color-base-100));
-  border: 1px solid rgb(var(--color-accent) / 0.6);
-  border-left-width: 4px;
-  border-radius: 8px;
-  box-shadow:
-    rgb(17 24 39 / 35%) 0px 10px 38px -10px,
-    rgb(17 24 39 / 20%) 0px 10px 20px -15px;
-  padding: 14px 16px;
-  display: grid;
-  grid-template-columns: 22px 1fr;
-  grid-template-areas: 'icon title' 'icon description';
-  column-gap: 10px;
-  row-gap: 4px;
-  align-items: center;
-}
-
-.toast-root[data-state='open'] {
-  animation: toast-slide-in 160ms cubic-bezier(0.16, 1, 0.3, 1);
-}
-
-.toast-root[data-state='closed'] {
-  animation: toast-hide 120ms ease-in;
-}
-
-.toast-root[data-swipe='move'] {
-  transform: translateX(var(--radix-toast-swipe-move-x));
-}
-
-.toast-root[data-swipe='cancel'] {
-  transform: translateX(0);
-  transition: transform 200ms ease-out;
-}
-
-.toast-root[data-swipe='end'] {
-  animation: toast-swipe-out 140ms ease-out;
-}
-
-@keyframes toast-swipe-out {
-  from {
-    transform: translateX(var(--radix-toast-swipe-end-x));
-  }
-  to {
-    transform: translateX(calc(100% + var(--toast-viewport-padding)));
-  }
-}
-
-.toast-title {
-  grid-area: title;
-  font-weight: 600;
-  color: rgb(var(--color-base-content));
-  font-size: 13px;
-}
-
-.toast-description {
-  grid-area: description;
-  margin: 0;
-  color: rgb(var(--color-base-content) / 0.7);
-  font-size: 12px;
-  line-height: 1.35;
-}
-
-.toast-icon {
-  grid-area: icon;
-  color: rgb(var(--color-accent));
-  align-self: start;
-}
-
-.toast-icon-svg {
-  width: 22px;
-  height: 22px;
-}
 /* External file drops do not intercept pointer interaction with the editor. */
 .model-file-drop-overlay {
   position: fixed;

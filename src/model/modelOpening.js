@@ -3,6 +3,16 @@ import { normalizeEdges } from './edgeUtils.js'
 
 const isObject = (value) => value !== null && typeof value === 'object' && !Array.isArray(value)
 
+export class UnsupportedModelVersionError extends Error {
+  constructor(version) {
+    super(`Unsupported model version: ${String(version)}.`)
+    this.name = 'UnsupportedModelVersionError'
+    this.code = 'UNSUPPORTED_MODEL_VERSION'
+    this.fileVersion = version
+    this.supportedVersion = MODEL_VERSION
+  }
+}
+
 export function parseModelFile(text) {
   if (!text.trim()) throw new Error('The selected model file is empty.')
   let payload
@@ -15,7 +25,7 @@ export function parseModelFile(text) {
     throw new Error('Invalid model: nodes and edges must be arrays.')
   }
   if (payload.version !== undefined && payload.version !== 1 && payload.version !== MODEL_VERSION) {
-    throw new Error(`Unsupported model version: ${String(payload.version)}.`)
+    throw new UnsupportedModelVersionError(payload.version)
   }
   const normalizeEntries = (entries, kind) => {
     const ids = new Set()

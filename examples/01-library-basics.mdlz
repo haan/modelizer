@@ -1,0 +1,393 @@
+{
+  "version": 2,
+  "modelName": "01 - Library basics",
+  "nodes": [
+    {
+      "id": "reader",
+      "type": "class",
+      "position": {
+        "x": 0,
+        "y": 0
+      },
+      "selected": false,
+      "data": {
+        "label": "Reader",
+        "logicalName": "",
+        "color": "#ffc107",
+        "attributes": [
+          {
+            "id": "reader-attr-0",
+            "name": "name",
+            "logicalName": "",
+            "type": "",
+            "typeParams": {
+              "maxLength": "",
+              "precision": "",
+              "scale": "",
+              "enumValues": ""
+            },
+            "defaultValue": "",
+            "nullable": false,
+            "unique": false,
+            "autoIncrement": false,
+            "visibility": {
+              "conceptual": true,
+              "logical": false,
+              "physical": false
+            }
+          },
+          {
+            "id": "reader-attr-1",
+            "name": "email",
+            "logicalName": "",
+            "type": "",
+            "typeParams": {
+              "maxLength": "",
+              "precision": "",
+              "scale": "",
+              "enumValues": ""
+            },
+            "defaultValue": "",
+            "nullable": false,
+            "unique": false,
+            "autoIncrement": false,
+            "visibility": {
+              "conceptual": true,
+              "logical": false,
+              "physical": false
+            }
+          }
+        ],
+        "visibility": {
+          "conceptual": true,
+          "logical": false,
+          "physical": false
+        },
+        "viewPositions": {
+          "conceptual": {
+            "x": 0,
+            "y": 0
+          },
+          "logical": {
+            "x": 0,
+            "y": 0
+          },
+          "physical": {
+            "x": 0,
+            "y": 0
+          }
+        }
+      }
+    },
+    {
+      "id": "loan",
+      "type": "class",
+      "position": {
+        "x": 500,
+        "y": 0
+      },
+      "selected": false,
+      "data": {
+        "label": "Loan",
+        "logicalName": "",
+        "color": "#009688",
+        "attributes": [
+          {
+            "id": "loan-attr-0",
+            "name": "borrowedAt",
+            "logicalName": "",
+            "type": "",
+            "typeParams": {
+              "maxLength": "",
+              "precision": "",
+              "scale": "",
+              "enumValues": ""
+            },
+            "defaultValue": "",
+            "nullable": false,
+            "unique": false,
+            "autoIncrement": false,
+            "visibility": {
+              "conceptual": true,
+              "logical": false,
+              "physical": false
+            }
+          },
+          {
+            "id": "loan-attr-1",
+            "name": "dueAt",
+            "logicalName": "",
+            "type": "",
+            "typeParams": {
+              "maxLength": "",
+              "precision": "",
+              "scale": "",
+              "enumValues": ""
+            },
+            "defaultValue": "",
+            "nullable": false,
+            "unique": false,
+            "autoIncrement": false,
+            "visibility": {
+              "conceptual": true,
+              "logical": false,
+              "physical": false
+            }
+          }
+        ],
+        "visibility": {
+          "conceptual": true,
+          "logical": false,
+          "physical": false
+        },
+        "viewPositions": {
+          "conceptual": {
+            "x": 500,
+            "y": 0
+          },
+          "logical": {
+            "x": 500,
+            "y": 0
+          },
+          "physical": {
+            "x": 500,
+            "y": 0
+          }
+        }
+      }
+    },
+    {
+      "id": "copy",
+      "type": "class",
+      "position": {
+        "x": 500,
+        "y": 300
+      },
+      "selected": false,
+      "data": {
+        "label": "BookCopy",
+        "logicalName": "",
+        "color": "#2196f3",
+        "attributes": [
+          {
+            "id": "copy-attr-0",
+            "name": "barcode",
+            "logicalName": "",
+            "type": "",
+            "typeParams": {
+              "maxLength": "",
+              "precision": "",
+              "scale": "",
+              "enumValues": ""
+            },
+            "defaultValue": "",
+            "nullable": false,
+            "unique": false,
+            "autoIncrement": false,
+            "visibility": {
+              "conceptual": true,
+              "logical": false,
+              "physical": false
+            }
+          },
+          {
+            "id": "copy-attr-1",
+            "name": "condition",
+            "logicalName": "",
+            "type": "",
+            "typeParams": {
+              "maxLength": "",
+              "precision": "",
+              "scale": "",
+              "enumValues": ""
+            },
+            "defaultValue": "",
+            "nullable": false,
+            "unique": false,
+            "autoIncrement": false,
+            "visibility": {
+              "conceptual": true,
+              "logical": false,
+              "physical": false
+            }
+          }
+        ],
+        "visibility": {
+          "conceptual": true,
+          "logical": false,
+          "physical": false
+        },
+        "viewPositions": {
+          "conceptual": {
+            "x": 500,
+            "y": 300
+          },
+          "logical": {
+            "x": 500,
+            "y": 300
+          },
+          "physical": {
+            "x": 500,
+            "y": 300
+          }
+        }
+      }
+    },
+    {
+      "id": "book",
+      "type": "class",
+      "position": {
+        "x": 0,
+        "y": 300
+      },
+      "selected": false,
+      "data": {
+        "label": "Book",
+        "logicalName": "",
+        "color": "#9c27b0",
+        "attributes": [
+          {
+            "id": "book-attr-0",
+            "name": "title",
+            "logicalName": "",
+            "type": "",
+            "typeParams": {
+              "maxLength": "",
+              "precision": "",
+              "scale": "",
+              "enumValues": ""
+            },
+            "defaultValue": "",
+            "nullable": false,
+            "unique": false,
+            "autoIncrement": false,
+            "visibility": {
+              "conceptual": true,
+              "logical": false,
+              "physical": false
+            }
+          },
+          {
+            "id": "book-attr-1",
+            "name": "isbn",
+            "logicalName": "",
+            "type": "",
+            "typeParams": {
+              "maxLength": "",
+              "precision": "",
+              "scale": "",
+              "enumValues": ""
+            },
+            "defaultValue": "",
+            "nullable": false,
+            "unique": false,
+            "autoIncrement": false,
+            "visibility": {
+              "conceptual": true,
+              "logical": false,
+              "physical": false
+            }
+          }
+        ],
+        "visibility": {
+          "conceptual": true,
+          "logical": false,
+          "physical": false
+        },
+        "viewPositions": {
+          "conceptual": {
+            "x": 0,
+            "y": 300
+          },
+          "logical": {
+            "x": 0,
+            "y": 300
+          },
+          "physical": {
+            "x": 0,
+            "y": 300
+          }
+        }
+      }
+    }
+  ],
+  "edges": [
+    {
+      "id": "edge-0001",
+      "source": "reader",
+      "target": "loan",
+      "sourceHandle": "right-source",
+      "targetHandle": "left-target",
+      "type": "association",
+      "selected": false,
+      "interactionWidth": 20,
+      "data": {
+        "name": "borrows",
+        "type": "association",
+        "roleA": "borrower",
+        "roleB": "loans",
+        "multiplicityA": "1..1",
+        "multiplicityB": "0..*",
+        "lineStyle": "orthogonal",
+        "controlPoints": [],
+        "parallelIndex": 0,
+        "parallelCount": 1
+      }
+    },
+    {
+      "id": "edge-0002",
+      "source": "loan",
+      "target": "copy",
+      "sourceHandle": "right-source",
+      "targetHandle": "left-target",
+      "type": "association",
+      "selected": false,
+      "interactionWidth": 20,
+      "data": {
+        "name": "records",
+        "type": "association",
+        "roleA": "loans",
+        "roleB": "copy",
+        "multiplicityA": "0..*",
+        "multiplicityB": "1..1",
+        "lineStyle": "orthogonal",
+        "controlPoints": [],
+        "parallelIndex": 0,
+        "parallelCount": 1
+      }
+    },
+    {
+      "id": "edge-0003",
+      "source": "book",
+      "target": "copy",
+      "sourceHandle": "right-source",
+      "targetHandle": "left-target",
+      "type": "association",
+      "selected": false,
+      "interactionWidth": 20,
+      "data": {
+        "name": "hasCopies",
+        "type": "association",
+        "roleA": "edition",
+        "roleB": "copies",
+        "multiplicityA": "1..1",
+        "multiplicityB": "0..*",
+        "lineStyle": "orthogonal",
+        "controlPoints": [],
+        "parallelIndex": 0,
+        "parallelCount": 1
+      }
+    }
+  ],
+  "annotations": {
+    "conceptual": {
+      "items": []
+    },
+    "logical": {
+      "items": []
+    },
+    "physical": {
+      "items": []
+    }
+  }
+}

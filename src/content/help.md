@@ -1,306 +1,237 @@
-Modelizer is a lightweight database modeling tool for teaching conceptual, logical, and physical modeling.
-It is intentionally **not** a smart assistant:
-- it does **not validate** your model
-- it does **not auto-correct** modeling choices
-- it does **not auto-generate** relationships from associations
+## Your first model
 
-## Recommended workflow
+Start with a small example: a library with a **Reader** and a **Loan**. Build the conceptual model first, then add the details needed for the logical and physical views.
 
-1. Create a model (`File > New`).
-2. Add classes and attributes in the **Classes** panel.
-3. Build associations in **Conceptual** view.
-4. Build attribute relationships in **Logical** or **Physical** view.
-5. Save as `.mdlz`.
-6. Export the current view as PNG when needed.
+1. Choose **File → New**. Use the pencil beside the model name in the top bar to give your model a name.
+2. In **Classes**, choose **Add class**, enter `Reader`, and confirm the name. Add a second class called `Loan`.
+3. Expand Reader in the panel and choose **Add attribute**. Add `name` and `email`. Give Loan the attributes `borrowedAt` and `dueAt`.
+4. Drag the classes apart on the canvas. Connect a handle on Reader to a handle on Loan to create an association.
+5. Open **Relations**, rename the association to `borrows`, and set the roles and multiplicities at each end.
+6. Choose **File → Save** to keep an editable `.mdlz` file. Use **Export PNG** when you need an image for a lesson or document.
 
-## Interface overview
+> Modelizer leaves modeling decisions to you. It does not check whether a model is correct or automatically turn associations into relationships.
 
-### Top menu
-- **File**: New, Open, Save, Save As, Import (Java Modelizer / MySQL), Export PNG.
-- **Edit**: Undo and Redo recorded modeling changes.
-- **Settings**: toggle composite aggregation, conceptual operations compartment, confirmation dialogs, PNG accent colors, Notes, Areas, and Annotations.
-- **View**: dark mode, background, accent colors, fullscreen, view-specific settings toggle, constraint display mode.
-- **Help**: opens this dialog plus the About tab.
+### Find your way around
 
-In **Settings** and **View**, a checkmark means an option is enabled; select it to
-toggle it. Labels stay the same in either state. The **Constraints** submenu uses
-radio dots because exactly one display mode is selected at a time.
+Use the left sidebar to switch between **Classes / Tables**, **Relations**, and the three modeling views. Expand an item in a panel to edit its details. Its focus button brings it into view on the canvas.
 
-### Header
-Use **View > Dark mode** to switch the whole editor to a dark appearance. Light is
-the default and your preference is remembered in this browser. It does not change
-your model or undo history. PNG exports always use light styling; user-selected
-class, area, and annotation colors remain unchanged.
+The top menus separate **View** (what the diagram shows) from **Preferences** (how the editor behaves). Drag the information panel’s right edge if you need more room for names or forms.
 
-- The model name appears in the center of the header.
-- Hover the model name and use the edit button to rename it.
-- A `*` next to the model name means there are unsaved changes.
+## Edit classes and attributes
 
-### Left sidebar
-- Quick actions: New, Open, Save, Export.
-- Panels: Classes/Tables, Refs, optional Notes, optional Areas.
-- Views: Conceptual, Logical, Physical.
-- Sync button: copy positions and area sizes from the previous modeling phase (disabled in conceptual view).
+### Add and name an element
 
-### Information panel
-- The information panel shows the active sidebar panel.
-- Drag the panel's right edge to resize it.
-- Focus buttons in list items center the corresponding class, association, relationship, note, or area on the canvas.
+Choose **Add class** in conceptual view or **Add table** in logical or physical view. The new item opens for naming. Expand it to add attributes or columns; expand an attribute to edit its details.
 
-## Views
+The name is used in conceptual view. A separate **Logical name**, when filled in, is used in logical and physical views. Leaving it blank keeps the original name.
 
-### Conceptual
-- Shows classes and associations.
-- Relationships are hidden.
-- Attribute handles are hidden.
-- Optional operations compartment can be shown with `Settings > Operations compartment`.
+### Set types and constraints
 
-### Logical
-- Shows tables and relationships.
-- Associations are hidden.
-- Attribute handles are visible.
-- Attribute logical names are used when present.
-- Class logical names are used when present.
+In an attribute’s details, choose its **Type**, then fill in the parameters that appear, such as a maximum length or decimal precision. Set nullability, uniqueness, auto-increment, and a default value where needed.
 
-### Physical
-- Shows tables and relationships with full column type and constraint details.
-- Attribute logical names are used when present.
-- Class logical names are used when present.
-- Default values overlay appears when at least one visible attribute has a default value.
+Use **Preferences → Only show fields for current view** to simplify the forms. Conceptual view then hides logical names and physical details; physical view shows all fields.
 
-## Classes, tables, attributes, and columns
+### Organize the panel
 
-### Classes and tables
-- Add from **Classes > Add class** in conceptual view, or **Tables > Add table** in logical/physical views.
-- New classes are auto-selected and opened for editing.
-- Names are generated as `Class1`, `Class2`, ... (counting classes only).
-- Classes have a separate logical name used for tables in logical and physical views; when it is blank, the class name is used.
-- You can reorder, rename, focus, recolor, set per-view visibility, and delete classes/tables.
-- `Ctrl+Alt+C` (`Ctrl+Opt+C` on macOS): add class/table.
+Drag the grip beside a class or attribute to reorder it. Use the pencil to rename a class, the color swatch to choose its accent, and the trash button to remove it. Actions appear on hover or keyboard focus and remain visible while the item is expanded. The color swatch is available when **View → Accent colors** is enabled.
 
-### Attributes and columns
-- Add from the class/table header button.
-- New attributes are opened for editing.
-- `Ctrl+Alt+A` (`Ctrl+Opt+A` on macOS): add attribute/column to the currently selected class/table.
-- You can reorder attributes/columns by dragging their handles.
-- Attribute editor supports:
-  - name
-  - per-view visibility (Conceptual, Logical/Physical)
-  - logical name
-  - constraints: N, UQ, AI
-  - type + parameters (`varchar`, `decimal`, `enum`, etc.)
-  - default value
-  - delete
+The **Visibility** checkboxes decide whether an element belongs in the conceptual view, the logical/physical views, or both. Hiding an element keeps it in the model.
 
-### View-specific settings
-- Enable with `View > View-specific settings only`.
-- In conceptual view, class and attribute logical names and physical-only fields are hidden.
-- In logical view, physical-only fields are hidden.
-- In physical view, all attribute/column settings are shown.
+## Connect classes and tables
 
-### Constraint display mode
-- `View > Constraints > Null`: nullable attributes show `N`.
-- `View > Constraints > Not Null` (default): non-nullable attributes show `NN`.
-- `View > Constraints > Null as ?`: nullable attributes append `?` to type in physical class/table rendering.
+### Create a conceptual association
 
-In physical class/table rendering, attributes with a default value are marked with `*` after the name.
+1. Switch to **Conceptual** in the sidebar.
+2. Drag from a class handle to a handle on another class.
+3. Open **Relations** and expand the new association.
+4. Give it a name and set each endpoint’s **Multiplicity** and **Role**. Use the class names in the form to identify the two ends.
 
-## Associations and relationships
+Associations have no direction. Multiple associations can connect the same pair of classes.
 
-### Associations (Conceptual view)
-Create associations by connecting class handles.
+### Connect a class to itself
 
-Supported:
-- association
-- reflexive association (up to 4 per class)
-- associative association (class connected to an association)
-- composition (when enabled in Settings)
+Connect two handles on the same class to create a reflexive association. Set its two roles and multiplicities in Relations. Select the loop on the canvas and drag its handles to adjust its width and height. A class can have up to four reflexive associations.
 
-Association details in **Refs** support:
-- name
-- multiplicity at each end
-- role at each end
-- comment
-- focus and delete
+### Attach an association class
 
-Association and composition edges support these styles in **Refs > Style**:
-- **Straight**: direct line between endpoints.
-- **Orthogonal**: auto-routed right-angle line.
-- **Manual**: user-routed polyline with rounded bends and endpoint stubs.
+Connect a class to the handle on an existing association. This creates the dashed associative connection. Its rename button is disabled: associative connections cannot be renamed independently.
 
-Manual routing interactions:
-- Double-click an edge segment: add a handle.
-- Drag a handle: move that routing point.
-- `Alt + click` a handle (`Option + click` on macOS): remove it.
+### Use composite aggregation
 
-Reflexive associations can be resized when selected:
-- horizontal handle: adjusts loop width
-- vertical handle: adjusts loop height
+Enable **Preferences → Enable composite aggregation**, then expand an ordinary association in Relations and select **Composite aggregation**. Its name, roles, multiplicities, and comment are kept.
 
-### Composition
-- Enable via `Settings > Composite aggregation`.
-- Created by toggling **Composite aggregation** in an association item in Refs.
-- Uses association data (name, multiplicities, roles, comments) and keeps it when toggled.
-- Hidden from conceptual canvas and Refs when composition setting is disabled.
-- Reflexive associations cannot be toggled to composition.
+This preference enables creation as well as display. Disabling it hides existing composite aggregations without deleting them. Reflexive associations cannot be changed into compositions.
 
-### Relationships (Logical/Physical views)
-- Create relationships by connecting attribute/column handles.
-- Duplicate relationships between the same two attributes are blocked (direction ignored).
-- While moving classes/tables in logical/physical, relationship handles auto-switch sides to keep routing coherent.
-- Relationship details in **Refs** show source/target tables and columns, style, focus, and delete.
-- Relationship edges support these styles in **Refs > Style**:
-  - **Straight**: direct line between endpoints.
-  - **Orthogonal**: auto-routed right-angle line.
-  - **Manual**: user-routed polyline with rounded bends and direct endpoint segments (no stubs).
-- Manual routing interactions:
-  - Double-click an edge segment: add a handle.
-  - Drag a handle: move that routing point.
-  - `Alt + click` a handle (`Option + click` on macOS): remove it.
+### Create a logical or physical relationship
 
-## Notes, Areas, and Annotations
+Switch to **Logical** or **Physical** and connect an attribute/column handle to another attribute/column handle. Relationships are directional: the **Relations** panel shows the source and destination tables and columns with an arrow.
 
-### Notes
-- Disabled by default (`Settings > Notes`).
-- Notes panel allows add, rename, focus, visibility per view group, text editing, and delete.
-- Notes are draggable on the canvas.
-- Positions are stored per view and synchronized to later views until manually moved there.
+Associations are not converted automatically. Create the relationships your model needs. A second relationship between the same two attributes is blocked, even in the opposite direction.
 
-### Areas
-- Disabled by default (`Settings > Areas`).
-- Areas are colored, resizable regions for visual grouping.
-- Areas panel allows add, rename, focus, color, visibility per view group, and delete.
-- Areas render behind classes/edges and above the background.
-- Position and size are stored per view and synchronized similarly to classes/notes.
+## Work across the three views
 
-### Annotations
-- Disabled by default (`Settings > Annotations`).
-- Annotations are stored separately for conceptual, logical, and physical views.
-- Tools: Pointer, Select annotation, pen, marker, text, arrow, line, rectangle, ellipse, ink eraser, and laser pointer.
-- Open Shapes to choose an arrow, line, rectangle, or ellipse. Click the color swatch below the drawing tools for colors, stroke widths, and other tool settings.
-- More annotation actions contains duplicate, delete, PNG export, and Clear current view. Expand Keyboard shortcuts at the bottom for navigation and editing shortcuts.
-- Pointer interacts with the diagram. Other tools capture canvas input; there is no separate annotation mode.
-- Select annotation moves, resizes, recolors, duplicates, and deletes one annotation at a time. Line and arrow endpoints can be dragged independently.
-- Pen and marker support color and thickness; marker also supports opacity.
-- Text supports color, font size, wrapping, box width, optional background, padding, and border. Double-click text to edit it using Text or Select annotation. Side handles adjust wrapping width.
-- Eraser supports whole-stroke and partial erase modes.
-- Ink erasing only affects pen and marker strokes. Select text or shapes to delete them.
-- Hold Shift while drawing shapes to constrain angles/proportions, or while using the marker for a straight highlight.
-- Hold `Space` while an annotation tool is active to temporarily pan the diagram.
-- Use the wheel to zoom. Annotations scale with the diagram, so zoom in for readability.
-- The laser pointer shows a halo and fading drag trail; it does not affect saved content, exports, or undo history.
-- Toolbar Undo and Redo use the shared model history. Clear view asks for confirmation and can be undone.
-- Hide annotations temporarily hides the marks while keeping the toolbar available. Selecting a drawing tool shows them again.
-- Annotation tool settings are stored in `localStorage`.
+The three views show different aspects of the same model. Use the sidebar to move between them.
 
-## Import, save, and export
+| View | What you work with |
+| --- | --- |
+| **Conceptual** | Classes, attributes, and associations. Focus on the domain and its meaning. |
+| **Logical** | Tables and attribute relationships. Logical names are used when present. |
+| **Physical** | Tables and relationships with column types, constraints, and default values. |
 
-### Open / Save / Save As (`.mdlz`)
-- Models are local files.
-- No server-side storage.
-- `.mdlz` saves model name, classes/tables, attributes/columns, associations, relationships, notes, areas, and annotations.
-- Saved models use format version 2 for shapes and styled text boxes. Version 1 files still open; older Modelizer versions cannot open version 2 files.
-- Creating a new model resets to conceptual view and resets the viewport.
-- Opening or importing a model switches to conceptual view and runs fit view.
-- You can also drop one `.mdlz` file anywhere on the Modelizer page. Folders and multiple files are not supported.
-- Model files are read and validated before you are asked to discard unsaved changes. Canceling or opening an invalid file keeps your current model.
-- When your browser supports file handles for dropped files (such as Chrome and Edge), **Save** writes back to the dropped file; the browser may ask for permission. Otherwise, the first **Save** uses **Save As** or downloads a copy.
-- **File → Open** remains available for keyboard and mobile/tablet use.
+### Carry a layout forward
 
-### Import
-- **Java Modelizer** (`.mod`)
-- **MySQL** (`.sql`)
+Arrange the conceptual model first. In logical view, use **Sync** to copy positions and area sizes from conceptual view. In physical view, Sync copies them from logical view. Sync is unavailable in conceptual view because there is no previous phase.
 
-Import behavior:
-- unmatched attribute types are mapped to **Undefined** (`type: ''`) and reported in a warning dialog
-- if imported/opened content contains Notes, Areas, Composite aggregations, or Annotations that are currently disabled, a warning toast is shown
+Layouts can differ between views. Use Sync when you want to copy the previous phase’s arrangement again.
 
-Java Modelizer importer notes:
-- imports tables/classes, fields/attributes, positions, visibility, associations, associative associations, reflexive associations, and relationships where they can be matched
-- scales and shifts imported positions into the Modelizer canvas
-- ignores unsupported or incomplete links
+### Choose the notation
 
-MySQL importer notes:
-- focused on MySQL DDL parsing
-- imports tables, columns, common data types, defaults, nullability, unique/primary key markers, and auto-increment
-- foreign keys are imported as relationships
-- composite foreign keys are ignored
+Use **View → Operations compartment** to show or hide the empty UML operations compartment beneath class attributes.
 
-### Export PNG
-- Opens one preview from File, the sidebar, or the annotation toolbar, labeled with the active conceptual, logical, or physical view.
-- Fits the full included content, independently of canvas zoom and pan.
-- Include notes and Include areas appear only when the current view contains those items, including temporarily hidden ones, and start with current visibility. Accent colors remembers your last export choice in this browser.
-- Include annotations appears only when the current view has annotations and starts with current visibility. Enable it to include hidden marks. Laser effects are never exported.
-- Resolution offers Standard (1×) or High (2×), subject to image size limits.
-- More options offers a white or transparent background, small/medium/large margins, and an editable filename. White, medium margins, and Standard resolution are the defaults.
-- The preview updates automatically; Download PNG becomes available when the new image is ready. Export errors appear with a Try again action.
-- Transparency is shown on a checkerboard that is not included in the downloaded image. Annotation colors are preserved; check pale marks for readability.
-- Includes physical-view Default Values below the diagram. Excludes controls, annotation toolbox, toasts, and canvas grid.
-- Preview changes do not change the model or canvas settings. Saving the model continues to include all annotations.
+Use **View → Nullability notation** to choose how nullability is shown: **Null** marks nullable attributes with `N`; **Not Null** marks required attributes with `NN`; **Null as ?** appends `?` to nullable types in physical view.
 
-## View options
+In physical view, a `*` after an attribute name marks a default value. The values appear below the diagram.
 
-- **Dark mode**
-- **Background grid**
-- **Accent colors**
-- **Fullscreen**: hides sidebar and information panel.
-- **View-specific settings only**
-- **Constraints**: choose how nullable and non-nullable attributes are displayed.
+## Make the diagram readable
 
-## Shortcuts
+### Start with placement
 
-- New model: `Ctrl/Cmd + N`
-- Open model: `Ctrl/Cmd + O`
-- Save model: `Ctrl/Cmd + S`
-- Undo: `Ctrl/Cmd + Z`
-- Redo: `Ctrl/Cmd + Y` or `Ctrl/Cmd + Shift + Z`
-- Add class/table: `Ctrl+Alt+C` / `Ctrl+Opt+C`
-- Add attribute/column to selected class/table: `Ctrl+Alt+A` / `Ctrl+Opt+A`
-- Delete selection: `Delete` / `Backspace`
-- Annotation tools when annotations are visible: `V` pointer, `S` select annotation, `P` pen, `M` marker, `T` text, `E` ink eraser, `L` laser
-- Select annotation: Tab to a mark and press Enter to select it; arrow keys nudge it (Shift moves by 10 units); `Ctrl/Cmd+D` duplicates it.
-- Text annotation selected: `Enter` edits selected text, `Delete` / `Backspace` deletes it
-- Text annotation editor: `Enter` commits, `Shift+Enter` inserts a newline, `Esc` cancels
-- Annotation tools: `Esc` cancels a gesture or clears selection/editing first, then returns to Pointer
-- Annotation tools: hold `Space` and drag to temporarily pan the diagram
+Drag classes and tables to give their connections room. Leave extra space for long association names, roles, and multiplicities. Use a panel item’s focus button to find an element in a large model.
 
-## Unsaved changes and persistence
+For a classroom discussion, **View → Fullscreen** hides the sidebar and information panel. Background grid and accent colors can also be toggled in View. **Preferences → Dark mode** changes the editor’s appearance; PNG exports use light styling.
 
-- Dirty state is indicated with `*` next to model name.
-- Browser unload warning appears if there are unsaved changes.
-- UI preferences are stored in `localStorage`:
-  - background
-  - accent colors
-  - operations compartment
-  - constraint display mode
-  - confirmation dialogs
-  - PNG accent export
-  - view-specific settings toggle
-  - fullscreen
-  - composition enabled
-  - notes enabled
-  - areas enabled
-  - annotations enabled
-  - annotation tool settings
+### Choose a line style
 
-## Current defaults
+Expand an association or relationship in **Relations** and choose **Line style**:
 
-- View: conceptual
-- Background: enabled
-- Accent colors: enabled
-- Conceptual operations compartment: disabled
-- Constraint display: Not Null
-- Confirmation dialogs: enabled
-- View-specific settings only: disabled
-- Fullscreen: disabled
-- Composite aggregation: disabled
-- Notes: disabled
-- Areas: disabled
-- Annotations: disabled
+- **Orthogonal** routes the line with right-angle bends and is a useful starting point.
+- **Straight** connects the endpoints directly.
+- **Manual** lets you place the bends yourself.
 
-## Limitations
+For a manual line, double-click a segment to add a routing handle, then drag it into place. **Alt + click** a handle to remove it (**Option + click** on macOS).
 
-- No automated correctness checks.
-- No automatic conversion from associations to relationships.
-- Export format is PNG only.
-- MySQL import ignores composite foreign keys.
+### Untangle crowded connections
+
+For parallel associations, try orthogonal routing first and leave room between the classes for labels. Move the classes or use manual routing if several labels compete for the same space. Selected reflexive loops have their own width and height handles.
+
+Modelizer does not guarantee that every label avoids every other element. Very dense models may need wider spacing, a different line style, or a layout tailored to the view.
+
+## Add notes and drawings
+
+### Leave an explanation in the model
+
+Enable **View → Notes**, then use the **Notes** panel to add a note and edit its text. Drag the note into place. Its visibility settings let you choose the views in which it appears.
+
+### Group related elements
+
+Enable **View → Areas**, then add an area from the **Areas** panel. Give it a name and color, and move or resize it on the canvas to surround a group. Areas sit behind the model; their position and size can differ between views.
+
+### Draw during a discussion
+
+1. Enable **View → Annotations** to show the drawing toolbar.
+2. Choose **Pen**, **Marker**, or **Text**, or open **Shapes** for arrows, lines, rectangles, and ellipses.
+3. Use the color swatch beneath the tools to adjust color, stroke width, and other settings.
+4. Return to **Pointer** to interact with the model. Hold **Space** and drag to pan temporarily while using a drawing tool.
+
+Hold **Shift** while drawing a shape to constrain its angle or proportions, or while using Marker for a straight highlight. Annotations belong to the current view and are saved with the model.
+
+### Edit or remove a mark
+
+Choose **Select annotation**, then select a mark to move, resize, recolor, duplicate, or delete it. Drag a line or arrow’s endpoints independently. Double-click a text annotation to edit it; its side handles adjust wrapping width.
+
+The ink eraser affects only pen and marker strokes. Select text and shapes to delete them. **More annotation actions → Clear current view** removes the current view’s annotations after confirmation and can be undone.
+
+Use **Hide annotations** to conceal marks temporarily. The laser pointer is useful for pointing things out: its trail fades and is never saved or exported.
+
+## Save, import and export
+
+### Keep an editable copy
+
+Choose **File → Save** to save a `.mdlz` file containing the model, its layouts, notes, areas, and annotations. **Save As** creates another copy. The `*` beside the model name means there are unsaved changes.
+
+Models are local files; there is no server-side model storage. Save before closing the browser. Editor preferences are remembered in this browser separately from your model.
+
+### Open a model
+
+Choose **File → Open**, or drop one `.mdlz` file onto Modelizer. Opening a file switches to conceptual view and fits the model into view. An invalid file leaves the current model intact.
+
+If a file contains notes, areas, annotations, or composite aggregations that your settings hide, a dialog offers to reveal them. Enabling composite aggregation also makes it available for creation.
+
+Some browsers can save back to an opened or dropped file. Others prompt for a location or download a copy. Current models use format version 2; version 1 files still open, but older Modelizer versions cannot open version 2 files.
+
+### Bring in an existing design
+
+Use **File → Import** for Java Modelizer (`.mod`) or MySQL (`.sql`) files. Review the result after importing. Unrecognized attribute types become **Undefined** and are reported in a warning.
+
+Java Modelizer import keeps supported classes, attributes, positions, and connections. Unsupported or incomplete links may be skipped. MySQL import reads table definitions and foreign keys; composite foreign keys are ignored.
+
+### Export an image
+
+1. Switch to the view you want to share, then choose **Export PNG** from File or the sidebar.
+2. In the preview, choose whether to include notes, areas, and annotations. These options appear when the current view contains those items, even if they are hidden on the canvas.
+3. Choose **Standard (1×)** or **High (2×)** resolution. Open **More options** to set a white or transparent background, margins, and filename.
+4. Wait for the preview to update, then choose **Download PNG**.
+
+The export fits the included content regardless of your current zoom or pan. It omits the grid, editor controls, and laser effects. A transparency checkerboard is only a preview aid. Export settings do not change the model or its canvas settings.
+
+## Solve common problems
+
+### I cannot find a class or connection
+
+Check the active view first: conceptual view shows associations; logical and physical views show relationships. Check the element’s **Visibility** settings, then use its focus button in the panel to locate it.
+
+For missing notes, areas, or drawings, check **View**. For composite aggregations, check **Preferences → Enable composite aggregation**.
+
+### An editing field or color button is missing
+
+**Preferences → Only show fields for current view** hides fields that do not apply to the active view. Switch views or disable that preference. Color buttons are hidden when **View → Accent colors** is off.
+
+### Dragging draws instead of moving the model
+
+Choose **Pointer** in the annotation toolbar. Other drawing tools capture canvas input. **Esc** cancels the current gesture or selection first; press it again to return to Pointer if needed.
+
+### I made a mistake
+
+Use **Edit → Undo** and **Edit → Redo**. Annotation edits share the model’s history. **Preferences → Confirm before deleting** adds a confirmation before deleting model elements.
+
+### A PNG is missing something
+
+Check the active view and the preview’s inclusion options. Hidden notes, areas, and annotations can be included without showing them on the editor canvas. Use **Try again** if the preview reports an export error.
+
+### My changes were not saved
+
+Look for the `*` beside the model name. Use **Save**, and check whether the browser asks for file permission or downloads a new copy. A PNG is an image, not an editable backup; keep a `.mdlz` file as well.
+
+## Keyboard shortcuts
+
+Use **Cmd** instead of **Ctrl** for the shortcuts shown as Ctrl/Cmd. On macOS, **Option** is the Alt key.
+
+| Action | Shortcut |
+| --- | --- |
+| New model | `Ctrl/Cmd + N` |
+| Open model | `Ctrl/Cmd + O` |
+| Save model | `Ctrl/Cmd + S` |
+| Undo | `Ctrl/Cmd + Z` |
+| Redo | `Ctrl/Cmd + Y` or `Ctrl/Cmd + Shift + Z` |
+| Add class or table | `Ctrl + Alt + C` |
+| Add attribute or column to the selected class/table | `Ctrl + Alt + A` |
+| Delete selection | `Delete` / `Backspace` |
+
+### Annotation tools
+
+With annotations visible and while not typing: **V** selects Pointer, **S** Select annotation, **P** Pen, **M** Marker, **T** Text, **E** Ink eraser, and **L** Laser.
+
+| Action | Shortcut |
+| --- | --- |
+| Temporarily pan with a drawing tool active | Hold `Space` and drag |
+| Select a focused annotation | `Tab` to a mark, then `Enter` |
+| Nudge a selected annotation | Arrow keys; hold `Shift` for 10-unit steps |
+| Duplicate a selected annotation | `Ctrl/Cmd + D` |
+| Edit selected text | `Enter` |
+| Confirm text / insert a new line | `Enter` / `Shift + Enter` |
+| Cancel text editing | `Esc` |
+| Cancel a gesture or clear selection, then return to Pointer | `Esc` |
+
+### Manual lines
+
+Double-click a segment to add a routing handle. Drag a handle to move it; **Alt + click** (**Option + click** on macOS) removes it.

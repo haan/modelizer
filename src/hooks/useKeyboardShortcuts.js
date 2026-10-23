@@ -28,7 +28,9 @@ export function useKeyboardShortcuts({
       /Mac|iPhone|iPad|iPod/.test(navigator.platform)
 
     const handleKeyDown = (event) => {
-      if (event.defaultPrevented) {
+      // Radix portals do not set aria-modal. Ignore model commands while a
+      // dialog is open, including focus temporarily outside it or in a portal.
+      if (event.defaultPrevented || document.querySelector('[role="dialog"]:not([data-state="closed"]), [role="alertdialog"]:not([data-state="closed"])')) {
         return
       }
       const key = event.key?.toLowerCase()

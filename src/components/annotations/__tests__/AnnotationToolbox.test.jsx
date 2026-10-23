@@ -186,3 +186,23 @@ describe('AnnotationToolbox', () => {
     expect(screen.queryByText('Clear annotations?')).not.toBeInTheDocument()
   })
 })
+
+it('groups pointer and keyboard slider gestures and ends them on blur or unmount', () => {
+ const start=vi.fn(),end=vi.fn();
+ const {unmount}=renderToolbox({activeTool:'text',onStyleEditStart:start,onStyleEditEnd:end});
+ fireEvent.click(screen.getByRole('button',{name:'Text options'}));
+ const slider=screen.getByRole('slider',{name:'Font size'});
+ fireEvent.pointerDown(slider);
+ fireEvent.change(slider,{target:{value:16}});
+ fireEvent.change(slider,{target:{value:20}});
+ fireEvent.pointerUp(window);
+ expect(start).toHaveBeenCalledTimes(1);expect(end).toHaveBeenCalledTimes(1);
+ fireEvent.keyDown(slider,{key:'ArrowRight'});
+ fireEvent.keyDown(slider,{key:'ArrowRight',repeat:true});
+ fireEvent.keyUp(slider,{key:'ArrowRight'});
+ expect(start).toHaveBeenCalledTimes(2);expect(end).toHaveBeenCalledTimes(2);
+ fireEvent.pointerDown(slider);fireEvent.blur(slider);
+ expect(end).toHaveBeenCalledTimes(3);
+ fireEvent.pointerDown(slider);unmount();
+ expect(end).toHaveBeenCalledTimes(4);
+});

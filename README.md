@@ -1,106 +1,105 @@
 # Modelizer
 
-Modelizer is a lightweight database modeling tool developed for teaching the database modeling process (initially for courses in Luxembourg).
+Modelizer is a lightweight database modeling tool for teaching and discussing the database modeling process, originally developed for courses in Luxembourg.
 
-- Online version: https://www.modelizer.lu/
-- Download: GitHub Releases
-- Docker image: https://hub.docker.com/r/haanlaurent/modelizer
+[Use Modelizer online](https://www.modelizer.lu/) · [Download for Windows](https://github.com/haan/modelizer/releases) · [Docker image](https://hub.docker.com/r/haanlaurent/modelizer)
 
-## Run locally (Windows)
+## Model in three views
 
-1. Download the latest release from the GitHub Releases page.
+| View | Purpose |
+| --- | --- |
+| **Conceptual** | Describe the domain with classes, attributes, associations, roles, and multiplicities. |
+| **Logical** | Define tables and relationships between attributes, using logical names where needed. |
+| **Physical** | Specify column types, nullability, uniqueness, auto-increment, and default values. |
+
+Conceptual models support parallel, reflexive, and associative associations, as well as composite aggregation. Enable **Preferences → Enable composite aggregation** to create and display composite aggregations.
+
+Modelizer leaves modeling decisions to the learner. It does not validate modeling correctness or automatically generate relationships from associations.
+
+## Get started
+
+1. Open Modelizer and choose **File → New**.
+2. In conceptual view, add classes and attributes from the **Classes** panel.
+3. Connect class handles to create associations, then edit their names, roles, and multiplicities in **Relations**.
+4. Switch to logical or physical view to define relationships between attributes or columns and add implementation details.
+5. Save an editable `.mdlz` file. Export a PNG when you need an image to share.
+
+Open **Help** in the application for task-based instructions, troubleshooting, and keyboard shortcuts. The [same guide is available in this repository](src/content/help.md).
+
+## Save, import, and share
+
+**Save and reopen models.** Use **File → Save** or **Save As** to keep a `.mdlz` file containing the model, layouts, notes, areas, and annotations. Reopen it with **File → Open** or by dropping one file onto the application. Depending on browser support and file permissions, Save writes back to the chosen file, prompts for a location, or downloads a copy.
+
+Models are stored in local files, with no server-side model storage. The `*` beside the model name indicates unsaved changes. Editor preferences are remembered separately in the browser. Current saves use file format version 2; version 1 files still open, but older Modelizer versions cannot open version 2 files.
+
+**Import existing designs.** Import Java Modelizer (`.mod`) or MySQL (`.sql`) files through **File → Import**. Review the result: unsupported types are reported and mapped to Undefined, unsupported Java Modelizer links may be skipped, and composite MySQL foreign keys are ignored.
+
+**Export an image.** **Export PNG** previews the full current view and lets you choose whether to include notes, areas, annotations, and accent colors. Choose standard or high resolution, a white or transparent background, margins, and a filename. Export settings do not change the model. Keep a `.mdlz` file as your editable copy; PNG is for sharing and presentation.
+
+## Teach and discuss
+
+Use **View → Notes** for explanations and **View → Areas** to group related elements. Enable **View → Annotations** to draw with a pen or marker, add text and shapes, or point things out with a temporary laser. Annotations are saved separately for each modeling view; laser effects are never saved or exported.
+
+Use **View** to adjust diagram content, notation, the background grid, accent colors, and fullscreen display. **Preferences** controls editor behavior and dark mode. PNG exports use light styling while preserving user-selected class, area, and annotation colors.
+
+## Run locally on Windows
+
+1. Download the release ZIP from [GitHub Releases](https://github.com/haan/modelizer/releases).
 2. Unzip it anywhere on your computer.
-3. Double-click `modelizer.bat`
-4. Open your browser at http://localhost:8080
+3. Double-click `modelizer.bat` to start the local server and open your browser.
+4. If the browser does not open automatically, visit [localhost:8080](http://localhost:8080).
 
-The release includes a tiny local webserver based on miniserve:
-https://github.com/svenstaro/miniserve
+The release includes a small local webserver based on [miniserve](https://github.com/svenstaro/miniserve). Close the server window when you are finished.
 
 ## Run with Docker
 
-Run the latest published image from Docker Hub:
-https://hub.docker.com/r/haanlaurent/modelizer
+Run the latest published [Docker image](https://hub.docker.com/r/haanlaurent/modelizer):
 
 ```bash
 docker run --rm -p 8080:80 haanlaurent/modelizer:latest
 ```
 
-Then open: http://localhost:8080
+Open [localhost:8080](http://localhost:8080). To use a specific release, replace `latest` with its published version tag.
 
-Run a specific version tag:
-
-```bash
-docker run --rm -p 8080:80 haanlaurent/modelizer:<version>
-```
-
-Build and run locally from this repository:
+To build and run the image from this repository:
 
 ```bash
 docker build -t modelizer:local .
 docker run --rm -p 8080:80 modelizer:local
 ```
 
-## Supported modeling elements
+## Development
 
-Modelizer supports:
-- different modeling levels:
-  - conceptual model (CDM)
-  - logical model (LDM)
-  - physical model (PDM)
-- classes
-- associations
-- associative associations
-- reflexive associations
-- composite aggregations (enable in menu first)
-- multiplicities
-- attributes
-- attribute types
-- default values
-- constraints: Null, Unique, Auto Increment
-- import from Java Modelizer files
+Use **Node.js 26.10.0 or a later 26.x release** and npm. The repository pins its development version in [.nvmrc](.nvmrc).
 
-## What Modelizer does (and does not do)
+From the repository root, install dependencies and start the development server:
 
-Modelizer is intentionally a teaching tool that simplifies drawing and defining models.
-It contains no validation logic and does not generate relationships automatically from associations.
-It does not help you make the "right" modeling decisions — you do.
+```bash
+npm ci
+npm run dev
+```
 
-## Export & storage
+Open the local URL printed by Vite.
 
-- Export format: PNG
-- Models must be downloaded manually (no server-side storage)
-- Settings are stored in browser localStorage
+Run lint and unit tests:
 
-## Teaching annotations
+```bash
+npm test
+```
 
-Enable **Settings > Annotations** to show the annotation toolbar. Use **Pointer**
-to interact with the diagram, or choose a drawing tool to mark it. The toolbar
-includes pen, highlighter, text, arrows, lines, rectangles, ellipses, ink erasing,
-and a temporary laser pointer. **Select annotation** moves, resizes, styles,
-duplicates, and deletes individual annotations. Text supports wrapping and an
-optional background, padding, and border.
+Build and preview the production app:
 
-Hold **Space** and drag to pan while using an annotation tool; use the wheel to
-zoom. **Shift** constrains shapes and draws straight highlights. Annotations scale
-with the diagram and are saved separately for each model view. The laser is never
-saved or exported.
+```bash
+npm run build:ci
+npm run preview
+```
 
-**Export PNG…** previews the full current view with options for annotations,
-notes, areas, accent colors, and resolution. More options offers white or
-transparent backgrounds, margins, and an editable filename. Include annotations
-appears only for marked views and can include marks hidden on the canvas.
-Preview settings do not alter the model; normal saving includes all annotations. Saved models now use file format version 2;
-version 1 files still open, but older Modelizer versions cannot open version 2.
+`build:ci` writes the web app to `dist/`. Use `npm run build` when you also want to refresh `bundle/app/dist/` for the Windows release bundle.
 
-## Appearance
-
-Use **View > Dark mode** to switch the entire editor between light and dark.
-Light is the default; your choice is remembered in this browser independently of
-your model files. PNG exports always use light styling. User-selected class,
-area, and annotation colors stay unchanged in either theme.
+The [examples folder](examples/) contains five conceptual smoke-test models of increasing complexity. Follow the [smoke-test guide](examples/README.txt) for manual checks; the largest model is an intentional readability stress test, not a claim that every layout already renders perfectly.
 
 ## Acknowledgments
 
-- ChartDB (interface design inspiration): https://github.com/chartdb/chartdb/
-- Java Modelizer by Bob Fisch: https://modelizer.fisch.lu/
-- miniserve (local webserver used in the release bundle): https://github.com/svenstaro/miniserve
+- [Java Modelizer](https://modelizer.fisch.lu/) by Bob Fisch — Modelizer’s predecessor.
+- [ChartDB](https://github.com/chartdb/chartdb/) — interface design inspiration.
+- [miniserve](https://github.com/svenstaro/miniserve) — the local webserver used in the Windows release bundle.

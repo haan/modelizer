@@ -208,27 +208,25 @@ export const getHiddenContentState = ({
   showAreas = true,
   showCompositionAggregation = false,
   showAnnotations = true,
+  annotationsVisible = true,
 } = {}) => {
-  const hasNotes = nodes.some((node) => node.type === NOTE_NODE_TYPE)
-  const hasAreas = nodes.some((node) => node.type === AREA_NODE_TYPE)
+  // Models open in conceptual view. Only report content a display setting hides there.
+  const hasNotes = nodes.some((node) => node.type === NOTE_NODE_TYPE && normalizeVisibility(node.data?.visibility).conceptual)
+  const hasAreas = nodes.some((node) => node.type === AREA_NODE_TYPE && normalizeVisibility(node.data?.visibility).conceptual)
   const hasCompositions = edges.some(
     (edge) =>
       edge.type === COMPOSITION_EDGE_TYPE ||
       edge.data?.type === 'composition' ||
       edge.sourceHandle === 'composition-source',
   )
-  const hasAnnotations =
-    annotations != null &&
-    typeof annotations === 'object' &&
-    Object.values(annotations).some(
-      (view) => Array.isArray(view?.items) && view.items.length > 0,
-    )
+  const hasAnnotations = Array.isArray(annotations?.[VIEW_CONCEPTUAL]?.items) &&
+    annotations[VIEW_CONCEPTUAL].items.length > 0
 
   return {
     hiddenNotes: hasNotes && !showNotes,
     hiddenAreas: hasAreas && !showAreas,
     hiddenCompositions: hasCompositions && !showCompositionAggregation,
-    hiddenAnnotations: hasAnnotations && !showAnnotations,
+    hiddenAnnotations: hasAnnotations && (!showAnnotations || !annotationsVisible),
   }
 }
 
@@ -379,6 +377,7 @@ export function useFileActions({
   showAreas = true,
   showCompositionAggregation = false,
   showAnnotations = true,
+  annotationsVisible = true,
   onHiddenContent,
   onImportWarning,
   onLoadAnnotations,
@@ -463,6 +462,7 @@ export function useFileActions({
       return
     }
     if (
+      !prevNodes.some((node) => node.dragging || node.resizing) &&
       !hasMeaningfulNodeChange(prevNodes, nodes) &&
       !hasMeaningfulEdgeChange(prevEdges, edges)
     ) {
@@ -498,13 +498,7 @@ export function useFileActions({
       onModelLoaded?.({ nodes: nextNodes, edges: nextEdges })
 
       if (onHiddenContent) {
-        const {
-          hiddenNotes,
-          hiddenAreas,
-          hiddenCompositions,
-          hiddenAnnotations,
-        } =
-          getHiddenContentState({
+        onHiddenContent(getHiddenContentState({
             nodes: nextNodes,
             edges: nextEdges,
             annotations: nextAnnotations,
@@ -512,20 +506,8 @@ export function useFileActions({
             showAreas,
             showCompositionAggregation,
             showAnnotations,
-          })
-        if (
-          hiddenNotes ||
-          hiddenAreas ||
-          hiddenCompositions ||
-          hiddenAnnotations
-        ) {
-          onHiddenContent({
-            hiddenNotes,
-            hiddenAreas,
-            hiddenCompositions,
-            hiddenAnnotations,
-          })
-        }
+            annotationsVisible,
+          }))
       }
     },
     [
@@ -538,6 +520,7 @@ export function useFileActions({
       showNotes,
       showCompositionAggregation,
       showAnnotations,
+      annotationsVisible,
       onHiddenContent,
       onLoadAnnotations,
       onModelLoaded,
@@ -671,7 +654,12 @@ export function useFileActions({
       requestDiscardChanges(commit)
     } catch (error) {
       if (current() && error?.name !== 'AbortError') {
-        onFileError?.(error?.message || 'The model could not be opened.')
+        const message = error?.message || 'The model could not be opened.'
+        if (error?.code === 'UNSUPPORTED_MODEL_VERSION') {
+          onFileError?.(message, { code: error.code, fileVersion: error.fileVersion, supportedVersion: error.supportedVersion })
+        } else {
+          onFileError?.(message)
+        }
       }
     } finally {
       if (!awaitingConfirmation) finish()

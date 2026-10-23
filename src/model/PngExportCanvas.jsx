@@ -9,6 +9,7 @@ import {
 import AnnotationLayer from '../components/annotations/AnnotationLayer.jsx'
 import DefaultValuesPanel from '../components/flow/overlays/DefaultValuesPanel.jsx'
 import { VIEW_PHYSICAL } from './constants.js'
+import AssociationLabelMask from '../components/flow/labels/AssociationLabelMask.jsx'
 
 const noop = () => {}
 
@@ -77,6 +78,7 @@ export default function PngExportCanvas({
           proOptions={{ hideAttribution: true }}
         >
           <ExportReady hasNodes={nodes.some((node) => !node.hidden)} onReady={onInit} />
+          <AssociationLabelMask />
           {showAnnotations ? (
             <AnnotationLayer
               annotations={annotations}
