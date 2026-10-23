@@ -29,7 +29,7 @@ describe('editor theme control', () => {
     const nodeCount = container.querySelectorAll('.react-flow__node').length
     const viewport = container.querySelector('.react-flow__viewport')
     const transform = viewport.style.transform
-    const view = screen.getByRole('menuitem', { name: 'View', exact: true })
+    const view = screen.getByRole('menuitem', { name: 'Preferences', exact: true })
     view.focus()
     await user.keyboard('{ArrowDown}')
     const toggle = await screen.findByRole('menuitemcheckbox', { name: 'Dark mode' })
@@ -59,7 +59,7 @@ describe('editor theme control', () => {
     await user.clear(name)
     await user.paste('Theme regression model')
     await user.keyboard('{Enter}')
-    await user.click(screen.getByRole('menuitem', { name: 'View', exact: true }))
+    await user.click(screen.getByRole('menuitem', { name: 'Preferences', exact: true }))
     await user.click(screen.getByRole('menuitemcheckbox', { name: 'Dark mode' }))
     expect(screen.getByText('Theme regression model')).toBeInTheDocument()
     expect(screen.getByText('*', { exact: true })).toBeInTheDocument()
@@ -79,16 +79,16 @@ describe('consistent menu preferences', () => {
     const user = userEvent.setup()
     render(<App />)
     const preferences = [
-      ['Settings', 'Composite aggregation', 'showCompositionAggregation'],
-      ['Settings', 'Operations compartment', 'showConceptualOperationsCompartment'],
-      ['Settings', 'Notes', 'showNotes'],
-      ['Settings', 'Areas', 'showAreas'],
-      ['Settings', 'Annotations', 'showAnnotations'],
-      ['Settings', 'Confirmation dialogs', 'confirmDelete'],
+      ['Preferences', 'Enable composite aggregation', 'showCompositionAggregation'],
+      ['View', 'Operations compartment', 'showConceptualOperationsCompartment'],
+      ['View', 'Notes', 'showNotes'],
+      ['View', 'Areas', 'showAreas'],
+      ['View', 'Annotations', 'showAnnotations'],
+      ['Preferences', 'Confirm before deleting', 'confirmDelete'],
       ['View', 'Background grid', 'showBackground'],
       ['View', 'Accent colors', 'showAccentColors'],
       ['View', 'Fullscreen', 'showFullscreen'],
-      ['View', 'View-specific settings only', 'viewSpecificSettingsOnly'],
+      ['Preferences', 'Only show fields for current view', 'viewSpecificSettingsOnly'],
     ]
     for (const [menu, label, key] of preferences) {
       const trigger = screen.getByRole('menuitem', { name: menu, exact: true })
@@ -110,7 +110,7 @@ describe('consistent menu preferences', () => {
     render(<App />)
     async function openConstraints() {
       await user.click(screen.getByRole('menuitem', { name: 'View', exact: true }))
-      screen.getByRole('menuitem', { name: 'Constraints', exact: true }).focus()
+      screen.getByRole('menuitem', { name: 'Nullability notation', exact: true }).focus()
       await user.keyboard('{ArrowRight}')
       await screen.findByRole('menuitemradio', { name: 'Null', exact: true })
     }

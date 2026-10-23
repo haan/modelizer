@@ -61,6 +61,37 @@ describe.each(['conceptual', 'logical', 'physical'])('exclusive focus in %s view
 })
 
 describe('useModelState model name history', () => {
+  it('does not add an undo step or discard redo merely by entering and leaving a name field', async () => {
+    const { result } = renderModelState()
+    act(() => result.current.setModelName('Saved title'))
+    await flushHistoryPush()
+    act(() => result.current.onUndo())
+    act(() => window.dispatchEvent(new CustomEvent('model-text-edit-start')))
+    await flushHistoryPush()
+    act(() => window.dispatchEvent(new CustomEvent('model-text-edit-end')))
+    expect(result.current.canUndo).toBe(false)
+    expect(result.current.canRedo).toBe(true)
+  })
+
+  it('undoes class creation once even when automatic name editing starts in a later frame', async () => {
+    const { result } = renderModelState()
+    let id
+    act(() => { id = result.current.onAddClass() })
+    await flushHistoryPush()
+    act(() => window.dispatchEvent(new CustomEvent('model-text-edit-start')))
+    await flushHistoryPush()
+    act(() => {
+      result.current.onNodesChange([{ id, type: 'dimensions', dimensions: { width: 180, height: 77 } }])
+      result.current.onRenameClass(id, 'Class1') // Escape restores the unchanged default name.
+      window.dispatchEvent(new CustomEvent('model-text-edit-end'))
+    })
+    act(() => result.current.onUndo())
+    expect(result.current.nodes).toHaveLength(0)
+    expect(result.current.canUndo).toBe(false)
+    act(() => result.current.onRedo())
+    expect(result.current.nodes.map(node => node.id)).toEqual([id])
+  })
+
   it('undoes and redoes model renames', async () => {
     const { result } = renderModelState()
 
@@ -93,13 +124,13 @@ describe('useModelState model name history', () => {
       window.dispatchEvent(new CustomEvent('model-text-edit-start'))
     })
 
-    act(() => {
-      result.current.setModelName('R')
-      result.current.setModelName('Re')
-      result.current.setModelName('Renamed model')
-      window.dispatchEvent(new CustomEvent('model-text-edit-end'))
-    })
     await flushHistoryPush()
+    expect(result.current.canUndo).toBe(false)
+    for (const name of ['R', 'Re', 'Renamed model']) {
+      act(() => result.current.setModelName(name))
+      await flushHistoryPush()
+    }
+    act(() => window.dispatchEvent(new CustomEvent('model-text-edit-end')))
 
     expect(result.current.modelName).toBe('Renamed model')
 
@@ -108,6 +139,9 @@ describe('useModelState model name history', () => {
     })
 
     expect(result.current.modelName).toBe('Untitled model')
+    expect(result.current.canUndo).toBe(false)
+    act(() => result.current.onRedo())
+    expect(result.current.modelName).toBe('Renamed model')
   })
 })
 

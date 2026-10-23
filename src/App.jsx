@@ -9,6 +9,7 @@ import {
   Controls,
 } from '@xyflow/react'
 import { edgeTypes, nodeTypes } from './flowTypes.js'
+import AssociationLabelMask from './components/flow/labels/AssociationLabelMask.jsx'
 import {
   ConfirmDiscardDialog,
   DeleteDialog,
@@ -1023,10 +1024,11 @@ function App() {
                   maxZoom={3}
                   defaultEdgeOptions={{ interactionWidth: 20 }}
                 >
+                  <AssociationLabelMask />
                   <div data-no-export="true">
                     <Controls position="bottom-right" />
                   </div>
-                  {showBackground ? <Background gap={16} size={1} color="rgb(var(--color-grid))" /> : null}
+                  {showBackground ? <Background gap={16} size={1} color="rgb(var(--color-grid) / 0.85)" /> : null}
                   {showAnnotations ? (
                     <>
                       {annotationsVisible && <AnnotationLayer

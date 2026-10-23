@@ -6,6 +6,35 @@ import ModelContentDialog from '../ModelContentDialog.jsx'
 
 afterEach(cleanup)
 
+it('explains that revealing compositions also enables their creation', () => {
+  const onReveal = vi.fn(), onDismiss = vi.fn()
+  render(<ModelContentDialog report={{ hiddenCompositions: true }} enabled={{}} onDismiss={onDismiss} onReveal={onReveal} />)
+  expect(screen.getByRole('dialog', { name: 'Enable composite aggregation?' })).toHaveTextContent('allow you to create them')
+  expect(onReveal).not.toHaveBeenCalled()
+  fireEvent.click(screen.getByRole('button', { name: 'Enable composite aggregation', exact: true }))
+  expect(onReveal.mock.calls).toEqual([['compositions']])
+  expect(onDismiss).toHaveBeenCalledOnce()
+})
+
+it('distinguishes enabling composition from revealing other hidden content', () => {
+  const onReveal = vi.fn(), onDismiss = vi.fn()
+  render(<ModelContentDialog report={{ hiddenNotes: true, hiddenCompositions: true, hiddenAnnotations: true }}
+    enabled={{}} onDismiss={onDismiss} onReveal={onReveal} />)
+  expect(screen.getByRole('dialog')).toHaveTextContent('notes and annotations hidden by your display settings')
+  expect(screen.getByRole('dialog')).toHaveTextContent('Composite aggregation is disabled.')
+  fireEvent.click(screen.getByRole('button', { name: 'Enable and show all' }))
+  expect(onReveal.mock.calls).toEqual([['notes'], ['compositions'], ['annotations']])
+  expect(onDismiss).toHaveBeenCalledOnce()
+})
+
+it('leaves composition disabled when the feature prompt is declined', () => {
+  const onReveal = vi.fn(), onDismiss = vi.fn()
+  render(<ModelContentDialog report={{ hiddenCompositions: true }} enabled={{}} onDismiss={onDismiss} onReveal={onReveal} />)
+  fireEvent.click(screen.getByRole('button', { name: 'Keep disabled' }))
+  expect(onReveal).not.toHaveBeenCalled()
+  expect(onDismiss).toHaveBeenCalledOnce()
+})
+
 it('provides a persistent, actionable unsupported-format dialog with a separate close control', () => {
   const onOpenChange = vi.fn()
   render(<FileErrorDialog error={{ open: true, code: 'UNSUPPORTED_MODEL_VERSION', fileVersion: 3, supportedVersion: 2 }} onOpenChange={onOpenChange} />)

@@ -1,6 +1,7 @@
 import { createRoot } from 'react-dom/client'
 import { toPng } from 'html-to-image'
 import PngExportCanvas from './PngExportCanvas.jsx'
+import { prepareAssociationLabelsForExport } from '../components/flow/labels/associationLabelMask.js'
 import {
   getPngExportContentBounds,
   getPngExportDimensions,
@@ -119,6 +120,7 @@ export async function exportFlowPng({
 
   try {
     const flow = await waitForExportInitialization(initializedPromise)
+    if (document.fonts?.ready) await waitForExportInitialization(document.fonts.ready)
     await waitForFrame()
     await waitForFrame()
 
@@ -153,6 +155,7 @@ export async function exportFlowPng({
     container.style.height = `${exportHeight}px`
     const pixelRatio = getPngExportPixelRatio(width, exportHeight, { baseRatio: resolution === 'high' ? 2 : 1 })
 
+    prepareAssociationLabelsForExport(container)
     return await toPng(container, {
       backgroundColor,
       filter: (node) =>

@@ -2,8 +2,9 @@ CONCEPTUAL SMOKE MODELS
 
 Open the .mdlz files with File > Open. These are ordinary version-2 Modelizer
 files, not imports or screenshots. Only conceptual visibility is enabled.
-Enable notes, areas, annotations and composite aggregations when prompted or
-through View settings. Display preferences belong to the application, not the
+Show notes, areas and annotations through View; enable composite aggregation
+through Preferences > Enable composite aggregation, or accept the opening prompt.
+These preferences belong to the application, not the
 model file. Test with the operations compartment both on and off.
 
 01-library-basics.mdlz
@@ -62,13 +63,16 @@ REPEATABLE PASS
    attributes, then undo; endpoints must stay on the current class boundary.
 4. Select an association, edit a manual route, resize a loop and undo each
    completed gesture once. Dashed attachment points must follow their base path.
-5. Toggle notes/areas/annotations and composite aggregation visibility. Content
+5. Toggle notes/areas/annotations and the composite aggregation feature. Content
    must return intact. Annotations must align during zoom and pan.
 6. Edit text and erase a pen stroke; undo. Use the laser, save and reopen: laser
    trails must never persist. No laser data is deliberately stored in fixtures.
 7. Export PNG at both resolutions with notes, areas and annotations included,
    even after hiding them on the canvas. Inspect negative-coordinate content,
    outer labels, arrowheads, pale marks, text boxes and image pixel dimensions.
+   Try white and transparent backgrounds: association names should have no
+   white rectangles, and crossing association lines should have gaps behind
+   the text. Check the same names while panning/zooming and after renaming.
 8. Save As a working copy outside examples/, reopen it and compare content.
    Keep these generated baselines unchanged for repeatable comparisons.
 

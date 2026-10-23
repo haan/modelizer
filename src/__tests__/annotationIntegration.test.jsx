@@ -109,10 +109,10 @@ describe('annotation editor integration', () => {
     expect(screen.queryByRole('dialog')).not.toBeInTheDocument()
   })
 
-  it('remembers accent colors from the export dialog without a duplicate Settings control', async () => {
+  it('remembers accent colors from the export dialog without a duplicate Preferences control', async () => {
     const user = userEvent.setup()
     render(<App />)
-    await user.click(screen.getByRole('menuitem', { name: 'Settings', exact: true }))
+    await user.click(screen.getByRole('menuitem', { name: 'Preferences', exact: true }))
     expect(screen.queryByRole('menuitemcheckbox', { name: 'Accent colors in PNG exports' })).not.toBeInTheDocument()
     await user.keyboard('{Escape}')
     await user.click(screen.getByRole('menuitem', { name: 'File', exact: true }))
