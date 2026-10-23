@@ -1,5 +1,5 @@
-import { cleanup, render, screen } from '@testing-library/react'
-import { afterEach, describe, expect, it } from 'vitest'
+import { cleanup, fireEvent, render, screen, within } from '@testing-library/react'
+import { afterEach, describe, expect, it, vi } from 'vitest'
 
 import { VIEW_LOGICAL, VIEW_PHYSICAL } from '../../../../model/constants.js'
 import RelationshipsPanel from '../RelationshipsPanel.jsx'
@@ -54,4 +54,26 @@ describe('RelationshipsPanel class labels', () => {
       expect(screen.queryByText('Customer')).not.toBeInTheDocument()
     },
   )
+})
+
+it.each([VIEW_LOGICAL, VIEW_PHYSICAL])('keeps header actions independent of expansion and endpoint columns correct in %s', activeView => {
+  const onHighlightAssociation = vi.fn(), onDeleteAssociation = vi.fn()
+  const onResetRelationshipRouting = vi.fn(), onUpdateRelationshipLineStyle = vi.fn()
+  render(<RelationshipsPanel nodes={nodes} edges={edges} activeView={activeView}
+    onHighlightAssociation={onHighlightAssociation} onDeleteAssociation={onDeleteAssociation}
+    onResetRelationshipRouting={onResetRelationshipRouting} onUpdateRelationshipLineStyle={onUpdateRelationshipLineStyle} />)
+  expect(screen.getByTitle('customer_id to id')).toBeInTheDocument()
+  fireEvent.click(screen.getByRole('button', { name: 'Highlight relationship' }))
+  fireEvent.click(screen.getByRole('button', { name: 'Delete relationship' }))
+  expect(onHighlightAssociation).toHaveBeenCalledWith('relationship-1')
+  expect(onDeleteAssociation).toHaveBeenCalledWith('relationship-1')
+  expect(screen.getByRole('button', { name: 'Toggle relationship details' })).toHaveAttribute('aria-expanded', 'false')
+  fireEvent.click(screen.getByRole('button', { name: 'Toggle relationship details' }))
+  expect(screen.getByTitle('customer_id to id')).toBeInTheDocument()
+  expect(within(screen.getByRole('region', { name: 'Endpoint from: customer_table' })).getByText('customer_id')).toBeInTheDocument()
+  expect(within(screen.getByRole('region', { name: 'Endpoint to: Order' })).getByText('id')).toBeInTheDocument()
+  fireEvent.click(screen.getByRole('radio', { name: 'Manual' }))
+  expect(onResetRelationshipRouting).toHaveBeenCalledWith('relationship-1')
+  expect(onUpdateRelationshipLineStyle).toHaveBeenCalledWith('relationship-1', 'manual')
+  expect(onResetRelationshipRouting.mock.invocationCallOrder[0]).toBeLessThan(onUpdateRelationshipLineStyle.mock.invocationCallOrder[0])
 })

@@ -1,26 +1,12 @@
+import { getEndpointLabelTransform } from '../utils/associationLabelTransforms.js'
 import { EdgeLabelRenderer, useInternalNode } from '@xyflow/react'
 import { AssociationLabel } from '../labels/AssociationLabel.jsx'
 import { MultiplicityLabel } from '../labels/MultiplicityLabel.jsx'
 import { getAssociationLayout } from '../utils/associationUtils.js'
 import { ASSOCIATION_LINE_STYLE_STRAIGHT } from '../../../model/constants.js'
 import { EdgeControlPoints } from './EdgeControlPoints.jsx'
-
-function getEndpointLabelTransform(position, x, y) {
-  const offset = 0
-
-  switch (position) {
-    case 'left':
-      return `translate(-100%, 0%) translate(${x - offset}px, ${y + 1}px)`
-    case 'right':
-      return `translate(0%, 0%) translate(${x + offset}px, ${y + 1}px)`
-    case 'top':
-      return `translate(0%, -100%) translate(${x + 1}px, ${y - offset}px)`
-    case 'bottom':
-      return `translate(0%, 0%) translate(${x + 1}px, ${y + offset}px)`
-    default:
-      return `translate(-50%, -50%) translate(${x}px, ${y}px)`
-  }
-}
+import { useParallelLabels } from './useParallelLabels.js'
+import { useAssociationAnchors } from './useAssociationAnchors.js'
 
 export function Composition({
   id,
@@ -34,7 +20,9 @@ export function Composition({
   const sourceNode = useInternalNode(source)
   const targetNode = useInternalNode(target)
 
-  const layout = getAssociationLayout(sourceNode, targetNode, data)
+  const anchors = useAssociationAnchors(id)
+  const layout = getAssociationLayout(sourceNode, targetNode, data, anchors)
+  const parallelLabels = useParallelLabels(id, source, target, data, sourceNode, targetNode, layout)
   if (!layout) {
     return null
   }
@@ -185,7 +173,8 @@ export function Composition({
         ) : null}
         {name ? (
           <AssociationLabel
-            transform={`translate(-50%, -100%) translate(${labelX}px, ${labelY - 1}px)`}
+            transform={parallelLabels?.nameTransform ?? `translate(-50%, -100%) translate(${labelX}px, ${labelY - 1}px)`}
+            className={parallelLabels ? 'whitespace-nowrap' : ''}
             label={name}
           />
         ) : null}

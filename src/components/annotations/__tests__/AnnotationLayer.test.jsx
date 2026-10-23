@@ -198,68 +198,21 @@ describe('AnnotationLayer', () => {
     expect(onCommitText).toHaveBeenCalledWith('New annotation')
   })
 
-  it('forwards wheel events to the element below the annotation overlay', () => {
-    const underlying = document.createElement('div')
-    const onWheel = vi.fn()
-    underlying.addEventListener('wheel', onWheel)
-    document.body.appendChild(underlying)
-    const originalElementFromPoint = document.elementFromPoint
-    Object.defineProperty(document, 'elementFromPoint', {
-      configurable: true,
-      value: vi.fn(() => underlying),
-    })
 
-    try {
-      const { container } = renderLayer()
-      const overlay = container.querySelector('.react-flow__annotation-layer')
-
-      fireEvent.wheel(overlay, { clientX: 10, clientY: 20, deltaY: 120 })
-
-      expect(onWheel).toHaveBeenCalledTimes(1)
-      const forwardedEvent = onWheel.mock.calls[0][0]
-      expect(forwardedEvent.deltaY).toBe(120)
-      expect(forwardedEvent.__annotationWheelForwarded).toBe(true)
-    } finally {
-      Object.defineProperty(document, 'elementFromPoint', {
-        configurable: true,
-        value: originalElementFromPoint,
-      })
-      underlying.remove()
-    }
-  })
-
-  it('does not re-forward wheel events that already came through the annotation overlay', () => {
-    const originalElementFromPoint = document.elementFromPoint
-    const elementFromPoint = vi.fn()
-    Object.defineProperty(document, 'elementFromPoint', {
-      configurable: true,
-      value: elementFromPoint,
-    })
-
-    try {
-      const { container } = renderLayer()
-      const overlay = container.querySelector('.react-flow__annotation-layer')
-      const wheelEvent = new WheelEvent('wheel', {
-        bubbles: true,
-        cancelable: true,
-        clientX: 10,
-        clientY: 20,
-        deltaY: 120,
-      })
-      Object.defineProperty(wheelEvent, '__annotationWheelForwarded', {
-        value: true,
-      })
-
-      overlay.dispatchEvent(wheelEvent)
-
-      expect(elementFromPoint).not.toHaveBeenCalled()
-    } finally {
-      Object.defineProperty(document, 'elementFromPoint', {
-        configurable: true,
-        value: originalElementFromPoint,
-      })
-    }
-  })
+  it('forwards wheels over selectable text to its own canvas with modifiers intact', () => {
+    const {container}=renderLayer({activeTool:'select'});
+    container.classList.add('react-flow');
+    const renderer=document.createElement('div');renderer.className='react-flow__renderer';container.appendChild(renderer);
+    const onWheel=vi.fn();renderer.addEventListener('wheel',onWheel);
+    const hit=container.querySelector('[data-annotation-hit-target]');
+    fireEvent.wheel(hit,{clientX:130,clientY:90,deltaY:120,deltaX:5,ctrlKey:true});
+    expect(onWheel).toHaveBeenCalledTimes(1);
+    expect(onWheel.mock.calls[0][0]).toMatchObject({deltaY:120,deltaX:5,ctrlKey:true,clientX:130,clientY:90,__annotationWheelForwarded:true});
+    const forwarded=new WheelEvent('wheel',{bubbles:true,deltaY:120});
+    Object.defineProperty(forwarded,'__annotationWheelForwarded',{value:true});
+    hit.dispatchEvent(forwarded);
+    expect(onWheel).toHaveBeenCalledTimes(1);
+  });
 
   it('shows a pan cursor while temporary pan mode is active', () => {
     const { container } = renderLayer({ isTemporaryPanMode: true })
@@ -315,4 +268,36 @@ describe('annotation selection and laser rendering', () => {
       vi.useRealTimers()
     }
   })
+})
+
+it.each([
+  { id: 'shape', kind: 'shape', shape: 'rectangle', x1: 0, y1: 0, x2: 100, y2: 60, color: '#000000', thickness: 2 },
+  { id: 'stroke', kind: 'stroke', tool: 'pen', points: [{ x: 0, y: 0 }, { x: 100, y: 60 }], color: '#000000', thickness: 2, opacity: 1 },
+])('forwards wheel events over a selectable $kind', (item) => {
+  const { container } = renderLayer({
+    activeTool: 'select', selectedId: item.id,
+    annotations: { conceptual: { items: [item] } },
+  })
+  container.classList.add('react-flow')
+  const renderer = document.createElement('div')
+  renderer.className = 'react-flow__renderer'
+  container.appendChild(renderer)
+  const onWheel = vi.fn()
+  renderer.addEventListener('wheel', onWheel)
+  const hit = container.querySelector('[role="button"] [pointer-events="stroke"]')
+  expect(hit).not.toBeNull()
+  fireEvent.wheel(hit, { deltaY: -120 })
+  expect(onWheel).toHaveBeenCalledOnce()
+})
+
+it('preserves wheel scrolling inside the annotation text editor', () => {
+  const { container } = renderLayer({ activeTool: 'text', editingTextId: 'text-1' })
+  container.classList.add('react-flow')
+  const renderer = document.createElement('div')
+  renderer.className = 'react-flow__renderer'
+  container.appendChild(renderer)
+  const onWheel = vi.fn()
+  renderer.addEventListener('wheel', onWheel)
+  fireEvent.wheel(screen.getByRole('textbox'), { deltaY: 120 })
+  expect(onWheel).not.toHaveBeenCalled()
 })

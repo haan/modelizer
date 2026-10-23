@@ -171,6 +171,9 @@ export function useAnnotations({ activeView, reactFlowInstance, pushHistorySnaps
   const [dirtySignal, setDirtySignal] = useState(0)
   const annotationsRef = useRef(annotations)
   const gestureRef = useRef(null)
+  const styleEditRef = useRef(null)
+  const beginStyleEdit = useCallback(() => { styleEditRef.current ??= { historyPushed: false } }, [])
+  const endStyleEdit = useCallback(() => { styleEditRef.current = null }, [])
   const panRef = useRef(false)
   const getAnnotationsSnapshot = useCallback(() => annotationsRef.current, [])
   const selectedItem = annotations[activeView]?.items.find((item) => item.id === selectedId) ?? null
@@ -183,23 +186,24 @@ export function useAnnotations({ activeView, reactFlowInstance, pushHistorySnaps
     setPreviewItems(null)
   }, [])
   const resetTransient = useCallback(() => {
+    endStyleEdit()
     cancelGesture()
     setPendingText(null)
     setSelectedId(null)
     setEditingTextId(null)
     panRef.current = false
     setTemporaryPanMode(false)
-  }, [cancelGesture])
+  }, [cancelGesture, endStyleEdit])
   useEffect(() => {
     // A view switch must not carry unfinished gestures into the new view.
     // eslint-disable-next-line react-hooks/set-state-in-effect
     resetTransient()
   }, [activeView, enabled, resetTransient])
 
-  const commitItems = useCallback((items, view = activeView) => {
+  const commitItems = useCallback((items, view = activeView, recordHistory = true) => {
     const old = annotationsRef.current
     if (items === old[view].items) return false
-    pushHistorySnapshot?.()
+    if (recordHistory) pushHistorySnapshot?.()
     const next = { ...old, [view]: { items } }
     annotationsRef.current = next
     setAnnotations(next)
@@ -215,14 +219,17 @@ export function useAnnotations({ activeView, reactFlowInstance, pushHistorySnaps
     const items = annotationsRef.current[activeView].items
     const item = items.find((entry) => entry.id === selectedId)
     if (!item || !Object.keys(updates).some((key) => item[key] !== updates[key])) return
-    commitItems(items.map((entry) => entry.id === selectedId ? { ...entry, ...updates } : entry))
+    const edit = styleEditRef.current
+    commitItems(items.map((entry) => entry.id === selectedId ? { ...entry, ...updates } : entry), activeView, !edit?.historyPushed)
+    if (edit) edit.historyPushed = true
   }, [activeView, selectedId, commitItems])
   const onSelectItem = useCallback((id) => {
+    endStyleEdit()
     cancelGesture()
     setPendingText(null)
     setEditingTextId(null)
     setSelectedId(id)
-  }, [cancelGesture])
+  }, [cancelGesture, endStyleEdit])
   const updateSettings = useCallback((key, setter, updates) => {
     setter((cur) => {
       const next = { ...cur, ...updates }
@@ -467,7 +474,7 @@ export function useAnnotations({ activeView, reactFlowInstance, pushHistorySnaps
     selectedTextId: selectedTextItem?.id ?? null, editingTextId: editingTextItem?.id ?? null,
     isTemporaryPanMode: enabled && isTemporaryPanMode, dirtySignal, getAnnotationsSnapshot,
     setTool, updatePenSettings, updateMarkerSettings, updateTextSettings, updateEraserSettings,
-    updateSelected, onSelectItem, onPointerDown, onPointerMove, onPointerUp, onPointerCancel: cancelGesture,
+    updateSelected, beginStyleEdit, endStyleEdit, onSelectItem, onPointerDown, onPointerMove, onPointerUp, onPointerCancel: cancelGesture,
     onCommitText, onCommitTextEdit, onTextPointerDown: onItemPointerDown, onItemPointerDown,
     onTextDoubleClick, onDeleteSelectedText: onDeleteSelected, onDeleteSelected, onDuplicateSelected,
     onClearAnnotations, onLoadAnnotations,

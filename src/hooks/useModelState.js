@@ -9,7 +9,7 @@ import {
 } from '@xyflow/react'
 import { CLASS_COLOR_PALETTE, getRandomPaletteColor } from '../classPalette.js'
 import { createAttribute, normalizeAttributes } from '../attributes.js'
-import { getAssociationLayout } from '../components/flow/utils/associationUtils.js'
+import { getAssociationLayout, getAssociationEndpointAllocations } from '../components/flow/utils/associationUtils.js'
 import { getRelationshipLayoutFromNodes } from '../components/flow/utils/relationshipUtils.js'
 import {
   getReflexiveAssociationLayout,
@@ -2102,7 +2102,9 @@ export function useModelState({
       const targetNode =
         reactFlowInstance?.getInternalNode(edge.target) ??
         nodesRef.current.find((node) => node.id === edge.target)
-      const layout = getAssociationLayout(sourceNode, targetNode, edge.data)
+      const getNode = id => reactFlowInstance?.getInternalNode(id) ?? nodesRef.current.find(node => node.id === id)
+      const allocations = getAssociationEndpointAllocations(reactFlowInstance?.getEdges() ?? edgesRef.current, getNode)
+      const layout = getAssociationLayout(sourceNode, targetNode, edge.data, allocations.get(edge.id))
       if (!layout) {
         return
       }
@@ -2656,6 +2658,9 @@ export function useModelState({
     const nodeMap = new Map(nodes.map((node) => [node.id, node]))
     const getNode = (nodeId) =>
       reactFlowInstance?.getInternalNode(nodeId) ?? nodeMap.get(nodeId)
+    const allocations = getAssociationEndpointAllocations(edges.filter(edge =>
+      visibleClassIds.has(edge.source) && visibleClassIds.has(edge.target) &&
+      (edge.type !== COMPOSITION_EDGE_TYPE || showCompositionAggregation)), getNode)
 
     return edges
       .filter(
@@ -2724,7 +2729,7 @@ export function useModelState({
           return null
         }
 
-        const layout = getAssociationLayout(sourceNode, targetNode, edge.data)
+        const layout = getAssociationLayout(sourceNode, targetNode, edge.data, allocations.get(edge.id))
         if (!layout) {
           return null
         }
@@ -2754,7 +2759,7 @@ export function useModelState({
         }
       })
       .filter(Boolean)
-  }, [edges, nodes, normalizedActiveView, reactFlowInstance, visibleClassIds])
+  }, [edges, nodes, normalizedActiveView, reactFlowInstance, visibleClassIds, showCompositionAggregation])
 
   const flowEdges = useMemo(() => {
     if (normalizedActiveView !== VIEW_CONCEPTUAL) {

@@ -1,0 +1,3028 @@
+{
+  "version": 2,
+  "modelName": "03 - University enrolment",
+  "nodes": [
+    {
+      "id": "area-0001",
+      "type": "area",
+      "position": {
+        "x": -710,
+        "y": -470
+      },
+      "selected": false,
+      "data": {
+        "label": "People",
+        "color": "#ffc107",
+        "viewSizes": {
+          "conceptual": {
+            "width": 1530,
+            "height": 1370
+          },
+          "logical": {
+            "width": 1530,
+            "height": 1370
+          },
+          "physical": {
+            "width": 1530,
+            "height": 1370
+          }
+        },
+        "visibility": {
+          "conceptual": true,
+          "logical": false,
+          "physical": false
+        },
+        "viewPositions": {
+          "conceptual": {
+            "x": -710,
+            "y": -470
+          },
+          "logical": {
+            "x": -710,
+            "y": -470
+          },
+          "physical": {
+            "x": -710,
+            "y": -470
+          }
+        }
+      },
+      "width": 1530,
+      "height": 1370,
+      "style": {
+        "width": 1530,
+        "height": 1370
+      },
+      "zIndex": -1
+    },
+    {
+      "id": "Person",
+      "type": "class",
+      "position": {
+        "x": -650,
+        "y": -400
+      },
+      "selected": false,
+      "data": {
+        "label": "Person",
+        "logicalName": "",
+        "color": "#ffc107",
+        "attributes": [
+          {
+            "id": "Person-attr-0",
+            "name": "identifier",
+            "logicalName": "",
+            "type": "",
+            "typeParams": {
+              "maxLength": "",
+              "precision": "",
+              "scale": "",
+              "enumValues": ""
+            },
+            "defaultValue": "",
+            "nullable": false,
+            "unique": false,
+            "autoIncrement": false,
+            "visibility": {
+              "conceptual": true,
+              "logical": false,
+              "physical": false
+            }
+          },
+          {
+            "id": "Person-attr-1",
+            "name": "displayName",
+            "logicalName": "",
+            "type": "",
+            "typeParams": {
+              "maxLength": "",
+              "precision": "",
+              "scale": "",
+              "enumValues": ""
+            },
+            "defaultValue": "",
+            "nullable": false,
+            "unique": false,
+            "autoIncrement": false,
+            "visibility": {
+              "conceptual": true,
+              "logical": false,
+              "physical": false
+            }
+          },
+          {
+            "id": "Person-attr-2",
+            "name": "status",
+            "logicalName": "",
+            "type": "",
+            "typeParams": {
+              "maxLength": "",
+              "precision": "",
+              "scale": "",
+              "enumValues": ""
+            },
+            "defaultValue": "",
+            "nullable": false,
+            "unique": false,
+            "autoIncrement": false,
+            "visibility": {
+              "conceptual": true,
+              "logical": false,
+              "physical": false
+            }
+          },
+          {
+            "id": "Person-attr-3",
+            "name": "createdAt",
+            "logicalName": "",
+            "type": "",
+            "typeParams": {
+              "maxLength": "",
+              "precision": "",
+              "scale": "",
+              "enumValues": ""
+            },
+            "defaultValue": "",
+            "nullable": false,
+            "unique": false,
+            "autoIncrement": false,
+            "visibility": {
+              "conceptual": true,
+              "logical": false,
+              "physical": false
+            }
+          },
+          {
+            "id": "Person-attr-4",
+            "name": "updatedAt",
+            "logicalName": "",
+            "type": "",
+            "typeParams": {
+              "maxLength": "",
+              "precision": "",
+              "scale": "",
+              "enumValues": ""
+            },
+            "defaultValue": "",
+            "nullable": false,
+            "unique": false,
+            "autoIncrement": false,
+            "visibility": {
+              "conceptual": true,
+              "logical": false,
+              "physical": false
+            }
+          },
+          {
+            "id": "Person-attr-5",
+            "name": "effectiveFrom",
+            "logicalName": "",
+            "type": "",
+            "typeParams": {
+              "maxLength": "",
+              "precision": "",
+              "scale": "",
+              "enumValues": ""
+            },
+            "defaultValue": "",
+            "nullable": false,
+            "unique": false,
+            "autoIncrement": false,
+            "visibility": {
+              "conceptual": true,
+              "logical": false,
+              "physical": false
+            }
+          },
+          {
+            "id": "Person-attr-6",
+            "name": "effectiveUntil",
+            "logicalName": "",
+            "type": "",
+            "typeParams": {
+              "maxLength": "",
+              "precision": "",
+              "scale": "",
+              "enumValues": ""
+            },
+            "defaultValue": "",
+            "nullable": false,
+            "unique": false,
+            "autoIncrement": false,
+            "visibility": {
+              "conceptual": true,
+              "logical": false,
+              "physical": false
+            }
+          }
+        ],
+        "visibility": {
+          "conceptual": true,
+          "logical": false,
+          "physical": false
+        },
+        "viewPositions": {
+          "conceptual": {
+            "x": -650,
+            "y": -400
+          },
+          "logical": {
+            "x": -650,
+            "y": -400
+          },
+          "physical": {
+            "x": -650,
+            "y": -400
+          }
+        }
+      }
+    },
+    {
+      "id": "Student",
+      "type": "class",
+      "position": {
+        "x": -170,
+        "y": -400
+      },
+      "selected": false,
+      "data": {
+        "label": "Student",
+        "logicalName": "",
+        "color": "#ffc107",
+        "attributes": [
+          {
+            "id": "Student-attr-0",
+            "name": "identifier",
+            "logicalName": "",
+            "type": "",
+            "typeParams": {
+              "maxLength": "",
+              "precision": "",
+              "scale": "",
+              "enumValues": ""
+            },
+            "defaultValue": "",
+            "nullable": false,
+            "unique": false,
+            "autoIncrement": false,
+            "visibility": {
+              "conceptual": true,
+              "logical": false,
+              "physical": false
+            }
+          },
+          {
+            "id": "Student-attr-1",
+            "name": "displayName",
+            "logicalName": "",
+            "type": "",
+            "typeParams": {
+              "maxLength": "",
+              "precision": "",
+              "scale": "",
+              "enumValues": ""
+            },
+            "defaultValue": "",
+            "nullable": false,
+            "unique": false,
+            "autoIncrement": false,
+            "visibility": {
+              "conceptual": true,
+              "logical": false,
+              "physical": false
+            }
+          },
+          {
+            "id": "Student-attr-2",
+            "name": "status",
+            "logicalName": "",
+            "type": "",
+            "typeParams": {
+              "maxLength": "",
+              "precision": "",
+              "scale": "",
+              "enumValues": ""
+            },
+            "defaultValue": "",
+            "nullable": false,
+            "unique": false,
+            "autoIncrement": false,
+            "visibility": {
+              "conceptual": true,
+              "logical": false,
+              "physical": false
+            }
+          }
+        ],
+        "visibility": {
+          "conceptual": true,
+          "logical": false,
+          "physical": false
+        },
+        "viewPositions": {
+          "conceptual": {
+            "x": -170,
+            "y": -400
+          },
+          "logical": {
+            "x": -170,
+            "y": -400
+          },
+          "physical": {
+            "x": -170,
+            "y": -400
+          }
+        }
+      }
+    },
+    {
+      "id": "Lecturer",
+      "type": "class",
+      "position": {
+        "x": 310,
+        "y": -400
+      },
+      "selected": false,
+      "data": {
+        "label": "Lecturer",
+        "logicalName": "",
+        "color": "#ffc107",
+        "attributes": [
+          {
+            "id": "Lecturer-attr-0",
+            "name": "identifier",
+            "logicalName": "",
+            "type": "",
+            "typeParams": {
+              "maxLength": "",
+              "precision": "",
+              "scale": "",
+              "enumValues": ""
+            },
+            "defaultValue": "",
+            "nullable": false,
+            "unique": false,
+            "autoIncrement": false,
+            "visibility": {
+              "conceptual": true,
+              "logical": false,
+              "physical": false
+            }
+          },
+          {
+            "id": "Lecturer-attr-1",
+            "name": "displayName",
+            "logicalName": "",
+            "type": "",
+            "typeParams": {
+              "maxLength": "",
+              "precision": "",
+              "scale": "",
+              "enumValues": ""
+            },
+            "defaultValue": "",
+            "nullable": false,
+            "unique": false,
+            "autoIncrement": false,
+            "visibility": {
+              "conceptual": true,
+              "logical": false,
+              "physical": false
+            }
+          },
+          {
+            "id": "Lecturer-attr-2",
+            "name": "status",
+            "logicalName": "",
+            "type": "",
+            "typeParams": {
+              "maxLength": "",
+              "precision": "",
+              "scale": "",
+              "enumValues": ""
+            },
+            "defaultValue": "",
+            "nullable": false,
+            "unique": false,
+            "autoIncrement": false,
+            "visibility": {
+              "conceptual": true,
+              "logical": false,
+              "physical": false
+            }
+          },
+          {
+            "id": "Lecturer-attr-3",
+            "name": "createdAt",
+            "logicalName": "",
+            "type": "",
+            "typeParams": {
+              "maxLength": "",
+              "precision": "",
+              "scale": "",
+              "enumValues": ""
+            },
+            "defaultValue": "",
+            "nullable": false,
+            "unique": false,
+            "autoIncrement": false,
+            "visibility": {
+              "conceptual": true,
+              "logical": false,
+              "physical": false
+            }
+          }
+        ],
+        "visibility": {
+          "conceptual": true,
+          "logical": false,
+          "physical": false
+        },
+        "viewPositions": {
+          "conceptual": {
+            "x": 310,
+            "y": -400
+          },
+          "logical": {
+            "x": 310,
+            "y": -400
+          },
+          "physical": {
+            "x": 310,
+            "y": -400
+          }
+        }
+      }
+    },
+    {
+      "id": "Department",
+      "type": "class",
+      "position": {
+        "x": -650,
+        "y": 250
+      },
+      "selected": false,
+      "data": {
+        "label": "Department",
+        "logicalName": "",
+        "color": "#ffc107",
+        "attributes": [
+          {
+            "id": "Department-attr-0",
+            "name": "identifier",
+            "logicalName": "",
+            "type": "",
+            "typeParams": {
+              "maxLength": "",
+              "precision": "",
+              "scale": "",
+              "enumValues": ""
+            },
+            "defaultValue": "",
+            "nullable": false,
+            "unique": false,
+            "autoIncrement": false,
+            "visibility": {
+              "conceptual": true,
+              "logical": false,
+              "physical": false
+            }
+          },
+          {
+            "id": "Department-attr-1",
+            "name": "displayName",
+            "logicalName": "",
+            "type": "",
+            "typeParams": {
+              "maxLength": "",
+              "precision": "",
+              "scale": "",
+              "enumValues": ""
+            },
+            "defaultValue": "",
+            "nullable": false,
+            "unique": false,
+            "autoIncrement": false,
+            "visibility": {
+              "conceptual": true,
+              "logical": false,
+              "physical": false
+            }
+          }
+        ],
+        "visibility": {
+          "conceptual": true,
+          "logical": false,
+          "physical": false
+        },
+        "viewPositions": {
+          "conceptual": {
+            "x": -650,
+            "y": 250
+          },
+          "logical": {
+            "x": -650,
+            "y": 250
+          },
+          "physical": {
+            "x": -650,
+            "y": 250
+          }
+        }
+      }
+    },
+    {
+      "id": "Address",
+      "type": "class",
+      "position": {
+        "x": -170,
+        "y": 250
+      },
+      "selected": false,
+      "data": {
+        "label": "Address",
+        "logicalName": "",
+        "color": "#ffc107",
+        "attributes": [
+          {
+            "id": "Address-attr-0",
+            "name": "identifier",
+            "logicalName": "",
+            "type": "",
+            "typeParams": {
+              "maxLength": "",
+              "precision": "",
+              "scale": "",
+              "enumValues": ""
+            },
+            "defaultValue": "",
+            "nullable": false,
+            "unique": false,
+            "autoIncrement": false,
+            "visibility": {
+              "conceptual": true,
+              "logical": false,
+              "physical": false
+            }
+          },
+          {
+            "id": "Address-attr-1",
+            "name": "displayName",
+            "logicalName": "",
+            "type": "",
+            "typeParams": {
+              "maxLength": "",
+              "precision": "",
+              "scale": "",
+              "enumValues": ""
+            },
+            "defaultValue": "",
+            "nullable": false,
+            "unique": false,
+            "autoIncrement": false,
+            "visibility": {
+              "conceptual": true,
+              "logical": false,
+              "physical": false
+            }
+          },
+          {
+            "id": "Address-attr-2",
+            "name": "status",
+            "logicalName": "",
+            "type": "",
+            "typeParams": {
+              "maxLength": "",
+              "precision": "",
+              "scale": "",
+              "enumValues": ""
+            },
+            "defaultValue": "",
+            "nullable": false,
+            "unique": false,
+            "autoIncrement": false,
+            "visibility": {
+              "conceptual": true,
+              "logical": false,
+              "physical": false
+            }
+          }
+        ],
+        "visibility": {
+          "conceptual": true,
+          "logical": false,
+          "physical": false
+        },
+        "viewPositions": {
+          "conceptual": {
+            "x": -170,
+            "y": 250
+          },
+          "logical": {
+            "x": -170,
+            "y": 250
+          },
+          "physical": {
+            "x": -170,
+            "y": 250
+          }
+        }
+      }
+    },
+    {
+      "id": "EmergencyContact",
+      "type": "class",
+      "position": {
+        "x": 310,
+        "y": 250
+      },
+      "selected": false,
+      "data": {
+        "label": "EmergencyContact",
+        "logicalName": "",
+        "color": "#ffc107",
+        "attributes": [
+          {
+            "id": "EmergencyContact-attr-0",
+            "name": "identifier",
+            "logicalName": "",
+            "type": "",
+            "typeParams": {
+              "maxLength": "",
+              "precision": "",
+              "scale": "",
+              "enumValues": ""
+            },
+            "defaultValue": "",
+            "nullable": false,
+            "unique": false,
+            "autoIncrement": false,
+            "visibility": {
+              "conceptual": true,
+              "logical": false,
+              "physical": false
+            }
+          },
+          {
+            "id": "EmergencyContact-attr-1",
+            "name": "displayName",
+            "logicalName": "",
+            "type": "",
+            "typeParams": {
+              "maxLength": "",
+              "precision": "",
+              "scale": "",
+              "enumValues": ""
+            },
+            "defaultValue": "",
+            "nullable": false,
+            "unique": false,
+            "autoIncrement": false,
+            "visibility": {
+              "conceptual": true,
+              "logical": false,
+              "physical": false
+            }
+          },
+          {
+            "id": "EmergencyContact-attr-2",
+            "name": "status",
+            "logicalName": "",
+            "type": "",
+            "typeParams": {
+              "maxLength": "",
+              "precision": "",
+              "scale": "",
+              "enumValues": ""
+            },
+            "defaultValue": "",
+            "nullable": false,
+            "unique": false,
+            "autoIncrement": false,
+            "visibility": {
+              "conceptual": true,
+              "logical": false,
+              "physical": false
+            }
+          },
+          {
+            "id": "EmergencyContact-attr-3",
+            "name": "createdAt",
+            "logicalName": "",
+            "type": "",
+            "typeParams": {
+              "maxLength": "",
+              "precision": "",
+              "scale": "",
+              "enumValues": ""
+            },
+            "defaultValue": "",
+            "nullable": false,
+            "unique": false,
+            "autoIncrement": false,
+            "visibility": {
+              "conceptual": true,
+              "logical": false,
+              "physical": false
+            }
+          }
+        ],
+        "visibility": {
+          "conceptual": true,
+          "logical": false,
+          "physical": false
+        },
+        "viewPositions": {
+          "conceptual": {
+            "x": 310,
+            "y": 250
+          },
+          "logical": {
+            "x": 310,
+            "y": 250
+          },
+          "physical": {
+            "x": 310,
+            "y": 250
+          }
+        }
+      }
+    },
+    {
+      "id": "area-0002",
+      "type": "area",
+      "position": {
+        "x": 1090,
+        "y": -470
+      },
+      "selected": false,
+      "data": {
+        "label": "Teaching",
+        "color": "#2196f3",
+        "viewSizes": {
+          "conceptual": {
+            "width": 1530,
+            "height": 1370
+          },
+          "logical": {
+            "width": 1530,
+            "height": 1370
+          },
+          "physical": {
+            "width": 1530,
+            "height": 1370
+          }
+        },
+        "visibility": {
+          "conceptual": true,
+          "logical": false,
+          "physical": false
+        },
+        "viewPositions": {
+          "conceptual": {
+            "x": 1090,
+            "y": -470
+          },
+          "logical": {
+            "x": 1090,
+            "y": -470
+          },
+          "physical": {
+            "x": 1090,
+            "y": -470
+          }
+        }
+      },
+      "width": 1530,
+      "height": 1370,
+      "style": {
+        "width": 1530,
+        "height": 1370
+      },
+      "zIndex": -1
+    },
+    {
+      "id": "Course",
+      "type": "class",
+      "position": {
+        "x": 1150,
+        "y": -400
+      },
+      "selected": false,
+      "data": {
+        "label": "Course",
+        "logicalName": "",
+        "color": "#2196f3",
+        "attributes": [
+          {
+            "id": "Course-attr-0",
+            "name": "identifier",
+            "logicalName": "",
+            "type": "",
+            "typeParams": {
+              "maxLength": "",
+              "precision": "",
+              "scale": "",
+              "enumValues": ""
+            },
+            "defaultValue": "",
+            "nullable": false,
+            "unique": false,
+            "autoIncrement": false,
+            "visibility": {
+              "conceptual": true,
+              "logical": false,
+              "physical": false
+            }
+          },
+          {
+            "id": "Course-attr-1",
+            "name": "displayName",
+            "logicalName": "",
+            "type": "",
+            "typeParams": {
+              "maxLength": "",
+              "precision": "",
+              "scale": "",
+              "enumValues": ""
+            },
+            "defaultValue": "",
+            "nullable": false,
+            "unique": false,
+            "autoIncrement": false,
+            "visibility": {
+              "conceptual": true,
+              "logical": false,
+              "physical": false
+            }
+          },
+          {
+            "id": "Course-attr-2",
+            "name": "status",
+            "logicalName": "",
+            "type": "",
+            "typeParams": {
+              "maxLength": "",
+              "precision": "",
+              "scale": "",
+              "enumValues": ""
+            },
+            "defaultValue": "",
+            "nullable": false,
+            "unique": false,
+            "autoIncrement": false,
+            "visibility": {
+              "conceptual": true,
+              "logical": false,
+              "physical": false
+            }
+          },
+          {
+            "id": "Course-attr-3",
+            "name": "createdAt",
+            "logicalName": "",
+            "type": "",
+            "typeParams": {
+              "maxLength": "",
+              "precision": "",
+              "scale": "",
+              "enumValues": ""
+            },
+            "defaultValue": "",
+            "nullable": false,
+            "unique": false,
+            "autoIncrement": false,
+            "visibility": {
+              "conceptual": true,
+              "logical": false,
+              "physical": false
+            }
+          },
+          {
+            "id": "Course-attr-4",
+            "name": "updatedAt",
+            "logicalName": "",
+            "type": "",
+            "typeParams": {
+              "maxLength": "",
+              "precision": "",
+              "scale": "",
+              "enumValues": ""
+            },
+            "defaultValue": "",
+            "nullable": false,
+            "unique": false,
+            "autoIncrement": false,
+            "visibility": {
+              "conceptual": true,
+              "logical": false,
+              "physical": false
+            }
+          },
+          {
+            "id": "Course-attr-5",
+            "name": "effectiveFrom",
+            "logicalName": "",
+            "type": "",
+            "typeParams": {
+              "maxLength": "",
+              "precision": "",
+              "scale": "",
+              "enumValues": ""
+            },
+            "defaultValue": "",
+            "nullable": false,
+            "unique": false,
+            "autoIncrement": false,
+            "visibility": {
+              "conceptual": true,
+              "logical": false,
+              "physical": false
+            }
+          },
+          {
+            "id": "Course-attr-6",
+            "name": "effectiveUntil",
+            "logicalName": "",
+            "type": "",
+            "typeParams": {
+              "maxLength": "",
+              "precision": "",
+              "scale": "",
+              "enumValues": ""
+            },
+            "defaultValue": "",
+            "nullable": false,
+            "unique": false,
+            "autoIncrement": false,
+            "visibility": {
+              "conceptual": true,
+              "logical": false,
+              "physical": false
+            }
+          }
+        ],
+        "visibility": {
+          "conceptual": true,
+          "logical": false,
+          "physical": false
+        },
+        "viewPositions": {
+          "conceptual": {
+            "x": 1150,
+            "y": -400
+          },
+          "logical": {
+            "x": 1150,
+            "y": -400
+          },
+          "physical": {
+            "x": 1150,
+            "y": -400
+          }
+        }
+      }
+    },
+    {
+      "id": "Module",
+      "type": "class",
+      "position": {
+        "x": 1630,
+        "y": -400
+      },
+      "selected": false,
+      "data": {
+        "label": "Module",
+        "logicalName": "",
+        "color": "#2196f3",
+        "attributes": [
+          {
+            "id": "Module-attr-0",
+            "name": "identifier",
+            "logicalName": "",
+            "type": "",
+            "typeParams": {
+              "maxLength": "",
+              "precision": "",
+              "scale": "",
+              "enumValues": ""
+            },
+            "defaultValue": "",
+            "nullable": false,
+            "unique": false,
+            "autoIncrement": false,
+            "visibility": {
+              "conceptual": true,
+              "logical": false,
+              "physical": false
+            }
+          },
+          {
+            "id": "Module-attr-1",
+            "name": "displayName",
+            "logicalName": "",
+            "type": "",
+            "typeParams": {
+              "maxLength": "",
+              "precision": "",
+              "scale": "",
+              "enumValues": ""
+            },
+            "defaultValue": "",
+            "nullable": false,
+            "unique": false,
+            "autoIncrement": false,
+            "visibility": {
+              "conceptual": true,
+              "logical": false,
+              "physical": false
+            }
+          },
+          {
+            "id": "Module-attr-2",
+            "name": "status",
+            "logicalName": "",
+            "type": "",
+            "typeParams": {
+              "maxLength": "",
+              "precision": "",
+              "scale": "",
+              "enumValues": ""
+            },
+            "defaultValue": "",
+            "nullable": false,
+            "unique": false,
+            "autoIncrement": false,
+            "visibility": {
+              "conceptual": true,
+              "logical": false,
+              "physical": false
+            }
+          }
+        ],
+        "visibility": {
+          "conceptual": true,
+          "logical": false,
+          "physical": false
+        },
+        "viewPositions": {
+          "conceptual": {
+            "x": 1630,
+            "y": -400
+          },
+          "logical": {
+            "x": 1630,
+            "y": -400
+          },
+          "physical": {
+            "x": 1630,
+            "y": -400
+          }
+        }
+      }
+    },
+    {
+      "id": "Session",
+      "type": "class",
+      "position": {
+        "x": 2110,
+        "y": -400
+      },
+      "selected": false,
+      "data": {
+        "label": "Session",
+        "logicalName": "",
+        "color": "#2196f3",
+        "attributes": [
+          {
+            "id": "Session-attr-0",
+            "name": "identifier",
+            "logicalName": "",
+            "type": "",
+            "typeParams": {
+              "maxLength": "",
+              "precision": "",
+              "scale": "",
+              "enumValues": ""
+            },
+            "defaultValue": "",
+            "nullable": false,
+            "unique": false,
+            "autoIncrement": false,
+            "visibility": {
+              "conceptual": true,
+              "logical": false,
+              "physical": false
+            }
+          },
+          {
+            "id": "Session-attr-1",
+            "name": "displayName",
+            "logicalName": "",
+            "type": "",
+            "typeParams": {
+              "maxLength": "",
+              "precision": "",
+              "scale": "",
+              "enumValues": ""
+            },
+            "defaultValue": "",
+            "nullable": false,
+            "unique": false,
+            "autoIncrement": false,
+            "visibility": {
+              "conceptual": true,
+              "logical": false,
+              "physical": false
+            }
+          },
+          {
+            "id": "Session-attr-2",
+            "name": "status",
+            "logicalName": "",
+            "type": "",
+            "typeParams": {
+              "maxLength": "",
+              "precision": "",
+              "scale": "",
+              "enumValues": ""
+            },
+            "defaultValue": "",
+            "nullable": false,
+            "unique": false,
+            "autoIncrement": false,
+            "visibility": {
+              "conceptual": true,
+              "logical": false,
+              "physical": false
+            }
+          },
+          {
+            "id": "Session-attr-3",
+            "name": "createdAt",
+            "logicalName": "",
+            "type": "",
+            "typeParams": {
+              "maxLength": "",
+              "precision": "",
+              "scale": "",
+              "enumValues": ""
+            },
+            "defaultValue": "",
+            "nullable": false,
+            "unique": false,
+            "autoIncrement": false,
+            "visibility": {
+              "conceptual": true,
+              "logical": false,
+              "physical": false
+            }
+          }
+        ],
+        "visibility": {
+          "conceptual": true,
+          "logical": false,
+          "physical": false
+        },
+        "viewPositions": {
+          "conceptual": {
+            "x": 2110,
+            "y": -400
+          },
+          "logical": {
+            "x": 2110,
+            "y": -400
+          },
+          "physical": {
+            "x": 2110,
+            "y": -400
+          }
+        }
+      }
+    },
+    {
+      "id": "Room",
+      "type": "class",
+      "position": {
+        "x": 1150,
+        "y": 250
+      },
+      "selected": false,
+      "data": {
+        "label": "Room",
+        "logicalName": "",
+        "color": "#2196f3",
+        "attributes": [
+          {
+            "id": "Room-attr-0",
+            "name": "identifier",
+            "logicalName": "",
+            "type": "",
+            "typeParams": {
+              "maxLength": "",
+              "precision": "",
+              "scale": "",
+              "enumValues": ""
+            },
+            "defaultValue": "",
+            "nullable": false,
+            "unique": false,
+            "autoIncrement": false,
+            "visibility": {
+              "conceptual": true,
+              "logical": false,
+              "physical": false
+            }
+          },
+          {
+            "id": "Room-attr-1",
+            "name": "displayName",
+            "logicalName": "",
+            "type": "",
+            "typeParams": {
+              "maxLength": "",
+              "precision": "",
+              "scale": "",
+              "enumValues": ""
+            },
+            "defaultValue": "",
+            "nullable": false,
+            "unique": false,
+            "autoIncrement": false,
+            "visibility": {
+              "conceptual": true,
+              "logical": false,
+              "physical": false
+            }
+          }
+        ],
+        "visibility": {
+          "conceptual": true,
+          "logical": false,
+          "physical": false
+        },
+        "viewPositions": {
+          "conceptual": {
+            "x": 1150,
+            "y": 250
+          },
+          "logical": {
+            "x": 1150,
+            "y": 250
+          },
+          "physical": {
+            "x": 1150,
+            "y": 250
+          }
+        }
+      }
+    },
+    {
+      "id": "Campus",
+      "type": "class",
+      "position": {
+        "x": 1630,
+        "y": 250
+      },
+      "selected": false,
+      "data": {
+        "label": "Campus",
+        "logicalName": "",
+        "color": "#2196f3",
+        "attributes": [
+          {
+            "id": "Campus-attr-0",
+            "name": "identifier",
+            "logicalName": "",
+            "type": "",
+            "typeParams": {
+              "maxLength": "",
+              "precision": "",
+              "scale": "",
+              "enumValues": ""
+            },
+            "defaultValue": "",
+            "nullable": false,
+            "unique": false,
+            "autoIncrement": false,
+            "visibility": {
+              "conceptual": true,
+              "logical": false,
+              "physical": false
+            }
+          },
+          {
+            "id": "Campus-attr-1",
+            "name": "displayName",
+            "logicalName": "",
+            "type": "",
+            "typeParams": {
+              "maxLength": "",
+              "precision": "",
+              "scale": "",
+              "enumValues": ""
+            },
+            "defaultValue": "",
+            "nullable": false,
+            "unique": false,
+            "autoIncrement": false,
+            "visibility": {
+              "conceptual": true,
+              "logical": false,
+              "physical": false
+            }
+          },
+          {
+            "id": "Campus-attr-2",
+            "name": "status",
+            "logicalName": "",
+            "type": "",
+            "typeParams": {
+              "maxLength": "",
+              "precision": "",
+              "scale": "",
+              "enumValues": ""
+            },
+            "defaultValue": "",
+            "nullable": false,
+            "unique": false,
+            "autoIncrement": false,
+            "visibility": {
+              "conceptual": true,
+              "logical": false,
+              "physical": false
+            }
+          }
+        ],
+        "visibility": {
+          "conceptual": true,
+          "logical": false,
+          "physical": false
+        },
+        "viewPositions": {
+          "conceptual": {
+            "x": 1630,
+            "y": 250
+          },
+          "logical": {
+            "x": 1630,
+            "y": 250
+          },
+          "physical": {
+            "x": 1630,
+            "y": 250
+          }
+        }
+      }
+    },
+    {
+      "id": "Semester",
+      "type": "class",
+      "position": {
+        "x": 2110,
+        "y": 250
+      },
+      "selected": false,
+      "data": {
+        "label": "Semester",
+        "logicalName": "",
+        "color": "#2196f3",
+        "attributes": [
+          {
+            "id": "Semester-attr-0",
+            "name": "identifier",
+            "logicalName": "",
+            "type": "",
+            "typeParams": {
+              "maxLength": "",
+              "precision": "",
+              "scale": "",
+              "enumValues": ""
+            },
+            "defaultValue": "",
+            "nullable": false,
+            "unique": false,
+            "autoIncrement": false,
+            "visibility": {
+              "conceptual": true,
+              "logical": false,
+              "physical": false
+            }
+          },
+          {
+            "id": "Semester-attr-1",
+            "name": "displayName",
+            "logicalName": "",
+            "type": "",
+            "typeParams": {
+              "maxLength": "",
+              "precision": "",
+              "scale": "",
+              "enumValues": ""
+            },
+            "defaultValue": "",
+            "nullable": false,
+            "unique": false,
+            "autoIncrement": false,
+            "visibility": {
+              "conceptual": true,
+              "logical": false,
+              "physical": false
+            }
+          },
+          {
+            "id": "Semester-attr-2",
+            "name": "status",
+            "logicalName": "",
+            "type": "",
+            "typeParams": {
+              "maxLength": "",
+              "precision": "",
+              "scale": "",
+              "enumValues": ""
+            },
+            "defaultValue": "",
+            "nullable": false,
+            "unique": false,
+            "autoIncrement": false,
+            "visibility": {
+              "conceptual": true,
+              "logical": false,
+              "physical": false
+            }
+          },
+          {
+            "id": "Semester-attr-3",
+            "name": "createdAt",
+            "logicalName": "",
+            "type": "",
+            "typeParams": {
+              "maxLength": "",
+              "precision": "",
+              "scale": "",
+              "enumValues": ""
+            },
+            "defaultValue": "",
+            "nullable": false,
+            "unique": false,
+            "autoIncrement": false,
+            "visibility": {
+              "conceptual": true,
+              "logical": false,
+              "physical": false
+            }
+          }
+        ],
+        "visibility": {
+          "conceptual": true,
+          "logical": false,
+          "physical": false
+        },
+        "viewPositions": {
+          "conceptual": {
+            "x": 2110,
+            "y": 250
+          },
+          "logical": {
+            "x": 2110,
+            "y": 250
+          },
+          "physical": {
+            "x": 2110,
+            "y": 250
+          }
+        }
+      }
+    },
+    {
+      "id": "area-0003",
+      "type": "area",
+      "position": {
+        "x": -710,
+        "y": 1130
+      },
+      "selected": false,
+      "data": {
+        "label": "Assessment",
+        "color": "#9c27b0",
+        "viewSizes": {
+          "conceptual": {
+            "width": 1530,
+            "height": 1370
+          },
+          "logical": {
+            "width": 1530,
+            "height": 1370
+          },
+          "physical": {
+            "width": 1530,
+            "height": 1370
+          }
+        },
+        "visibility": {
+          "conceptual": true,
+          "logical": false,
+          "physical": false
+        },
+        "viewPositions": {
+          "conceptual": {
+            "x": -710,
+            "y": 1130
+          },
+          "logical": {
+            "x": -710,
+            "y": 1130
+          },
+          "physical": {
+            "x": -710,
+            "y": 1130
+          }
+        }
+      },
+      "width": 1530,
+      "height": 1370,
+      "style": {
+        "width": 1530,
+        "height": 1370
+      },
+      "zIndex": -1
+    },
+    {
+      "id": "Assessment",
+      "type": "class",
+      "position": {
+        "x": -650,
+        "y": 1200
+      },
+      "selected": false,
+      "data": {
+        "label": "Assessment",
+        "logicalName": "",
+        "color": "#9c27b0",
+        "attributes": [
+          {
+            "id": "Assessment-attr-0",
+            "name": "identifier",
+            "logicalName": "",
+            "type": "",
+            "typeParams": {
+              "maxLength": "",
+              "precision": "",
+              "scale": "",
+              "enumValues": ""
+            },
+            "defaultValue": "",
+            "nullable": false,
+            "unique": false,
+            "autoIncrement": false,
+            "visibility": {
+              "conceptual": true,
+              "logical": false,
+              "physical": false
+            }
+          },
+          {
+            "id": "Assessment-attr-1",
+            "name": "displayName",
+            "logicalName": "",
+            "type": "",
+            "typeParams": {
+              "maxLength": "",
+              "precision": "",
+              "scale": "",
+              "enumValues": ""
+            },
+            "defaultValue": "",
+            "nullable": false,
+            "unique": false,
+            "autoIncrement": false,
+            "visibility": {
+              "conceptual": true,
+              "logical": false,
+              "physical": false
+            }
+          },
+          {
+            "id": "Assessment-attr-2",
+            "name": "status",
+            "logicalName": "",
+            "type": "",
+            "typeParams": {
+              "maxLength": "",
+              "precision": "",
+              "scale": "",
+              "enumValues": ""
+            },
+            "defaultValue": "",
+            "nullable": false,
+            "unique": false,
+            "autoIncrement": false,
+            "visibility": {
+              "conceptual": true,
+              "logical": false,
+              "physical": false
+            }
+          },
+          {
+            "id": "Assessment-attr-3",
+            "name": "createdAt",
+            "logicalName": "",
+            "type": "",
+            "typeParams": {
+              "maxLength": "",
+              "precision": "",
+              "scale": "",
+              "enumValues": ""
+            },
+            "defaultValue": "",
+            "nullable": false,
+            "unique": false,
+            "autoIncrement": false,
+            "visibility": {
+              "conceptual": true,
+              "logical": false,
+              "physical": false
+            }
+          },
+          {
+            "id": "Assessment-attr-4",
+            "name": "updatedAt",
+            "logicalName": "",
+            "type": "",
+            "typeParams": {
+              "maxLength": "",
+              "precision": "",
+              "scale": "",
+              "enumValues": ""
+            },
+            "defaultValue": "",
+            "nullable": false,
+            "unique": false,
+            "autoIncrement": false,
+            "visibility": {
+              "conceptual": true,
+              "logical": false,
+              "physical": false
+            }
+          },
+          {
+            "id": "Assessment-attr-5",
+            "name": "effectiveFrom",
+            "logicalName": "",
+            "type": "",
+            "typeParams": {
+              "maxLength": "",
+              "precision": "",
+              "scale": "",
+              "enumValues": ""
+            },
+            "defaultValue": "",
+            "nullable": false,
+            "unique": false,
+            "autoIncrement": false,
+            "visibility": {
+              "conceptual": true,
+              "logical": false,
+              "physical": false
+            }
+          },
+          {
+            "id": "Assessment-attr-6",
+            "name": "effectiveUntil",
+            "logicalName": "",
+            "type": "",
+            "typeParams": {
+              "maxLength": "",
+              "precision": "",
+              "scale": "",
+              "enumValues": ""
+            },
+            "defaultValue": "",
+            "nullable": false,
+            "unique": false,
+            "autoIncrement": false,
+            "visibility": {
+              "conceptual": true,
+              "logical": false,
+              "physical": false
+            }
+          }
+        ],
+        "visibility": {
+          "conceptual": true,
+          "logical": false,
+          "physical": false
+        },
+        "viewPositions": {
+          "conceptual": {
+            "x": -650,
+            "y": 1200
+          },
+          "logical": {
+            "x": -650,
+            "y": 1200
+          },
+          "physical": {
+            "x": -650,
+            "y": 1200
+          }
+        }
+      }
+    },
+    {
+      "id": "Submission",
+      "type": "class",
+      "position": {
+        "x": -170,
+        "y": 1200
+      },
+      "selected": false,
+      "data": {
+        "label": "Submission",
+        "logicalName": "",
+        "color": "#9c27b0",
+        "attributes": [
+          {
+            "id": "Submission-attr-0",
+            "name": "identifier",
+            "logicalName": "",
+            "type": "",
+            "typeParams": {
+              "maxLength": "",
+              "precision": "",
+              "scale": "",
+              "enumValues": ""
+            },
+            "defaultValue": "",
+            "nullable": false,
+            "unique": false,
+            "autoIncrement": false,
+            "visibility": {
+              "conceptual": true,
+              "logical": false,
+              "physical": false
+            }
+          },
+          {
+            "id": "Submission-attr-1",
+            "name": "displayName",
+            "logicalName": "",
+            "type": "",
+            "typeParams": {
+              "maxLength": "",
+              "precision": "",
+              "scale": "",
+              "enumValues": ""
+            },
+            "defaultValue": "",
+            "nullable": false,
+            "unique": false,
+            "autoIncrement": false,
+            "visibility": {
+              "conceptual": true,
+              "logical": false,
+              "physical": false
+            }
+          },
+          {
+            "id": "Submission-attr-2",
+            "name": "status",
+            "logicalName": "",
+            "type": "",
+            "typeParams": {
+              "maxLength": "",
+              "precision": "",
+              "scale": "",
+              "enumValues": ""
+            },
+            "defaultValue": "",
+            "nullable": false,
+            "unique": false,
+            "autoIncrement": false,
+            "visibility": {
+              "conceptual": true,
+              "logical": false,
+              "physical": false
+            }
+          }
+        ],
+        "visibility": {
+          "conceptual": true,
+          "logical": false,
+          "physical": false
+        },
+        "viewPositions": {
+          "conceptual": {
+            "x": -170,
+            "y": 1200
+          },
+          "logical": {
+            "x": -170,
+            "y": 1200
+          },
+          "physical": {
+            "x": -170,
+            "y": 1200
+          }
+        }
+      }
+    },
+    {
+      "id": "Grade",
+      "type": "class",
+      "position": {
+        "x": 310,
+        "y": 1200
+      },
+      "selected": false,
+      "data": {
+        "label": "Grade",
+        "logicalName": "",
+        "color": "#9c27b0",
+        "attributes": [
+          {
+            "id": "Grade-attr-0",
+            "name": "identifier",
+            "logicalName": "",
+            "type": "",
+            "typeParams": {
+              "maxLength": "",
+              "precision": "",
+              "scale": "",
+              "enumValues": ""
+            },
+            "defaultValue": "",
+            "nullable": false,
+            "unique": false,
+            "autoIncrement": false,
+            "visibility": {
+              "conceptual": true,
+              "logical": false,
+              "physical": false
+            }
+          },
+          {
+            "id": "Grade-attr-1",
+            "name": "displayName",
+            "logicalName": "",
+            "type": "",
+            "typeParams": {
+              "maxLength": "",
+              "precision": "",
+              "scale": "",
+              "enumValues": ""
+            },
+            "defaultValue": "",
+            "nullable": false,
+            "unique": false,
+            "autoIncrement": false,
+            "visibility": {
+              "conceptual": true,
+              "logical": false,
+              "physical": false
+            }
+          },
+          {
+            "id": "Grade-attr-2",
+            "name": "status",
+            "logicalName": "",
+            "type": "",
+            "typeParams": {
+              "maxLength": "",
+              "precision": "",
+              "scale": "",
+              "enumValues": ""
+            },
+            "defaultValue": "",
+            "nullable": false,
+            "unique": false,
+            "autoIncrement": false,
+            "visibility": {
+              "conceptual": true,
+              "logical": false,
+              "physical": false
+            }
+          },
+          {
+            "id": "Grade-attr-3",
+            "name": "createdAt",
+            "logicalName": "",
+            "type": "",
+            "typeParams": {
+              "maxLength": "",
+              "precision": "",
+              "scale": "",
+              "enumValues": ""
+            },
+            "defaultValue": "",
+            "nullable": false,
+            "unique": false,
+            "autoIncrement": false,
+            "visibility": {
+              "conceptual": true,
+              "logical": false,
+              "physical": false
+            }
+          }
+        ],
+        "visibility": {
+          "conceptual": true,
+          "logical": false,
+          "physical": false
+        },
+        "viewPositions": {
+          "conceptual": {
+            "x": 310,
+            "y": 1200
+          },
+          "logical": {
+            "x": 310,
+            "y": 1200
+          },
+          "physical": {
+            "x": 310,
+            "y": 1200
+          }
+        }
+      }
+    },
+    {
+      "id": "Qualification",
+      "type": "class",
+      "position": {
+        "x": -650,
+        "y": 1850
+      },
+      "selected": false,
+      "data": {
+        "label": "Qualification",
+        "logicalName": "",
+        "color": "#9c27b0",
+        "attributes": [
+          {
+            "id": "Qualification-attr-0",
+            "name": "identifier",
+            "logicalName": "",
+            "type": "",
+            "typeParams": {
+              "maxLength": "",
+              "precision": "",
+              "scale": "",
+              "enumValues": ""
+            },
+            "defaultValue": "",
+            "nullable": false,
+            "unique": false,
+            "autoIncrement": false,
+            "visibility": {
+              "conceptual": true,
+              "logical": false,
+              "physical": false
+            }
+          },
+          {
+            "id": "Qualification-attr-1",
+            "name": "displayName",
+            "logicalName": "",
+            "type": "",
+            "typeParams": {
+              "maxLength": "",
+              "precision": "",
+              "scale": "",
+              "enumValues": ""
+            },
+            "defaultValue": "",
+            "nullable": false,
+            "unique": false,
+            "autoIncrement": false,
+            "visibility": {
+              "conceptual": true,
+              "logical": false,
+              "physical": false
+            }
+          }
+        ],
+        "visibility": {
+          "conceptual": true,
+          "logical": false,
+          "physical": false
+        },
+        "viewPositions": {
+          "conceptual": {
+            "x": -650,
+            "y": 1850
+          },
+          "logical": {
+            "x": -650,
+            "y": 1850
+          },
+          "physical": {
+            "x": -650,
+            "y": 1850
+          }
+        }
+      }
+    },
+    {
+      "id": "Attendance",
+      "type": "class",
+      "position": {
+        "x": -170,
+        "y": 1850
+      },
+      "selected": false,
+      "data": {
+        "label": "Attendance",
+        "logicalName": "",
+        "color": "#9c27b0",
+        "attributes": [
+          {
+            "id": "Attendance-attr-0",
+            "name": "identifier",
+            "logicalName": "",
+            "type": "",
+            "typeParams": {
+              "maxLength": "",
+              "precision": "",
+              "scale": "",
+              "enumValues": ""
+            },
+            "defaultValue": "",
+            "nullable": false,
+            "unique": false,
+            "autoIncrement": false,
+            "visibility": {
+              "conceptual": true,
+              "logical": false,
+              "physical": false
+            }
+          },
+          {
+            "id": "Attendance-attr-1",
+            "name": "displayName",
+            "logicalName": "",
+            "type": "",
+            "typeParams": {
+              "maxLength": "",
+              "precision": "",
+              "scale": "",
+              "enumValues": ""
+            },
+            "defaultValue": "",
+            "nullable": false,
+            "unique": false,
+            "autoIncrement": false,
+            "visibility": {
+              "conceptual": true,
+              "logical": false,
+              "physical": false
+            }
+          },
+          {
+            "id": "Attendance-attr-2",
+            "name": "status",
+            "logicalName": "",
+            "type": "",
+            "typeParams": {
+              "maxLength": "",
+              "precision": "",
+              "scale": "",
+              "enumValues": ""
+            },
+            "defaultValue": "",
+            "nullable": false,
+            "unique": false,
+            "autoIncrement": false,
+            "visibility": {
+              "conceptual": true,
+              "logical": false,
+              "physical": false
+            }
+          }
+        ],
+        "visibility": {
+          "conceptual": true,
+          "logical": false,
+          "physical": false
+        },
+        "viewPositions": {
+          "conceptual": {
+            "x": -170,
+            "y": 1850
+          },
+          "logical": {
+            "x": -170,
+            "y": 1850
+          },
+          "physical": {
+            "x": -170,
+            "y": 1850
+          }
+        }
+      }
+    },
+    {
+      "id": "Enrolment",
+      "type": "class",
+      "position": {
+        "x": 1100,
+        "y": 1400
+      },
+      "selected": false,
+      "data": {
+        "label": "enrolsIn",
+        "logicalName": "",
+        "color": "#9c27b0",
+        "attributes": [
+          {
+            "id": "Enrolment-attr-0",
+            "name": "registeredAt",
+            "logicalName": "",
+            "type": "",
+            "typeParams": {
+              "maxLength": "",
+              "precision": "",
+              "scale": "",
+              "enumValues": ""
+            },
+            "defaultValue": "",
+            "nullable": false,
+            "unique": false,
+            "autoIncrement": false,
+            "visibility": {
+              "conceptual": true,
+              "logical": false,
+              "physical": false
+            }
+          },
+          {
+            "id": "Enrolment-attr-1",
+            "name": "attempt",
+            "logicalName": "",
+            "type": "",
+            "typeParams": {
+              "maxLength": "",
+              "precision": "",
+              "scale": "",
+              "enumValues": ""
+            },
+            "defaultValue": "",
+            "nullable": false,
+            "unique": false,
+            "autoIncrement": false,
+            "visibility": {
+              "conceptual": true,
+              "logical": false,
+              "physical": false
+            }
+          },
+          {
+            "id": "Enrolment-attr-2",
+            "name": "status",
+            "logicalName": "",
+            "type": "",
+            "typeParams": {
+              "maxLength": "",
+              "precision": "",
+              "scale": "",
+              "enumValues": ""
+            },
+            "defaultValue": "",
+            "nullable": false,
+            "unique": false,
+            "autoIncrement": false,
+            "visibility": {
+              "conceptual": true,
+              "logical": false,
+              "physical": false
+            }
+          }
+        ],
+        "visibility": {
+          "conceptual": true,
+          "logical": false,
+          "physical": false
+        },
+        "viewPositions": {
+          "conceptual": {
+            "x": 1100,
+            "y": 1400
+          },
+          "logical": {
+            "x": 1100,
+            "y": 1400
+          },
+          "physical": {
+            "x": 1100,
+            "y": 1400
+          }
+        }
+      }
+    },
+    {
+      "id": "note-0030",
+      "type": "note",
+      "position": {
+        "x": -1000,
+        "y": -650
+      },
+      "selected": false,
+      "data": {
+        "label": "Four reflexive corners",
+        "text": "Person has four reflexive associations. Inspect both roles, both multiplicities and each name; resize one loop, then undo.",
+        "visibility": {
+          "conceptual": true,
+          "logical": false,
+          "physical": false
+        },
+        "viewPositions": {
+          "conceptual": {
+            "x": -1000,
+            "y": -650
+          },
+          "logical": {
+            "x": -1000,
+            "y": -650
+          },
+          "physical": {
+            "x": -1000,
+            "y": -650
+          }
+        }
+      }
+    },
+    {
+      "id": "note-0031",
+      "type": "note",
+      "position": {
+        "x": 1470,
+        "y": 1400
+      },
+      "selected": false,
+      "data": {
+        "label": "Association class",
+        "text": "The Enrolment class attaches to enrolsIn. Move Student or Course and verify that the dashed link follows the base association.",
+        "visibility": {
+          "conceptual": true,
+          "logical": false,
+          "physical": false
+        },
+        "viewPositions": {
+          "conceptual": {
+            "x": 1470,
+            "y": 1400
+          },
+          "logical": {
+            "x": 1470,
+            "y": 1400
+          },
+          "physical": {
+            "x": 1470,
+            "y": 1400
+          }
+        }
+      }
+    },
+    {
+      "id": "note-0032",
+      "type": "note",
+      "position": {
+        "x": 2700,
+        "y": 800
+      },
+      "selected": false,
+      "data": {
+        "label": "Composition",
+        "text": "Enable composite aggregations in View settings. The Course–Module diamond must remain attached and match its line colour.",
+        "visibility": {
+          "conceptual": true,
+          "logical": false,
+          "physical": false
+        },
+        "viewPositions": {
+          "conceptual": {
+            "x": 2700,
+            "y": 800
+          },
+          "logical": {
+            "x": 2700,
+            "y": 800
+          },
+          "physical": {
+            "x": 2700,
+            "y": 800
+          }
+        }
+      }
+    }
+  ],
+  "edges": [
+    {
+      "id": "edge-0004",
+      "source": "Person",
+      "target": "Student",
+      "sourceHandle": "right-source",
+      "targetHandle": "left-target",
+      "type": "association",
+      "selected": false,
+      "interactionWidth": 20,
+      "data": {
+        "name": "studiesAs",
+        "type": "association",
+        "roleA": "person",
+        "roleB": "student",
+        "multiplicityA": "1..1",
+        "multiplicityB": "0..*",
+        "lineStyle": "orthogonal",
+        "controlPoints": [],
+        "parallelIndex": 0,
+        "parallelCount": 1
+      }
+    },
+    {
+      "id": "edge-0005",
+      "source": "Person",
+      "target": "Lecturer",
+      "sourceHandle": "right-source",
+      "targetHandle": "left-target",
+      "type": "association",
+      "selected": false,
+      "interactionWidth": 20,
+      "data": {
+        "name": "teachesAs",
+        "type": "association",
+        "roleA": "person",
+        "roleB": "lecturer",
+        "multiplicityA": "1..1",
+        "multiplicityB": "0..*",
+        "lineStyle": "orthogonal",
+        "controlPoints": [],
+        "parallelIndex": 0,
+        "parallelCount": 1
+      }
+    },
+    {
+      "id": "edge-0006",
+      "source": "Person",
+      "target": "Address",
+      "sourceHandle": "right-source",
+      "targetHandle": "left-target",
+      "type": "association",
+      "selected": false,
+      "interactionWidth": 20,
+      "data": {
+        "name": "livesAt",
+        "type": "association",
+        "roleA": "person",
+        "roleB": "address",
+        "multiplicityA": "1..1",
+        "multiplicityB": "0..*",
+        "lineStyle": "orthogonal",
+        "controlPoints": [],
+        "parallelIndex": 0,
+        "parallelCount": 1
+      }
+    },
+    {
+      "id": "edge-0007",
+      "source": "Person",
+      "target": "EmergencyContact",
+      "sourceHandle": "right-source",
+      "targetHandle": "left-target",
+      "type": "association",
+      "selected": false,
+      "interactionWidth": 20,
+      "data": {
+        "name": "nominates",
+        "type": "association",
+        "roleA": "person",
+        "roleB": "emergencycontact",
+        "multiplicityA": "1..1",
+        "multiplicityB": "0..*",
+        "lineStyle": "orthogonal",
+        "controlPoints": [],
+        "parallelIndex": 0,
+        "parallelCount": 1
+      }
+    },
+    {
+      "id": "edge-0008",
+      "source": "Lecturer",
+      "target": "Department",
+      "sourceHandle": "right-source",
+      "targetHandle": "left-target",
+      "type": "association",
+      "selected": false,
+      "interactionWidth": 20,
+      "data": {
+        "name": "worksIn",
+        "type": "association",
+        "roleA": "lecturer",
+        "roleB": "department",
+        "multiplicityA": "1..1",
+        "multiplicityB": "0..*",
+        "lineStyle": "orthogonal",
+        "controlPoints": [],
+        "parallelIndex": 0,
+        "parallelCount": 1
+      }
+    },
+    {
+      "id": "edge-0009",
+      "source": "Student",
+      "target": "Course",
+      "sourceHandle": "right-source",
+      "targetHandle": "left-target",
+      "type": "association",
+      "selected": false,
+      "interactionWidth": 20,
+      "data": {
+        "name": "enrolsIn",
+        "type": "association",
+        "roleA": "student",
+        "roleB": "course",
+        "multiplicityA": "1..1",
+        "multiplicityB": "0..*",
+        "lineStyle": "orthogonal",
+        "controlPoints": [],
+        "parallelIndex": 0,
+        "parallelCount": 2
+      }
+    },
+    {
+      "id": "edge-0010",
+      "source": "Student",
+      "target": "Course",
+      "sourceHandle": "right-source",
+      "targetHandle": "left-target",
+      "type": "association",
+      "selected": false,
+      "interactionWidth": 20,
+      "data": {
+        "name": "waitsFor",
+        "type": "association",
+        "roleA": "student",
+        "roleB": "course",
+        "multiplicityA": "1..1",
+        "multiplicityB": "0..*",
+        "lineStyle": "orthogonal",
+        "controlPoints": [],
+        "parallelIndex": 1,
+        "parallelCount": 2
+      }
+    },
+    {
+      "id": "edge-0011",
+      "source": "Lecturer",
+      "target": "Course",
+      "sourceHandle": "right-source",
+      "targetHandle": "left-target",
+      "type": "association",
+      "selected": false,
+      "interactionWidth": 20,
+      "data": {
+        "name": "teaches",
+        "type": "association",
+        "roleA": "lecturer",
+        "roleB": "course",
+        "multiplicityA": "1..1",
+        "multiplicityB": "0..*",
+        "lineStyle": "orthogonal",
+        "controlPoints": [],
+        "parallelIndex": 0,
+        "parallelCount": 1
+      }
+    },
+    {
+      "id": "edge-0012",
+      "source": "Course",
+      "target": "Module",
+      "sourceHandle": "right-source",
+      "targetHandle": "left-target",
+      "type": "composition",
+      "selected": false,
+      "interactionWidth": 20,
+      "data": {
+        "name": "contains",
+        "type": "composition",
+        "roleA": "course",
+        "roleB": "module",
+        "multiplicityA": "1..1",
+        "multiplicityB": "0..*",
+        "lineStyle": "orthogonal",
+        "controlPoints": [],
+        "parallelIndex": 0,
+        "parallelCount": 1
+      }
+    },
+    {
+      "id": "edge-0013",
+      "source": "Module",
+      "target": "Session",
+      "sourceHandle": "right-source",
+      "targetHandle": "left-target",
+      "type": "association",
+      "selected": false,
+      "interactionWidth": 20,
+      "data": {
+        "name": "schedules",
+        "type": "association",
+        "roleA": "module",
+        "roleB": "session",
+        "multiplicityA": "1..1",
+        "multiplicityB": "0..*",
+        "lineStyle": "orthogonal",
+        "controlPoints": [],
+        "parallelIndex": 0,
+        "parallelCount": 1
+      }
+    },
+    {
+      "id": "edge-0014",
+      "source": "Session",
+      "target": "Room",
+      "sourceHandle": "right-source",
+      "targetHandle": "left-target",
+      "type": "association",
+      "selected": false,
+      "interactionWidth": 20,
+      "data": {
+        "name": "occupies",
+        "type": "association",
+        "roleA": "session",
+        "roleB": "room",
+        "multiplicityA": "1..1",
+        "multiplicityB": "0..*",
+        "lineStyle": "orthogonal",
+        "controlPoints": [],
+        "parallelIndex": 0,
+        "parallelCount": 1
+      }
+    },
+    {
+      "id": "edge-0015",
+      "source": "Room",
+      "target": "Campus",
+      "sourceHandle": "right-source",
+      "targetHandle": "left-target",
+      "type": "association",
+      "selected": false,
+      "interactionWidth": 20,
+      "data": {
+        "name": "locatedOn",
+        "type": "association",
+        "roleA": "room",
+        "roleB": "campus",
+        "multiplicityA": "1..1",
+        "multiplicityB": "0..*",
+        "lineStyle": "orthogonal",
+        "controlPoints": [],
+        "parallelIndex": 0,
+        "parallelCount": 1
+      }
+    },
+    {
+      "id": "edge-0016",
+      "source": "Session",
+      "target": "Semester",
+      "sourceHandle": "right-source",
+      "targetHandle": "left-target",
+      "type": "association",
+      "selected": false,
+      "interactionWidth": 20,
+      "data": {
+        "name": "occursDuring",
+        "type": "association",
+        "roleA": "session",
+        "roleB": "semester",
+        "multiplicityA": "1..1",
+        "multiplicityB": "0..*",
+        "lineStyle": "orthogonal",
+        "controlPoints": [],
+        "parallelIndex": 0,
+        "parallelCount": 1
+      }
+    },
+    {
+      "id": "edge-0017",
+      "source": "Student",
+      "target": "Submission",
+      "sourceHandle": "right-source",
+      "targetHandle": "left-target",
+      "type": "association",
+      "selected": false,
+      "interactionWidth": 20,
+      "data": {
+        "name": "submits",
+        "type": "association",
+        "roleA": "student",
+        "roleB": "submission",
+        "multiplicityA": "1..1",
+        "multiplicityB": "0..*",
+        "lineStyle": "orthogonal",
+        "controlPoints": [],
+        "parallelIndex": 0,
+        "parallelCount": 1
+      }
+    },
+    {
+      "id": "edge-0018",
+      "source": "Submission",
+      "target": "Assessment",
+      "sourceHandle": "right-source",
+      "targetHandle": "left-target",
+      "type": "association",
+      "selected": false,
+      "interactionWidth": 20,
+      "data": {
+        "name": "answers",
+        "type": "association",
+        "roleA": "submission",
+        "roleB": "assessment",
+        "multiplicityA": "1..1",
+        "multiplicityB": "0..*",
+        "lineStyle": "orthogonal",
+        "controlPoints": [],
+        "parallelIndex": 0,
+        "parallelCount": 1
+      }
+    },
+    {
+      "id": "edge-0019",
+      "source": "Assessment",
+      "target": "Grade",
+      "sourceHandle": "right-source",
+      "targetHandle": "left-target",
+      "type": "association",
+      "selected": false,
+      "interactionWidth": 20,
+      "data": {
+        "name": "awards",
+        "type": "association",
+        "roleA": "assessment",
+        "roleB": "grade",
+        "multiplicityA": "1..1",
+        "multiplicityB": "0..*",
+        "lineStyle": "orthogonal",
+        "controlPoints": [],
+        "parallelIndex": 0,
+        "parallelCount": 1
+      }
+    },
+    {
+      "id": "edge-0020",
+      "source": "Grade",
+      "target": "Qualification",
+      "sourceHandle": "right-source",
+      "targetHandle": "left-target",
+      "type": "association",
+      "selected": false,
+      "interactionWidth": 20,
+      "data": {
+        "name": "contributesTo",
+        "type": "association",
+        "roleA": "grade",
+        "roleB": "qualification",
+        "multiplicityA": "1..1",
+        "multiplicityB": "0..*",
+        "lineStyle": "orthogonal",
+        "controlPoints": [],
+        "parallelIndex": 0,
+        "parallelCount": 1
+      }
+    },
+    {
+      "id": "edge-0021",
+      "source": "Student",
+      "target": "Attendance",
+      "sourceHandle": "right-source",
+      "targetHandle": "left-target",
+      "type": "association",
+      "selected": false,
+      "interactionWidth": 20,
+      "data": {
+        "name": "attends",
+        "type": "association",
+        "roleA": "student",
+        "roleB": "attendance",
+        "multiplicityA": "1..1",
+        "multiplicityB": "0..*",
+        "lineStyle": "orthogonal",
+        "controlPoints": [],
+        "parallelIndex": 0,
+        "parallelCount": 1
+      }
+    },
+    {
+      "id": "edge-0022",
+      "source": "Attendance",
+      "target": "Session",
+      "sourceHandle": "right-source",
+      "targetHandle": "left-target",
+      "type": "association",
+      "selected": false,
+      "interactionWidth": 20,
+      "data": {
+        "name": "recordsPresenceAt",
+        "type": "association",
+        "roleA": "attendance",
+        "roleB": "session",
+        "multiplicityA": "1..1",
+        "multiplicityB": "0..*",
+        "lineStyle": "orthogonal",
+        "controlPoints": [],
+        "parallelIndex": 0,
+        "parallelCount": 1
+      }
+    },
+    {
+      "id": "edge-0023",
+      "source": "Lecturer",
+      "target": "Assessment",
+      "sourceHandle": "right-source",
+      "targetHandle": "left-target",
+      "type": "association",
+      "selected": false,
+      "interactionWidth": 20,
+      "data": {
+        "name": "marks",
+        "type": "association",
+        "roleA": "lecturer",
+        "roleB": "assessment",
+        "multiplicityA": "1..1",
+        "multiplicityB": "0..*",
+        "lineStyle": "orthogonal",
+        "controlPoints": [],
+        "parallelIndex": 0,
+        "parallelCount": 1
+      }
+    },
+    {
+      "id": "edge-0024",
+      "source": "Course",
+      "target": "Assessment",
+      "sourceHandle": "right-source",
+      "targetHandle": "left-target",
+      "type": "association",
+      "selected": false,
+      "interactionWidth": 20,
+      "data": {
+        "name": "requires",
+        "type": "association",
+        "roleA": "course",
+        "roleB": "assessment",
+        "multiplicityA": "1..1",
+        "multiplicityB": "0..*",
+        "lineStyle": "orthogonal",
+        "controlPoints": [],
+        "parallelIndex": 0,
+        "parallelCount": 1
+      }
+    },
+    {
+      "id": "associative-0025",
+      "source": "Enrolment",
+      "target": "assoc-edge-edge-0009",
+      "sourceHandle": "top-source",
+      "targetHandle": "association-target",
+      "type": "associativeAssociation",
+      "selected": false,
+      "interactionWidth": 20,
+      "data": {
+        "name": "enrolsIn",
+        "type": "associative",
+        "autoName": true
+      }
+    },
+    {
+      "id": "edge-0026",
+      "source": "Person",
+      "target": "Person",
+      "sourceHandle": "right-source",
+      "targetHandle": "left-target",
+      "type": "reflexiveAssociation",
+      "selected": false,
+      "interactionWidth": 20,
+      "data": {
+        "name": "mentors",
+        "type": "association",
+        "roleA": "parent",
+        "roleB": "child",
+        "multiplicityA": "0..1",
+        "multiplicityB": "0..*",
+        "lineStyle": "orthogonal",
+        "controlPoints": [],
+        "reflexiveIndex": 0,
+        "reflexiveCount": 4,
+        "reflexiveSide": "left",
+        "loopWidth": 85,
+        "loopHeight": 125
+      }
+    },
+    {
+      "id": "edge-0027",
+      "source": "Person",
+      "target": "Person",
+      "sourceHandle": "right-source",
+      "targetHandle": "left-target",
+      "type": "reflexiveAssociation",
+      "selected": false,
+      "interactionWidth": 20,
+      "data": {
+        "name": "delegatesTo",
+        "type": "association",
+        "roleA": "parent",
+        "roleB": "child",
+        "multiplicityA": "0..1",
+        "multiplicityB": "0..*",
+        "lineStyle": "orthogonal",
+        "controlPoints": [],
+        "reflexiveIndex": 1,
+        "reflexiveCount": 4,
+        "reflexiveSide": "right",
+        "loopWidth": 85,
+        "loopHeight": 125
+      }
+    },
+    {
+      "id": "edge-0028",
+      "source": "Person",
+      "target": "Person",
+      "sourceHandle": "right-source",
+      "targetHandle": "left-target",
+      "type": "reflexiveAssociation",
+      "selected": false,
+      "interactionWidth": 20,
+      "data": {
+        "name": "replaces",
+        "type": "association",
+        "roleA": "parent",
+        "roleB": "child",
+        "multiplicityA": "0..1",
+        "multiplicityB": "0..*",
+        "lineStyle": "orthogonal",
+        "controlPoints": [],
+        "reflexiveIndex": 2,
+        "reflexiveCount": 4,
+        "reflexiveSide": "lower-right",
+        "loopWidth": 85,
+        "loopHeight": 125
+      }
+    },
+    {
+      "id": "edge-0029",
+      "source": "Person",
+      "target": "Person",
+      "sourceHandle": "right-source",
+      "targetHandle": "left-target",
+      "type": "reflexiveAssociation",
+      "selected": false,
+      "interactionWidth": 20,
+      "data": {
+        "name": "isRelatedTo",
+        "type": "association",
+        "roleA": "parent",
+        "roleB": "child",
+        "multiplicityA": "0..1",
+        "multiplicityB": "0..*",
+        "lineStyle": "orthogonal",
+        "controlPoints": [],
+        "reflexiveIndex": 3,
+        "reflexiveCount": 4,
+        "reflexiveSide": "lower-left",
+        "loopWidth": 85,
+        "loopHeight": 125
+      }
+    }
+  ],
+  "annotations": {
+    "conceptual": {
+      "items": [
+        {
+          "id": "text-0033",
+          "kind": "text",
+          "x": 800,
+          "y": -650,
+          "text": "Teaching and assessment / UML review",
+          "color": "#334155",
+          "fontSize": 28
+        },
+        {
+          "id": "rectangle-0034",
+          "kind": "shape",
+          "shape": "rectangle",
+          "x1": 1050,
+          "y1": 1300,
+          "x2": 1350,
+          "y2": 1660,
+          "color": "#7c3aed",
+          "thickness": 2
+        },
+        {
+          "id": "ellipse-0035",
+          "kind": "shape",
+          "shape": "ellipse",
+          "x1": -870,
+          "y1": -600,
+          "x2": -180,
+          "y2": 50,
+          "color": "#dc2626",
+          "thickness": 2
+        },
+        {
+          "id": "arrow-0036",
+          "kind": "shape",
+          "shape": "arrow",
+          "x1": 1470,
+          "y1": 1460,
+          "x2": 1320,
+          "y2": 1450,
+          "color": "#dc2626",
+          "thickness": 2
+        },
+        {
+          "id": "line-0037",
+          "kind": "shape",
+          "shape": "line",
+          "x1": 950,
+          "y1": 1000,
+          "x2": 2700,
+          "y2": 1000,
+          "color": "#94a3b8",
+          "thickness": 2
+        },
+        {
+          "id": "stroke-0038",
+          "kind": "stroke",
+          "tool": "marker",
+          "points": [
+            {
+              "x": 1120,
+              "y": -480
+            },
+            {
+              "x": 1300,
+              "y": -470
+            },
+            {
+              "x": 1500,
+              "y": -475
+            },
+            {
+              "x": 1700,
+              "y": -460
+            }
+          ],
+          "color": "#facc15",
+          "thickness": 18,
+          "opacity": 0.35
+        },
+        {
+          "id": "stroke-0039",
+          "kind": "stroke",
+          "tool": "pen",
+          "points": [
+            {
+              "x": -1000,
+              "y": 50
+            },
+            {
+              "x": -900,
+              "y": 120
+            },
+            {
+              "x": -800,
+              "y": 80
+            },
+            {
+              "x": -700,
+              "y": 140
+            }
+          ],
+          "color": "#2563eb",
+          "thickness": 3,
+          "opacity": 1
+        },
+        {
+          "id": "text-0040",
+          "kind": "text",
+          "x": 1000,
+          "y": 2300,
+          "text": "Évaluation / Prüfung / 評価",
+          "color": "#334155",
+          "fontSize": 18,
+          "width": 300,
+          "padding": 12,
+          "background": "#fef3c7",
+          "border": true
+        }
+      ]
+    },
+    "logical": {
+      "items": []
+    },
+    "physical": {
+      "items": []
+    }
+  }
+}

@@ -78,7 +78,7 @@ export default function ClassesPanelAttributesPanel({
           value={openAttributeId}
           onValueChange={setOpenAttributeId}
         >
-          <ul className="mt-2 flex flex-col gap-1">
+          <ul className="mt-2 flex flex-col gap-0.5">
             {attributes.map((attribute) => (
               <ClassesPanelAttributesItem
                 key={attribute.id}

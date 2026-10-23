@@ -174,3 +174,27 @@ describe('annotation tools', () => {
     expect(result.current.annotations.conceptual.items[0]).toMatchObject({ kind: 'shape', x2: 100, y2: 20 })
   })
 })
+
+ it('undoes and redoes each style gesture once, including separate drags on the same slider', async () => {
+  const {result} = renderHook(() => {
+   const snapshot = useRef(() => null);
+   const history = useHistory();
+   const annotation = useAnnotations({activeView:'conceptual',pushHistorySnapshot:()=>history.pushHistory(snapshot.current())});
+   snapshot.current = annotation.getAnnotationsSnapshot;
+   return {...annotation,undo:()=>history.undo(annotation.getAnnotationsSnapshot(),annotation.onLoadAnnotations),redo:()=>history.redo(annotation.getAnnotationsSnapshot(),annotation.onLoadAnnotations)};
+  });
+  load(result,[textItem]);
+  act(()=>{result.current.setTool('select');result.current.onSelectItem('text')});
+  act(()=>result.current.beginStyleEdit());
+  for(const fontSize of [15,16,17,18,19,20]) await act(async()=>result.current.updateSelected({fontSize}));
+  act(()=>result.current.endStyleEdit());
+  act(()=>result.current.beginStyleEdit());
+  for(const fontSize of [21,22]) await act(async()=>result.current.updateSelected({fontSize}));
+  act(()=>result.current.endStyleEdit());
+  act(()=>result.current.undo());
+  expect(result.current.annotations.conceptual.items[0].fontSize).toBe(20);
+  act(()=>result.current.undo());
+  expect(result.current.annotations.conceptual.items[0].fontSize).toBe(14);
+  act(()=>result.current.redo());
+  expect(result.current.annotations.conceptual.items[0].fontSize).toBe(20);
+ });

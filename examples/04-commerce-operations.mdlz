@@ -1,0 +1,5446 @@
+{
+  "version": 2,
+  "modelName": "04 - Commerce operations",
+  "nodes": [
+    {
+      "id": "Customer",
+      "type": "class",
+      "position": {
+        "x": -700,
+        "y": -450
+      },
+      "selected": false,
+      "data": {
+        "label": "Customer",
+        "logicalName": "",
+        "color": "#009688",
+        "attributes": [],
+        "visibility": {
+          "conceptual": true,
+          "logical": false,
+          "physical": false
+        },
+        "viewPositions": {
+          "conceptual": {
+            "x": -700,
+            "y": -450
+          },
+          "logical": {
+            "x": -700,
+            "y": -450
+          },
+          "physical": {
+            "x": -700,
+            "y": -450
+          }
+        }
+      }
+    },
+    {
+      "id": "Order",
+      "type": "class",
+      "position": {
+        "x": -240,
+        "y": -450
+      },
+      "selected": false,
+      "data": {
+        "label": "Order",
+        "logicalName": "",
+        "color": "#009688",
+        "attributes": [
+          {
+            "id": "Order-attr-0",
+            "name": "identifier",
+            "logicalName": "",
+            "type": "",
+            "typeParams": {
+              "maxLength": "",
+              "precision": "",
+              "scale": "",
+              "enumValues": ""
+            },
+            "defaultValue": "",
+            "nullable": false,
+            "unique": false,
+            "autoIncrement": false,
+            "visibility": {
+              "conceptual": true,
+              "logical": false,
+              "physical": false
+            }
+          }
+        ],
+        "visibility": {
+          "conceptual": true,
+          "logical": false,
+          "physical": false
+        },
+        "viewPositions": {
+          "conceptual": {
+            "x": -240,
+            "y": -450
+          },
+          "logical": {
+            "x": -240,
+            "y": -450
+          },
+          "physical": {
+            "x": -240,
+            "y": -450
+          }
+        }
+      }
+    },
+    {
+      "id": "OrderLine",
+      "type": "class",
+      "position": {
+        "x": 220,
+        "y": -450
+      },
+      "selected": false,
+      "data": {
+        "label": "OrderLine",
+        "logicalName": "",
+        "color": "#009688",
+        "attributes": [
+          {
+            "id": "OrderLine-attr-0",
+            "name": "identifier",
+            "logicalName": "",
+            "type": "",
+            "typeParams": {
+              "maxLength": "",
+              "precision": "",
+              "scale": "",
+              "enumValues": ""
+            },
+            "defaultValue": "",
+            "nullable": false,
+            "unique": false,
+            "autoIncrement": false,
+            "visibility": {
+              "conceptual": true,
+              "logical": false,
+              "physical": false
+            }
+          },
+          {
+            "id": "OrderLine-attr-1",
+            "name": "displayName",
+            "logicalName": "",
+            "type": "",
+            "typeParams": {
+              "maxLength": "",
+              "precision": "",
+              "scale": "",
+              "enumValues": ""
+            },
+            "defaultValue": "",
+            "nullable": false,
+            "unique": false,
+            "autoIncrement": false,
+            "visibility": {
+              "conceptual": true,
+              "logical": false,
+              "physical": false
+            }
+          }
+        ],
+        "visibility": {
+          "conceptual": true,
+          "logical": false,
+          "physical": false
+        },
+        "viewPositions": {
+          "conceptual": {
+            "x": 220,
+            "y": -450
+          },
+          "logical": {
+            "x": 220,
+            "y": -450
+          },
+          "physical": {
+            "x": 220,
+            "y": -450
+          }
+        }
+      }
+    },
+    {
+      "id": "Product",
+      "type": "class",
+      "position": {
+        "x": 680,
+        "y": -450
+      },
+      "selected": false,
+      "data": {
+        "label": "Product",
+        "logicalName": "",
+        "color": "#009688",
+        "attributes": [
+          {
+            "id": "Product-attr-0",
+            "name": "identifier",
+            "logicalName": "",
+            "type": "",
+            "typeParams": {
+              "maxLength": "",
+              "precision": "",
+              "scale": "",
+              "enumValues": ""
+            },
+            "defaultValue": "",
+            "nullable": false,
+            "unique": false,
+            "autoIncrement": false,
+            "visibility": {
+              "conceptual": true,
+              "logical": false,
+              "physical": false
+            }
+          },
+          {
+            "id": "Product-attr-1",
+            "name": "displayName",
+            "logicalName": "",
+            "type": "",
+            "typeParams": {
+              "maxLength": "",
+              "precision": "",
+              "scale": "",
+              "enumValues": ""
+            },
+            "defaultValue": "",
+            "nullable": false,
+            "unique": false,
+            "autoIncrement": false,
+            "visibility": {
+              "conceptual": true,
+              "logical": false,
+              "physical": false
+            }
+          },
+          {
+            "id": "Product-attr-2",
+            "name": "status",
+            "logicalName": "",
+            "type": "",
+            "typeParams": {
+              "maxLength": "",
+              "precision": "",
+              "scale": "",
+              "enumValues": ""
+            },
+            "defaultValue": "",
+            "nullable": false,
+            "unique": false,
+            "autoIncrement": false,
+            "visibility": {
+              "conceptual": true,
+              "logical": false,
+              "physical": false
+            }
+          }
+        ],
+        "visibility": {
+          "conceptual": true,
+          "logical": false,
+          "physical": false
+        },
+        "viewPositions": {
+          "conceptual": {
+            "x": 680,
+            "y": -450
+          },
+          "logical": {
+            "x": 680,
+            "y": -450
+          },
+          "physical": {
+            "x": 680,
+            "y": -450
+          }
+        }
+      }
+    },
+    {
+      "id": "Catalogue",
+      "type": "class",
+      "position": {
+        "x": 1140,
+        "y": -450
+      },
+      "selected": false,
+      "data": {
+        "label": "Catalogue",
+        "logicalName": "",
+        "color": "#009688",
+        "attributes": [
+          {
+            "id": "Catalogue-attr-0",
+            "name": "identifier",
+            "logicalName": "",
+            "type": "",
+            "typeParams": {
+              "maxLength": "",
+              "precision": "",
+              "scale": "",
+              "enumValues": ""
+            },
+            "defaultValue": "",
+            "nullable": false,
+            "unique": false,
+            "autoIncrement": false,
+            "visibility": {
+              "conceptual": true,
+              "logical": false,
+              "physical": false
+            }
+          },
+          {
+            "id": "Catalogue-attr-1",
+            "name": "displayName",
+            "logicalName": "",
+            "type": "",
+            "typeParams": {
+              "maxLength": "",
+              "precision": "",
+              "scale": "",
+              "enumValues": ""
+            },
+            "defaultValue": "",
+            "nullable": false,
+            "unique": false,
+            "autoIncrement": false,
+            "visibility": {
+              "conceptual": true,
+              "logical": false,
+              "physical": false
+            }
+          },
+          {
+            "id": "Catalogue-attr-2",
+            "name": "status",
+            "logicalName": "",
+            "type": "",
+            "typeParams": {
+              "maxLength": "",
+              "precision": "",
+              "scale": "",
+              "enumValues": ""
+            },
+            "defaultValue": "",
+            "nullable": false,
+            "unique": false,
+            "autoIncrement": false,
+            "visibility": {
+              "conceptual": true,
+              "logical": false,
+              "physical": false
+            }
+          },
+          {
+            "id": "Catalogue-attr-3",
+            "name": "createdAt",
+            "logicalName": "",
+            "type": "",
+            "typeParams": {
+              "maxLength": "",
+              "precision": "",
+              "scale": "",
+              "enumValues": ""
+            },
+            "defaultValue": "",
+            "nullable": false,
+            "unique": false,
+            "autoIncrement": false,
+            "visibility": {
+              "conceptual": true,
+              "logical": false,
+              "physical": false
+            }
+          }
+        ],
+        "visibility": {
+          "conceptual": true,
+          "logical": false,
+          "physical": false
+        },
+        "viewPositions": {
+          "conceptual": {
+            "x": 1140,
+            "y": -450
+          },
+          "logical": {
+            "x": 1140,
+            "y": -450
+          },
+          "physical": {
+            "x": 1140,
+            "y": -450
+          }
+        }
+      }
+    },
+    {
+      "id": "Price",
+      "type": "class",
+      "position": {
+        "x": 1600,
+        "y": -450
+      },
+      "selected": false,
+      "data": {
+        "label": "Price",
+        "logicalName": "",
+        "color": "#009688",
+        "attributes": [
+          {
+            "id": "Price-attr-0",
+            "name": "identifier",
+            "logicalName": "",
+            "type": "",
+            "typeParams": {
+              "maxLength": "",
+              "precision": "",
+              "scale": "",
+              "enumValues": ""
+            },
+            "defaultValue": "",
+            "nullable": false,
+            "unique": false,
+            "autoIncrement": false,
+            "visibility": {
+              "conceptual": true,
+              "logical": false,
+              "physical": false
+            }
+          },
+          {
+            "id": "Price-attr-1",
+            "name": "displayName",
+            "logicalName": "",
+            "type": "",
+            "typeParams": {
+              "maxLength": "",
+              "precision": "",
+              "scale": "",
+              "enumValues": ""
+            },
+            "defaultValue": "",
+            "nullable": false,
+            "unique": false,
+            "autoIncrement": false,
+            "visibility": {
+              "conceptual": true,
+              "logical": false,
+              "physical": false
+            }
+          },
+          {
+            "id": "Price-attr-2",
+            "name": "status",
+            "logicalName": "",
+            "type": "",
+            "typeParams": {
+              "maxLength": "",
+              "precision": "",
+              "scale": "",
+              "enumValues": ""
+            },
+            "defaultValue": "",
+            "nullable": false,
+            "unique": false,
+            "autoIncrement": false,
+            "visibility": {
+              "conceptual": true,
+              "logical": false,
+              "physical": false
+            }
+          },
+          {
+            "id": "Price-attr-3",
+            "name": "createdAt",
+            "logicalName": "",
+            "type": "",
+            "typeParams": {
+              "maxLength": "",
+              "precision": "",
+              "scale": "",
+              "enumValues": ""
+            },
+            "defaultValue": "",
+            "nullable": false,
+            "unique": false,
+            "autoIncrement": false,
+            "visibility": {
+              "conceptual": true,
+              "logical": false,
+              "physical": false
+            }
+          },
+          {
+            "id": "Price-attr-4",
+            "name": "updatedAt",
+            "logicalName": "",
+            "type": "",
+            "typeParams": {
+              "maxLength": "",
+              "precision": "",
+              "scale": "",
+              "enumValues": ""
+            },
+            "defaultValue": "",
+            "nullable": false,
+            "unique": false,
+            "autoIncrement": false,
+            "visibility": {
+              "conceptual": true,
+              "logical": false,
+              "physical": false
+            }
+          }
+        ],
+        "visibility": {
+          "conceptual": true,
+          "logical": false,
+          "physical": false
+        },
+        "viewPositions": {
+          "conceptual": {
+            "x": 1600,
+            "y": -450
+          },
+          "logical": {
+            "x": 1600,
+            "y": -450
+          },
+          "physical": {
+            "x": 1600,
+            "y": -450
+          }
+        }
+      }
+    },
+    {
+      "id": "Promotion",
+      "type": "class",
+      "position": {
+        "x": -700,
+        "y": -10
+      },
+      "selected": false,
+      "data": {
+        "label": "Promotion",
+        "logicalName": "",
+        "color": "#009688",
+        "attributes": [
+          {
+            "id": "Promotion-attr-0",
+            "name": "identifier",
+            "logicalName": "",
+            "type": "",
+            "typeParams": {
+              "maxLength": "",
+              "precision": "",
+              "scale": "",
+              "enumValues": ""
+            },
+            "defaultValue": "",
+            "nullable": false,
+            "unique": false,
+            "autoIncrement": false,
+            "visibility": {
+              "conceptual": true,
+              "logical": false,
+              "physical": false
+            }
+          },
+          {
+            "id": "Promotion-attr-1",
+            "name": "displayName",
+            "logicalName": "",
+            "type": "",
+            "typeParams": {
+              "maxLength": "",
+              "precision": "",
+              "scale": "",
+              "enumValues": ""
+            },
+            "defaultValue": "",
+            "nullable": false,
+            "unique": false,
+            "autoIncrement": false,
+            "visibility": {
+              "conceptual": true,
+              "logical": false,
+              "physical": false
+            }
+          },
+          {
+            "id": "Promotion-attr-2",
+            "name": "status",
+            "logicalName": "",
+            "type": "",
+            "typeParams": {
+              "maxLength": "",
+              "precision": "",
+              "scale": "",
+              "enumValues": ""
+            },
+            "defaultValue": "",
+            "nullable": false,
+            "unique": false,
+            "autoIncrement": false,
+            "visibility": {
+              "conceptual": true,
+              "logical": false,
+              "physical": false
+            }
+          },
+          {
+            "id": "Promotion-attr-3",
+            "name": "createdAt",
+            "logicalName": "",
+            "type": "",
+            "typeParams": {
+              "maxLength": "",
+              "precision": "",
+              "scale": "",
+              "enumValues": ""
+            },
+            "defaultValue": "",
+            "nullable": false,
+            "unique": false,
+            "autoIncrement": false,
+            "visibility": {
+              "conceptual": true,
+              "logical": false,
+              "physical": false
+            }
+          },
+          {
+            "id": "Promotion-attr-4",
+            "name": "updatedAt",
+            "logicalName": "",
+            "type": "",
+            "typeParams": {
+              "maxLength": "",
+              "precision": "",
+              "scale": "",
+              "enumValues": ""
+            },
+            "defaultValue": "",
+            "nullable": false,
+            "unique": false,
+            "autoIncrement": false,
+            "visibility": {
+              "conceptual": true,
+              "logical": false,
+              "physical": false
+            }
+          },
+          {
+            "id": "Promotion-attr-5",
+            "name": "effectiveFrom",
+            "logicalName": "",
+            "type": "",
+            "typeParams": {
+              "maxLength": "",
+              "precision": "",
+              "scale": "",
+              "enumValues": ""
+            },
+            "defaultValue": "",
+            "nullable": false,
+            "unique": false,
+            "autoIncrement": false,
+            "visibility": {
+              "conceptual": true,
+              "logical": false,
+              "physical": false
+            }
+          }
+        ],
+        "visibility": {
+          "conceptual": true,
+          "logical": false,
+          "physical": false
+        },
+        "viewPositions": {
+          "conceptual": {
+            "x": -700,
+            "y": -10
+          },
+          "logical": {
+            "x": -700,
+            "y": -10
+          },
+          "physical": {
+            "x": -700,
+            "y": -10
+          }
+        }
+      }
+    },
+    {
+      "id": "Basket",
+      "type": "class",
+      "position": {
+        "x": -240,
+        "y": -10
+      },
+      "selected": false,
+      "data": {
+        "label": "Basket",
+        "logicalName": "",
+        "color": "#009688",
+        "attributes": [
+          {
+            "id": "Basket-attr-0",
+            "name": "identifier",
+            "logicalName": "",
+            "type": "",
+            "typeParams": {
+              "maxLength": "",
+              "precision": "",
+              "scale": "",
+              "enumValues": ""
+            },
+            "defaultValue": "",
+            "nullable": false,
+            "unique": false,
+            "autoIncrement": false,
+            "visibility": {
+              "conceptual": true,
+              "logical": false,
+              "physical": false
+            }
+          },
+          {
+            "id": "Basket-attr-1",
+            "name": "displayName",
+            "logicalName": "",
+            "type": "",
+            "typeParams": {
+              "maxLength": "",
+              "precision": "",
+              "scale": "",
+              "enumValues": ""
+            },
+            "defaultValue": "",
+            "nullable": false,
+            "unique": false,
+            "autoIncrement": false,
+            "visibility": {
+              "conceptual": true,
+              "logical": false,
+              "physical": false
+            }
+          },
+          {
+            "id": "Basket-attr-2",
+            "name": "status",
+            "logicalName": "",
+            "type": "",
+            "typeParams": {
+              "maxLength": "",
+              "precision": "",
+              "scale": "",
+              "enumValues": ""
+            },
+            "defaultValue": "",
+            "nullable": false,
+            "unique": false,
+            "autoIncrement": false,
+            "visibility": {
+              "conceptual": true,
+              "logical": false,
+              "physical": false
+            }
+          },
+          {
+            "id": "Basket-attr-3",
+            "name": "createdAt",
+            "logicalName": "",
+            "type": "",
+            "typeParams": {
+              "maxLength": "",
+              "precision": "",
+              "scale": "",
+              "enumValues": ""
+            },
+            "defaultValue": "",
+            "nullable": false,
+            "unique": false,
+            "autoIncrement": false,
+            "visibility": {
+              "conceptual": true,
+              "logical": false,
+              "physical": false
+            }
+          },
+          {
+            "id": "Basket-attr-4",
+            "name": "updatedAt",
+            "logicalName": "",
+            "type": "",
+            "typeParams": {
+              "maxLength": "",
+              "precision": "",
+              "scale": "",
+              "enumValues": ""
+            },
+            "defaultValue": "",
+            "nullable": false,
+            "unique": false,
+            "autoIncrement": false,
+            "visibility": {
+              "conceptual": true,
+              "logical": false,
+              "physical": false
+            }
+          },
+          {
+            "id": "Basket-attr-5",
+            "name": "effectiveFrom",
+            "logicalName": "",
+            "type": "",
+            "typeParams": {
+              "maxLength": "",
+              "precision": "",
+              "scale": "",
+              "enumValues": ""
+            },
+            "defaultValue": "",
+            "nullable": false,
+            "unique": false,
+            "autoIncrement": false,
+            "visibility": {
+              "conceptual": true,
+              "logical": false,
+              "physical": false
+            }
+          },
+          {
+            "id": "Basket-attr-6",
+            "name": "effectiveUntil",
+            "logicalName": "",
+            "type": "",
+            "typeParams": {
+              "maxLength": "",
+              "precision": "",
+              "scale": "",
+              "enumValues": ""
+            },
+            "defaultValue": "",
+            "nullable": false,
+            "unique": false,
+            "autoIncrement": false,
+            "visibility": {
+              "conceptual": true,
+              "logical": false,
+              "physical": false
+            }
+          }
+        ],
+        "visibility": {
+          "conceptual": true,
+          "logical": false,
+          "physical": false
+        },
+        "viewPositions": {
+          "conceptual": {
+            "x": -240,
+            "y": -10
+          },
+          "logical": {
+            "x": -240,
+            "y": -10
+          },
+          "physical": {
+            "x": -240,
+            "y": -10
+          }
+        }
+      }
+    },
+    {
+      "id": "Reservation",
+      "type": "class",
+      "position": {
+        "x": 220,
+        "y": -10
+      },
+      "selected": false,
+      "data": {
+        "label": "Reservation",
+        "logicalName": "",
+        "color": "#009688",
+        "attributes": [
+          {
+            "id": "Reservation-attr-0",
+            "name": "identifier",
+            "logicalName": "",
+            "type": "",
+            "typeParams": {
+              "maxLength": "",
+              "precision": "",
+              "scale": "",
+              "enumValues": ""
+            },
+            "defaultValue": "",
+            "nullable": false,
+            "unique": false,
+            "autoIncrement": false,
+            "visibility": {
+              "conceptual": true,
+              "logical": false,
+              "physical": false
+            }
+          },
+          {
+            "id": "Reservation-attr-1",
+            "name": "displayName",
+            "logicalName": "",
+            "type": "",
+            "typeParams": {
+              "maxLength": "",
+              "precision": "",
+              "scale": "",
+              "enumValues": ""
+            },
+            "defaultValue": "",
+            "nullable": false,
+            "unique": false,
+            "autoIncrement": false,
+            "visibility": {
+              "conceptual": true,
+              "logical": false,
+              "physical": false
+            }
+          },
+          {
+            "id": "Reservation-attr-2",
+            "name": "status",
+            "logicalName": "",
+            "type": "",
+            "typeParams": {
+              "maxLength": "",
+              "precision": "",
+              "scale": "",
+              "enumValues": ""
+            },
+            "defaultValue": "",
+            "nullable": false,
+            "unique": false,
+            "autoIncrement": false,
+            "visibility": {
+              "conceptual": true,
+              "logical": false,
+              "physical": false
+            }
+          },
+          {
+            "id": "Reservation-attr-3",
+            "name": "createdAt",
+            "logicalName": "",
+            "type": "",
+            "typeParams": {
+              "maxLength": "",
+              "precision": "",
+              "scale": "",
+              "enumValues": ""
+            },
+            "defaultValue": "",
+            "nullable": false,
+            "unique": false,
+            "autoIncrement": false,
+            "visibility": {
+              "conceptual": true,
+              "logical": false,
+              "physical": false
+            }
+          },
+          {
+            "id": "Reservation-attr-4",
+            "name": "updatedAt",
+            "logicalName": "",
+            "type": "",
+            "typeParams": {
+              "maxLength": "",
+              "precision": "",
+              "scale": "",
+              "enumValues": ""
+            },
+            "defaultValue": "",
+            "nullable": false,
+            "unique": false,
+            "autoIncrement": false,
+            "visibility": {
+              "conceptual": true,
+              "logical": false,
+              "physical": false
+            }
+          },
+          {
+            "id": "Reservation-attr-5",
+            "name": "effectiveFrom",
+            "logicalName": "",
+            "type": "",
+            "typeParams": {
+              "maxLength": "",
+              "precision": "",
+              "scale": "",
+              "enumValues": ""
+            },
+            "defaultValue": "",
+            "nullable": false,
+            "unique": false,
+            "autoIncrement": false,
+            "visibility": {
+              "conceptual": true,
+              "logical": false,
+              "physical": false
+            }
+          },
+          {
+            "id": "Reservation-attr-6",
+            "name": "effectiveUntil",
+            "logicalName": "",
+            "type": "",
+            "typeParams": {
+              "maxLength": "",
+              "precision": "",
+              "scale": "",
+              "enumValues": ""
+            },
+            "defaultValue": "",
+            "nullable": false,
+            "unique": false,
+            "autoIncrement": false,
+            "visibility": {
+              "conceptual": true,
+              "logical": false,
+              "physical": false
+            }
+          },
+          {
+            "id": "Reservation-attr-7",
+            "name": "referenceCode",
+            "logicalName": "",
+            "type": "",
+            "typeParams": {
+              "maxLength": "",
+              "precision": "",
+              "scale": "",
+              "enumValues": ""
+            },
+            "defaultValue": "",
+            "nullable": false,
+            "unique": false,
+            "autoIncrement": false,
+            "visibility": {
+              "conceptual": true,
+              "logical": false,
+              "physical": false
+            }
+          }
+        ],
+        "visibility": {
+          "conceptual": true,
+          "logical": false,
+          "physical": false
+        },
+        "viewPositions": {
+          "conceptual": {
+            "x": 220,
+            "y": -10
+          },
+          "logical": {
+            "x": 220,
+            "y": -10
+          },
+          "physical": {
+            "x": 220,
+            "y": -10
+          }
+        }
+      }
+    },
+    {
+      "id": "Subscription",
+      "type": "class",
+      "position": {
+        "x": 680,
+        "y": -10
+      },
+      "selected": false,
+      "data": {
+        "label": "Subscription",
+        "logicalName": "",
+        "color": "#009688",
+        "attributes": [],
+        "visibility": {
+          "conceptual": true,
+          "logical": false,
+          "physical": false
+        },
+        "viewPositions": {
+          "conceptual": {
+            "x": 680,
+            "y": -10
+          },
+          "logical": {
+            "x": 680,
+            "y": -10
+          },
+          "physical": {
+            "x": 680,
+            "y": -10
+          }
+        }
+      }
+    },
+    {
+      "id": "Channel",
+      "type": "class",
+      "position": {
+        "x": 1140,
+        "y": -10
+      },
+      "selected": false,
+      "data": {
+        "label": "Channel",
+        "logicalName": "",
+        "color": "#2196f3",
+        "attributes": [
+          {
+            "id": "Channel-attr-0",
+            "name": "identifier",
+            "logicalName": "",
+            "type": "",
+            "typeParams": {
+              "maxLength": "",
+              "precision": "",
+              "scale": "",
+              "enumValues": ""
+            },
+            "defaultValue": "",
+            "nullable": false,
+            "unique": false,
+            "autoIncrement": false,
+            "visibility": {
+              "conceptual": true,
+              "logical": false,
+              "physical": false
+            }
+          }
+        ],
+        "visibility": {
+          "conceptual": true,
+          "logical": false,
+          "physical": false
+        },
+        "viewPositions": {
+          "conceptual": {
+            "x": 1140,
+            "y": -10
+          },
+          "logical": {
+            "x": 1140,
+            "y": -10
+          },
+          "physical": {
+            "x": 1140,
+            "y": -10
+          }
+        }
+      }
+    },
+    {
+      "id": "Offer",
+      "type": "class",
+      "position": {
+        "x": 1600,
+        "y": -10
+      },
+      "selected": false,
+      "data": {
+        "label": "Offer",
+        "logicalName": "",
+        "color": "#2196f3",
+        "attributes": [
+          {
+            "id": "Offer-attr-0",
+            "name": "identifier",
+            "logicalName": "",
+            "type": "",
+            "typeParams": {
+              "maxLength": "",
+              "precision": "",
+              "scale": "",
+              "enumValues": ""
+            },
+            "defaultValue": "",
+            "nullable": false,
+            "unique": false,
+            "autoIncrement": false,
+            "visibility": {
+              "conceptual": true,
+              "logical": false,
+              "physical": false
+            }
+          },
+          {
+            "id": "Offer-attr-1",
+            "name": "displayName",
+            "logicalName": "",
+            "type": "",
+            "typeParams": {
+              "maxLength": "",
+              "precision": "",
+              "scale": "",
+              "enumValues": ""
+            },
+            "defaultValue": "",
+            "nullable": false,
+            "unique": false,
+            "autoIncrement": false,
+            "visibility": {
+              "conceptual": true,
+              "logical": false,
+              "physical": false
+            }
+          }
+        ],
+        "visibility": {
+          "conceptual": true,
+          "logical": false,
+          "physical": false
+        },
+        "viewPositions": {
+          "conceptual": {
+            "x": 1600,
+            "y": -10
+          },
+          "logical": {
+            "x": 1600,
+            "y": -10
+          },
+          "physical": {
+            "x": 1600,
+            "y": -10
+          }
+        }
+      }
+    },
+    {
+      "id": "Warehouse",
+      "type": "class",
+      "position": {
+        "x": -700,
+        "y": 430
+      },
+      "selected": false,
+      "data": {
+        "label": "Warehouse",
+        "logicalName": "",
+        "color": "#2196f3",
+        "attributes": [
+          {
+            "id": "Warehouse-attr-0",
+            "name": "identifier",
+            "logicalName": "",
+            "type": "",
+            "typeParams": {
+              "maxLength": "",
+              "precision": "",
+              "scale": "",
+              "enumValues": ""
+            },
+            "defaultValue": "",
+            "nullable": false,
+            "unique": false,
+            "autoIncrement": false,
+            "visibility": {
+              "conceptual": true,
+              "logical": false,
+              "physical": false
+            }
+          },
+          {
+            "id": "Warehouse-attr-1",
+            "name": "displayName",
+            "logicalName": "",
+            "type": "",
+            "typeParams": {
+              "maxLength": "",
+              "precision": "",
+              "scale": "",
+              "enumValues": ""
+            },
+            "defaultValue": "",
+            "nullable": false,
+            "unique": false,
+            "autoIncrement": false,
+            "visibility": {
+              "conceptual": true,
+              "logical": false,
+              "physical": false
+            }
+          },
+          {
+            "id": "Warehouse-attr-2",
+            "name": "status",
+            "logicalName": "",
+            "type": "",
+            "typeParams": {
+              "maxLength": "",
+              "precision": "",
+              "scale": "",
+              "enumValues": ""
+            },
+            "defaultValue": "",
+            "nullable": false,
+            "unique": false,
+            "autoIncrement": false,
+            "visibility": {
+              "conceptual": true,
+              "logical": false,
+              "physical": false
+            }
+          }
+        ],
+        "visibility": {
+          "conceptual": true,
+          "logical": false,
+          "physical": false
+        },
+        "viewPositions": {
+          "conceptual": {
+            "x": -700,
+            "y": 430
+          },
+          "logical": {
+            "x": -700,
+            "y": 430
+          },
+          "physical": {
+            "x": -700,
+            "y": 430
+          }
+        }
+      }
+    },
+    {
+      "id": "Inventory",
+      "type": "class",
+      "position": {
+        "x": -240,
+        "y": 430
+      },
+      "selected": false,
+      "data": {
+        "label": "Inventory",
+        "logicalName": "",
+        "color": "#2196f3",
+        "attributes": [
+          {
+            "id": "Inventory-attr-0",
+            "name": "identifier",
+            "logicalName": "",
+            "type": "",
+            "typeParams": {
+              "maxLength": "",
+              "precision": "",
+              "scale": "",
+              "enumValues": ""
+            },
+            "defaultValue": "",
+            "nullable": false,
+            "unique": false,
+            "autoIncrement": false,
+            "visibility": {
+              "conceptual": true,
+              "logical": false,
+              "physical": false
+            }
+          },
+          {
+            "id": "Inventory-attr-1",
+            "name": "displayName",
+            "logicalName": "",
+            "type": "",
+            "typeParams": {
+              "maxLength": "",
+              "precision": "",
+              "scale": "",
+              "enumValues": ""
+            },
+            "defaultValue": "",
+            "nullable": false,
+            "unique": false,
+            "autoIncrement": false,
+            "visibility": {
+              "conceptual": true,
+              "logical": false,
+              "physical": false
+            }
+          },
+          {
+            "id": "Inventory-attr-2",
+            "name": "status",
+            "logicalName": "",
+            "type": "",
+            "typeParams": {
+              "maxLength": "",
+              "precision": "",
+              "scale": "",
+              "enumValues": ""
+            },
+            "defaultValue": "",
+            "nullable": false,
+            "unique": false,
+            "autoIncrement": false,
+            "visibility": {
+              "conceptual": true,
+              "logical": false,
+              "physical": false
+            }
+          },
+          {
+            "id": "Inventory-attr-3",
+            "name": "createdAt",
+            "logicalName": "",
+            "type": "",
+            "typeParams": {
+              "maxLength": "",
+              "precision": "",
+              "scale": "",
+              "enumValues": ""
+            },
+            "defaultValue": "",
+            "nullable": false,
+            "unique": false,
+            "autoIncrement": false,
+            "visibility": {
+              "conceptual": true,
+              "logical": false,
+              "physical": false
+            }
+          }
+        ],
+        "visibility": {
+          "conceptual": true,
+          "logical": false,
+          "physical": false
+        },
+        "viewPositions": {
+          "conceptual": {
+            "x": -240,
+            "y": 430
+          },
+          "logical": {
+            "x": -240,
+            "y": 430
+          },
+          "physical": {
+            "x": -240,
+            "y": 430
+          }
+        }
+      }
+    },
+    {
+      "id": "StockMovement",
+      "type": "class",
+      "position": {
+        "x": 220,
+        "y": 430
+      },
+      "selected": false,
+      "data": {
+        "label": "StockMovement",
+        "logicalName": "",
+        "color": "#2196f3",
+        "attributes": [
+          {
+            "id": "StockMovement-attr-0",
+            "name": "identifier",
+            "logicalName": "",
+            "type": "",
+            "typeParams": {
+              "maxLength": "",
+              "precision": "",
+              "scale": "",
+              "enumValues": ""
+            },
+            "defaultValue": "",
+            "nullable": false,
+            "unique": false,
+            "autoIncrement": false,
+            "visibility": {
+              "conceptual": true,
+              "logical": false,
+              "physical": false
+            }
+          },
+          {
+            "id": "StockMovement-attr-1",
+            "name": "displayName",
+            "logicalName": "",
+            "type": "",
+            "typeParams": {
+              "maxLength": "",
+              "precision": "",
+              "scale": "",
+              "enumValues": ""
+            },
+            "defaultValue": "",
+            "nullable": false,
+            "unique": false,
+            "autoIncrement": false,
+            "visibility": {
+              "conceptual": true,
+              "logical": false,
+              "physical": false
+            }
+          },
+          {
+            "id": "StockMovement-attr-2",
+            "name": "status",
+            "logicalName": "",
+            "type": "",
+            "typeParams": {
+              "maxLength": "",
+              "precision": "",
+              "scale": "",
+              "enumValues": ""
+            },
+            "defaultValue": "",
+            "nullable": false,
+            "unique": false,
+            "autoIncrement": false,
+            "visibility": {
+              "conceptual": true,
+              "logical": false,
+              "physical": false
+            }
+          },
+          {
+            "id": "StockMovement-attr-3",
+            "name": "createdAt",
+            "logicalName": "",
+            "type": "",
+            "typeParams": {
+              "maxLength": "",
+              "precision": "",
+              "scale": "",
+              "enumValues": ""
+            },
+            "defaultValue": "",
+            "nullable": false,
+            "unique": false,
+            "autoIncrement": false,
+            "visibility": {
+              "conceptual": true,
+              "logical": false,
+              "physical": false
+            }
+          },
+          {
+            "id": "StockMovement-attr-4",
+            "name": "updatedAt",
+            "logicalName": "",
+            "type": "",
+            "typeParams": {
+              "maxLength": "",
+              "precision": "",
+              "scale": "",
+              "enumValues": ""
+            },
+            "defaultValue": "",
+            "nullable": false,
+            "unique": false,
+            "autoIncrement": false,
+            "visibility": {
+              "conceptual": true,
+              "logical": false,
+              "physical": false
+            }
+          }
+        ],
+        "visibility": {
+          "conceptual": true,
+          "logical": false,
+          "physical": false
+        },
+        "viewPositions": {
+          "conceptual": {
+            "x": 220,
+            "y": 430
+          },
+          "logical": {
+            "x": 220,
+            "y": 430
+          },
+          "physical": {
+            "x": 220,
+            "y": 430
+          }
+        }
+      }
+    },
+    {
+      "id": "Shipment",
+      "type": "class",
+      "position": {
+        "x": 680,
+        "y": 430
+      },
+      "selected": false,
+      "data": {
+        "label": "Shipment",
+        "logicalName": "",
+        "color": "#2196f3",
+        "attributes": [
+          {
+            "id": "Shipment-attr-0",
+            "name": "identifier",
+            "logicalName": "",
+            "type": "",
+            "typeParams": {
+              "maxLength": "",
+              "precision": "",
+              "scale": "",
+              "enumValues": ""
+            },
+            "defaultValue": "",
+            "nullable": false,
+            "unique": false,
+            "autoIncrement": false,
+            "visibility": {
+              "conceptual": true,
+              "logical": false,
+              "physical": false
+            }
+          },
+          {
+            "id": "Shipment-attr-1",
+            "name": "displayName",
+            "logicalName": "",
+            "type": "",
+            "typeParams": {
+              "maxLength": "",
+              "precision": "",
+              "scale": "",
+              "enumValues": ""
+            },
+            "defaultValue": "",
+            "nullable": false,
+            "unique": false,
+            "autoIncrement": false,
+            "visibility": {
+              "conceptual": true,
+              "logical": false,
+              "physical": false
+            }
+          },
+          {
+            "id": "Shipment-attr-2",
+            "name": "status",
+            "logicalName": "",
+            "type": "",
+            "typeParams": {
+              "maxLength": "",
+              "precision": "",
+              "scale": "",
+              "enumValues": ""
+            },
+            "defaultValue": "",
+            "nullable": false,
+            "unique": false,
+            "autoIncrement": false,
+            "visibility": {
+              "conceptual": true,
+              "logical": false,
+              "physical": false
+            }
+          },
+          {
+            "id": "Shipment-attr-3",
+            "name": "createdAt",
+            "logicalName": "",
+            "type": "",
+            "typeParams": {
+              "maxLength": "",
+              "precision": "",
+              "scale": "",
+              "enumValues": ""
+            },
+            "defaultValue": "",
+            "nullable": false,
+            "unique": false,
+            "autoIncrement": false,
+            "visibility": {
+              "conceptual": true,
+              "logical": false,
+              "physical": false
+            }
+          },
+          {
+            "id": "Shipment-attr-4",
+            "name": "updatedAt",
+            "logicalName": "",
+            "type": "",
+            "typeParams": {
+              "maxLength": "",
+              "precision": "",
+              "scale": "",
+              "enumValues": ""
+            },
+            "defaultValue": "",
+            "nullable": false,
+            "unique": false,
+            "autoIncrement": false,
+            "visibility": {
+              "conceptual": true,
+              "logical": false,
+              "physical": false
+            }
+          },
+          {
+            "id": "Shipment-attr-5",
+            "name": "effectiveFrom",
+            "logicalName": "",
+            "type": "",
+            "typeParams": {
+              "maxLength": "",
+              "precision": "",
+              "scale": "",
+              "enumValues": ""
+            },
+            "defaultValue": "",
+            "nullable": false,
+            "unique": false,
+            "autoIncrement": false,
+            "visibility": {
+              "conceptual": true,
+              "logical": false,
+              "physical": false
+            }
+          }
+        ],
+        "visibility": {
+          "conceptual": true,
+          "logical": false,
+          "physical": false
+        },
+        "viewPositions": {
+          "conceptual": {
+            "x": 680,
+            "y": 430
+          },
+          "logical": {
+            "x": 680,
+            "y": 430
+          },
+          "physical": {
+            "x": 680,
+            "y": 430
+          }
+        }
+      }
+    },
+    {
+      "id": "Parcel",
+      "type": "class",
+      "position": {
+        "x": 1140,
+        "y": 430
+      },
+      "selected": false,
+      "data": {
+        "label": "Parcel",
+        "logicalName": "",
+        "color": "#2196f3",
+        "attributes": [
+          {
+            "id": "Parcel-attr-0",
+            "name": "identifier",
+            "logicalName": "",
+            "type": "",
+            "typeParams": {
+              "maxLength": "",
+              "precision": "",
+              "scale": "",
+              "enumValues": ""
+            },
+            "defaultValue": "",
+            "nullable": false,
+            "unique": false,
+            "autoIncrement": false,
+            "visibility": {
+              "conceptual": true,
+              "logical": false,
+              "physical": false
+            }
+          },
+          {
+            "id": "Parcel-attr-1",
+            "name": "displayName",
+            "logicalName": "",
+            "type": "",
+            "typeParams": {
+              "maxLength": "",
+              "precision": "",
+              "scale": "",
+              "enumValues": ""
+            },
+            "defaultValue": "",
+            "nullable": false,
+            "unique": false,
+            "autoIncrement": false,
+            "visibility": {
+              "conceptual": true,
+              "logical": false,
+              "physical": false
+            }
+          },
+          {
+            "id": "Parcel-attr-2",
+            "name": "status",
+            "logicalName": "",
+            "type": "",
+            "typeParams": {
+              "maxLength": "",
+              "precision": "",
+              "scale": "",
+              "enumValues": ""
+            },
+            "defaultValue": "",
+            "nullable": false,
+            "unique": false,
+            "autoIncrement": false,
+            "visibility": {
+              "conceptual": true,
+              "logical": false,
+              "physical": false
+            }
+          },
+          {
+            "id": "Parcel-attr-3",
+            "name": "createdAt",
+            "logicalName": "",
+            "type": "",
+            "typeParams": {
+              "maxLength": "",
+              "precision": "",
+              "scale": "",
+              "enumValues": ""
+            },
+            "defaultValue": "",
+            "nullable": false,
+            "unique": false,
+            "autoIncrement": false,
+            "visibility": {
+              "conceptual": true,
+              "logical": false,
+              "physical": false
+            }
+          },
+          {
+            "id": "Parcel-attr-4",
+            "name": "updatedAt",
+            "logicalName": "",
+            "type": "",
+            "typeParams": {
+              "maxLength": "",
+              "precision": "",
+              "scale": "",
+              "enumValues": ""
+            },
+            "defaultValue": "",
+            "nullable": false,
+            "unique": false,
+            "autoIncrement": false,
+            "visibility": {
+              "conceptual": true,
+              "logical": false,
+              "physical": false
+            }
+          },
+          {
+            "id": "Parcel-attr-5",
+            "name": "effectiveFrom",
+            "logicalName": "",
+            "type": "",
+            "typeParams": {
+              "maxLength": "",
+              "precision": "",
+              "scale": "",
+              "enumValues": ""
+            },
+            "defaultValue": "",
+            "nullable": false,
+            "unique": false,
+            "autoIncrement": false,
+            "visibility": {
+              "conceptual": true,
+              "logical": false,
+              "physical": false
+            }
+          },
+          {
+            "id": "Parcel-attr-6",
+            "name": "effectiveUntil",
+            "logicalName": "",
+            "type": "",
+            "typeParams": {
+              "maxLength": "",
+              "precision": "",
+              "scale": "",
+              "enumValues": ""
+            },
+            "defaultValue": "",
+            "nullable": false,
+            "unique": false,
+            "autoIncrement": false,
+            "visibility": {
+              "conceptual": true,
+              "logical": false,
+              "physical": false
+            }
+          }
+        ],
+        "visibility": {
+          "conceptual": true,
+          "logical": false,
+          "physical": false
+        },
+        "viewPositions": {
+          "conceptual": {
+            "x": 1140,
+            "y": 430
+          },
+          "logical": {
+            "x": 1140,
+            "y": 430
+          },
+          "physical": {
+            "x": 1140,
+            "y": 430
+          }
+        }
+      }
+    },
+    {
+      "id": "Carrier",
+      "type": "class",
+      "position": {
+        "x": 1600,
+        "y": 430
+      },
+      "selected": false,
+      "data": {
+        "label": "Carrier",
+        "logicalName": "",
+        "color": "#2196f3",
+        "attributes": [
+          {
+            "id": "Carrier-attr-0",
+            "name": "identifier",
+            "logicalName": "",
+            "type": "",
+            "typeParams": {
+              "maxLength": "",
+              "precision": "",
+              "scale": "",
+              "enumValues": ""
+            },
+            "defaultValue": "",
+            "nullable": false,
+            "unique": false,
+            "autoIncrement": false,
+            "visibility": {
+              "conceptual": true,
+              "logical": false,
+              "physical": false
+            }
+          },
+          {
+            "id": "Carrier-attr-1",
+            "name": "displayName",
+            "logicalName": "",
+            "type": "",
+            "typeParams": {
+              "maxLength": "",
+              "precision": "",
+              "scale": "",
+              "enumValues": ""
+            },
+            "defaultValue": "",
+            "nullable": false,
+            "unique": false,
+            "autoIncrement": false,
+            "visibility": {
+              "conceptual": true,
+              "logical": false,
+              "physical": false
+            }
+          },
+          {
+            "id": "Carrier-attr-2",
+            "name": "status",
+            "logicalName": "",
+            "type": "",
+            "typeParams": {
+              "maxLength": "",
+              "precision": "",
+              "scale": "",
+              "enumValues": ""
+            },
+            "defaultValue": "",
+            "nullable": false,
+            "unique": false,
+            "autoIncrement": false,
+            "visibility": {
+              "conceptual": true,
+              "logical": false,
+              "physical": false
+            }
+          },
+          {
+            "id": "Carrier-attr-3",
+            "name": "createdAt",
+            "logicalName": "",
+            "type": "",
+            "typeParams": {
+              "maxLength": "",
+              "precision": "",
+              "scale": "",
+              "enumValues": ""
+            },
+            "defaultValue": "",
+            "nullable": false,
+            "unique": false,
+            "autoIncrement": false,
+            "visibility": {
+              "conceptual": true,
+              "logical": false,
+              "physical": false
+            }
+          },
+          {
+            "id": "Carrier-attr-4",
+            "name": "updatedAt",
+            "logicalName": "",
+            "type": "",
+            "typeParams": {
+              "maxLength": "",
+              "precision": "",
+              "scale": "",
+              "enumValues": ""
+            },
+            "defaultValue": "",
+            "nullable": false,
+            "unique": false,
+            "autoIncrement": false,
+            "visibility": {
+              "conceptual": true,
+              "logical": false,
+              "physical": false
+            }
+          },
+          {
+            "id": "Carrier-attr-5",
+            "name": "effectiveFrom",
+            "logicalName": "",
+            "type": "",
+            "typeParams": {
+              "maxLength": "",
+              "precision": "",
+              "scale": "",
+              "enumValues": ""
+            },
+            "defaultValue": "",
+            "nullable": false,
+            "unique": false,
+            "autoIncrement": false,
+            "visibility": {
+              "conceptual": true,
+              "logical": false,
+              "physical": false
+            }
+          },
+          {
+            "id": "Carrier-attr-6",
+            "name": "effectiveUntil",
+            "logicalName": "",
+            "type": "",
+            "typeParams": {
+              "maxLength": "",
+              "precision": "",
+              "scale": "",
+              "enumValues": ""
+            },
+            "defaultValue": "",
+            "nullable": false,
+            "unique": false,
+            "autoIncrement": false,
+            "visibility": {
+              "conceptual": true,
+              "logical": false,
+              "physical": false
+            }
+          },
+          {
+            "id": "Carrier-attr-7",
+            "name": "referenceCode",
+            "logicalName": "",
+            "type": "",
+            "typeParams": {
+              "maxLength": "",
+              "precision": "",
+              "scale": "",
+              "enumValues": ""
+            },
+            "defaultValue": "",
+            "nullable": false,
+            "unique": false,
+            "autoIncrement": false,
+            "visibility": {
+              "conceptual": true,
+              "logical": false,
+              "physical": false
+            }
+          }
+        ],
+        "visibility": {
+          "conceptual": true,
+          "logical": false,
+          "physical": false
+        },
+        "viewPositions": {
+          "conceptual": {
+            "x": 1600,
+            "y": 430
+          },
+          "logical": {
+            "x": 1600,
+            "y": 430
+          },
+          "physical": {
+            "x": 1600,
+            "y": 430
+          }
+        }
+      }
+    },
+    {
+      "id": "Delivery",
+      "type": "class",
+      "position": {
+        "x": -700,
+        "y": 870
+      },
+      "selected": false,
+      "data": {
+        "label": "Delivery",
+        "logicalName": "",
+        "color": "#2196f3",
+        "attributes": [],
+        "visibility": {
+          "conceptual": true,
+          "logical": false,
+          "physical": false
+        },
+        "viewPositions": {
+          "conceptual": {
+            "x": -700,
+            "y": 870
+          },
+          "logical": {
+            "x": -700,
+            "y": 870
+          },
+          "physical": {
+            "x": -700,
+            "y": 870
+          }
+        }
+      }
+    },
+    {
+      "id": "Route",
+      "type": "class",
+      "position": {
+        "x": -240,
+        "y": 870
+      },
+      "selected": false,
+      "data": {
+        "label": "Route",
+        "logicalName": "",
+        "color": "#2196f3",
+        "attributes": [
+          {
+            "id": "Route-attr-0",
+            "name": "identifier",
+            "logicalName": "",
+            "type": "",
+            "typeParams": {
+              "maxLength": "",
+              "precision": "",
+              "scale": "",
+              "enumValues": ""
+            },
+            "defaultValue": "",
+            "nullable": false,
+            "unique": false,
+            "autoIncrement": false,
+            "visibility": {
+              "conceptual": true,
+              "logical": false,
+              "physical": false
+            }
+          }
+        ],
+        "visibility": {
+          "conceptual": true,
+          "logical": false,
+          "physical": false
+        },
+        "viewPositions": {
+          "conceptual": {
+            "x": -240,
+            "y": 870
+          },
+          "logical": {
+            "x": -240,
+            "y": 870
+          },
+          "physical": {
+            "x": -240,
+            "y": 870
+          }
+        }
+      }
+    },
+    {
+      "id": "Location",
+      "type": "class",
+      "position": {
+        "x": 220,
+        "y": 870
+      },
+      "selected": false,
+      "data": {
+        "label": "Location",
+        "logicalName": "",
+        "color": "#ffc107",
+        "attributes": [
+          {
+            "id": "Location-attr-0",
+            "name": "identifier",
+            "logicalName": "",
+            "type": "",
+            "typeParams": {
+              "maxLength": "",
+              "precision": "",
+              "scale": "",
+              "enumValues": ""
+            },
+            "defaultValue": "",
+            "nullable": false,
+            "unique": false,
+            "autoIncrement": false,
+            "visibility": {
+              "conceptual": true,
+              "logical": false,
+              "physical": false
+            }
+          },
+          {
+            "id": "Location-attr-1",
+            "name": "displayName",
+            "logicalName": "",
+            "type": "",
+            "typeParams": {
+              "maxLength": "",
+              "precision": "",
+              "scale": "",
+              "enumValues": ""
+            },
+            "defaultValue": "",
+            "nullable": false,
+            "unique": false,
+            "autoIncrement": false,
+            "visibility": {
+              "conceptual": true,
+              "logical": false,
+              "physical": false
+            }
+          }
+        ],
+        "visibility": {
+          "conceptual": true,
+          "logical": false,
+          "physical": false
+        },
+        "viewPositions": {
+          "conceptual": {
+            "x": 220,
+            "y": 870
+          },
+          "logical": {
+            "x": 220,
+            "y": 870
+          },
+          "physical": {
+            "x": 220,
+            "y": 870
+          }
+        }
+      }
+    },
+    {
+      "id": "Return",
+      "type": "class",
+      "position": {
+        "x": 680,
+        "y": 870
+      },
+      "selected": false,
+      "data": {
+        "label": "Return",
+        "logicalName": "",
+        "color": "#ffc107",
+        "attributes": [
+          {
+            "id": "Return-attr-0",
+            "name": "identifier",
+            "logicalName": "",
+            "type": "",
+            "typeParams": {
+              "maxLength": "",
+              "precision": "",
+              "scale": "",
+              "enumValues": ""
+            },
+            "defaultValue": "",
+            "nullable": false,
+            "unique": false,
+            "autoIncrement": false,
+            "visibility": {
+              "conceptual": true,
+              "logical": false,
+              "physical": false
+            }
+          },
+          {
+            "id": "Return-attr-1",
+            "name": "displayName",
+            "logicalName": "",
+            "type": "",
+            "typeParams": {
+              "maxLength": "",
+              "precision": "",
+              "scale": "",
+              "enumValues": ""
+            },
+            "defaultValue": "",
+            "nullable": false,
+            "unique": false,
+            "autoIncrement": false,
+            "visibility": {
+              "conceptual": true,
+              "logical": false,
+              "physical": false
+            }
+          },
+          {
+            "id": "Return-attr-2",
+            "name": "status",
+            "logicalName": "",
+            "type": "",
+            "typeParams": {
+              "maxLength": "",
+              "precision": "",
+              "scale": "",
+              "enumValues": ""
+            },
+            "defaultValue": "",
+            "nullable": false,
+            "unique": false,
+            "autoIncrement": false,
+            "visibility": {
+              "conceptual": true,
+              "logical": false,
+              "physical": false
+            }
+          }
+        ],
+        "visibility": {
+          "conceptual": true,
+          "logical": false,
+          "physical": false
+        },
+        "viewPositions": {
+          "conceptual": {
+            "x": 680,
+            "y": 870
+          },
+          "logical": {
+            "x": 680,
+            "y": 870
+          },
+          "physical": {
+            "x": 680,
+            "y": 870
+          }
+        }
+      }
+    },
+    {
+      "id": "Inspection",
+      "type": "class",
+      "position": {
+        "x": 1140,
+        "y": 870
+      },
+      "selected": false,
+      "data": {
+        "label": "Inspection",
+        "logicalName": "",
+        "color": "#ffc107",
+        "attributes": [
+          {
+            "id": "Inspection-attr-0",
+            "name": "identifier",
+            "logicalName": "",
+            "type": "",
+            "typeParams": {
+              "maxLength": "",
+              "precision": "",
+              "scale": "",
+              "enumValues": ""
+            },
+            "defaultValue": "",
+            "nullable": false,
+            "unique": false,
+            "autoIncrement": false,
+            "visibility": {
+              "conceptual": true,
+              "logical": false,
+              "physical": false
+            }
+          },
+          {
+            "id": "Inspection-attr-1",
+            "name": "displayName",
+            "logicalName": "",
+            "type": "",
+            "typeParams": {
+              "maxLength": "",
+              "precision": "",
+              "scale": "",
+              "enumValues": ""
+            },
+            "defaultValue": "",
+            "nullable": false,
+            "unique": false,
+            "autoIncrement": false,
+            "visibility": {
+              "conceptual": true,
+              "logical": false,
+              "physical": false
+            }
+          },
+          {
+            "id": "Inspection-attr-2",
+            "name": "status",
+            "logicalName": "",
+            "type": "",
+            "typeParams": {
+              "maxLength": "",
+              "precision": "",
+              "scale": "",
+              "enumValues": ""
+            },
+            "defaultValue": "",
+            "nullable": false,
+            "unique": false,
+            "autoIncrement": false,
+            "visibility": {
+              "conceptual": true,
+              "logical": false,
+              "physical": false
+            }
+          },
+          {
+            "id": "Inspection-attr-3",
+            "name": "createdAt",
+            "logicalName": "",
+            "type": "",
+            "typeParams": {
+              "maxLength": "",
+              "precision": "",
+              "scale": "",
+              "enumValues": ""
+            },
+            "defaultValue": "",
+            "nullable": false,
+            "unique": false,
+            "autoIncrement": false,
+            "visibility": {
+              "conceptual": true,
+              "logical": false,
+              "physical": false
+            }
+          }
+        ],
+        "visibility": {
+          "conceptual": true,
+          "logical": false,
+          "physical": false
+        },
+        "viewPositions": {
+          "conceptual": {
+            "x": 1140,
+            "y": 870
+          },
+          "logical": {
+            "x": 1140,
+            "y": 870
+          },
+          "physical": {
+            "x": 1140,
+            "y": 870
+          }
+        }
+      }
+    },
+    {
+      "id": "HandlingUnit",
+      "type": "class",
+      "position": {
+        "x": 1600,
+        "y": 870
+      },
+      "selected": false,
+      "data": {
+        "label": "HandlingUnit",
+        "logicalName": "",
+        "color": "#ffc107",
+        "attributes": [
+          {
+            "id": "HandlingUnit-attr-0",
+            "name": "identifier",
+            "logicalName": "",
+            "type": "",
+            "typeParams": {
+              "maxLength": "",
+              "precision": "",
+              "scale": "",
+              "enumValues": ""
+            },
+            "defaultValue": "",
+            "nullable": false,
+            "unique": false,
+            "autoIncrement": false,
+            "visibility": {
+              "conceptual": true,
+              "logical": false,
+              "physical": false
+            }
+          },
+          {
+            "id": "HandlingUnit-attr-1",
+            "name": "displayName",
+            "logicalName": "",
+            "type": "",
+            "typeParams": {
+              "maxLength": "",
+              "precision": "",
+              "scale": "",
+              "enumValues": ""
+            },
+            "defaultValue": "",
+            "nullable": false,
+            "unique": false,
+            "autoIncrement": false,
+            "visibility": {
+              "conceptual": true,
+              "logical": false,
+              "physical": false
+            }
+          },
+          {
+            "id": "HandlingUnit-attr-2",
+            "name": "status",
+            "logicalName": "",
+            "type": "",
+            "typeParams": {
+              "maxLength": "",
+              "precision": "",
+              "scale": "",
+              "enumValues": ""
+            },
+            "defaultValue": "",
+            "nullable": false,
+            "unique": false,
+            "autoIncrement": false,
+            "visibility": {
+              "conceptual": true,
+              "logical": false,
+              "physical": false
+            }
+          },
+          {
+            "id": "HandlingUnit-attr-3",
+            "name": "createdAt",
+            "logicalName": "",
+            "type": "",
+            "typeParams": {
+              "maxLength": "",
+              "precision": "",
+              "scale": "",
+              "enumValues": ""
+            },
+            "defaultValue": "",
+            "nullable": false,
+            "unique": false,
+            "autoIncrement": false,
+            "visibility": {
+              "conceptual": true,
+              "logical": false,
+              "physical": false
+            }
+          },
+          {
+            "id": "HandlingUnit-attr-4",
+            "name": "updatedAt",
+            "logicalName": "",
+            "type": "",
+            "typeParams": {
+              "maxLength": "",
+              "precision": "",
+              "scale": "",
+              "enumValues": ""
+            },
+            "defaultValue": "",
+            "nullable": false,
+            "unique": false,
+            "autoIncrement": false,
+            "visibility": {
+              "conceptual": true,
+              "logical": false,
+              "physical": false
+            }
+          }
+        ],
+        "visibility": {
+          "conceptual": true,
+          "logical": false,
+          "physical": false
+        },
+        "viewPositions": {
+          "conceptual": {
+            "x": 1600,
+            "y": 870
+          },
+          "logical": {
+            "x": 1600,
+            "y": 870
+          },
+          "physical": {
+            "x": 1600,
+            "y": 870
+          }
+        }
+      }
+    },
+    {
+      "id": "Invoice",
+      "type": "class",
+      "position": {
+        "x": -700,
+        "y": 1310
+      },
+      "selected": false,
+      "data": {
+        "label": "Invoice",
+        "logicalName": "",
+        "color": "#ffc107",
+        "attributes": [
+          {
+            "id": "Invoice-attr-0",
+            "name": "identifier",
+            "logicalName": "",
+            "type": "",
+            "typeParams": {
+              "maxLength": "",
+              "precision": "",
+              "scale": "",
+              "enumValues": ""
+            },
+            "defaultValue": "",
+            "nullable": false,
+            "unique": false,
+            "autoIncrement": false,
+            "visibility": {
+              "conceptual": true,
+              "logical": false,
+              "physical": false
+            }
+          },
+          {
+            "id": "Invoice-attr-1",
+            "name": "displayName",
+            "logicalName": "",
+            "type": "",
+            "typeParams": {
+              "maxLength": "",
+              "precision": "",
+              "scale": "",
+              "enumValues": ""
+            },
+            "defaultValue": "",
+            "nullable": false,
+            "unique": false,
+            "autoIncrement": false,
+            "visibility": {
+              "conceptual": true,
+              "logical": false,
+              "physical": false
+            }
+          },
+          {
+            "id": "Invoice-attr-2",
+            "name": "status",
+            "logicalName": "",
+            "type": "",
+            "typeParams": {
+              "maxLength": "",
+              "precision": "",
+              "scale": "",
+              "enumValues": ""
+            },
+            "defaultValue": "",
+            "nullable": false,
+            "unique": false,
+            "autoIncrement": false,
+            "visibility": {
+              "conceptual": true,
+              "logical": false,
+              "physical": false
+            }
+          },
+          {
+            "id": "Invoice-attr-3",
+            "name": "createdAt",
+            "logicalName": "",
+            "type": "",
+            "typeParams": {
+              "maxLength": "",
+              "precision": "",
+              "scale": "",
+              "enumValues": ""
+            },
+            "defaultValue": "",
+            "nullable": false,
+            "unique": false,
+            "autoIncrement": false,
+            "visibility": {
+              "conceptual": true,
+              "logical": false,
+              "physical": false
+            }
+          },
+          {
+            "id": "Invoice-attr-4",
+            "name": "updatedAt",
+            "logicalName": "",
+            "type": "",
+            "typeParams": {
+              "maxLength": "",
+              "precision": "",
+              "scale": "",
+              "enumValues": ""
+            },
+            "defaultValue": "",
+            "nullable": false,
+            "unique": false,
+            "autoIncrement": false,
+            "visibility": {
+              "conceptual": true,
+              "logical": false,
+              "physical": false
+            }
+          },
+          {
+            "id": "Invoice-attr-5",
+            "name": "effectiveFrom",
+            "logicalName": "",
+            "type": "",
+            "typeParams": {
+              "maxLength": "",
+              "precision": "",
+              "scale": "",
+              "enumValues": ""
+            },
+            "defaultValue": "",
+            "nullable": false,
+            "unique": false,
+            "autoIncrement": false,
+            "visibility": {
+              "conceptual": true,
+              "logical": false,
+              "physical": false
+            }
+          }
+        ],
+        "visibility": {
+          "conceptual": true,
+          "logical": false,
+          "physical": false
+        },
+        "viewPositions": {
+          "conceptual": {
+            "x": -700,
+            "y": 1310
+          },
+          "logical": {
+            "x": -700,
+            "y": 1310
+          },
+          "physical": {
+            "x": -700,
+            "y": 1310
+          }
+        }
+      }
+    },
+    {
+      "id": "InvoiceLine",
+      "type": "class",
+      "position": {
+        "x": -240,
+        "y": 1310
+      },
+      "selected": false,
+      "data": {
+        "label": "InvoiceLine",
+        "logicalName": "",
+        "color": "#ffc107",
+        "attributes": [
+          {
+            "id": "InvoiceLine-attr-0",
+            "name": "identifier",
+            "logicalName": "",
+            "type": "",
+            "typeParams": {
+              "maxLength": "",
+              "precision": "",
+              "scale": "",
+              "enumValues": ""
+            },
+            "defaultValue": "",
+            "nullable": false,
+            "unique": false,
+            "autoIncrement": false,
+            "visibility": {
+              "conceptual": true,
+              "logical": false,
+              "physical": false
+            }
+          },
+          {
+            "id": "InvoiceLine-attr-1",
+            "name": "displayName",
+            "logicalName": "",
+            "type": "",
+            "typeParams": {
+              "maxLength": "",
+              "precision": "",
+              "scale": "",
+              "enumValues": ""
+            },
+            "defaultValue": "",
+            "nullable": false,
+            "unique": false,
+            "autoIncrement": false,
+            "visibility": {
+              "conceptual": true,
+              "logical": false,
+              "physical": false
+            }
+          },
+          {
+            "id": "InvoiceLine-attr-2",
+            "name": "status",
+            "logicalName": "",
+            "type": "",
+            "typeParams": {
+              "maxLength": "",
+              "precision": "",
+              "scale": "",
+              "enumValues": ""
+            },
+            "defaultValue": "",
+            "nullable": false,
+            "unique": false,
+            "autoIncrement": false,
+            "visibility": {
+              "conceptual": true,
+              "logical": false,
+              "physical": false
+            }
+          },
+          {
+            "id": "InvoiceLine-attr-3",
+            "name": "createdAt",
+            "logicalName": "",
+            "type": "",
+            "typeParams": {
+              "maxLength": "",
+              "precision": "",
+              "scale": "",
+              "enumValues": ""
+            },
+            "defaultValue": "",
+            "nullable": false,
+            "unique": false,
+            "autoIncrement": false,
+            "visibility": {
+              "conceptual": true,
+              "logical": false,
+              "physical": false
+            }
+          },
+          {
+            "id": "InvoiceLine-attr-4",
+            "name": "updatedAt",
+            "logicalName": "",
+            "type": "",
+            "typeParams": {
+              "maxLength": "",
+              "precision": "",
+              "scale": "",
+              "enumValues": ""
+            },
+            "defaultValue": "",
+            "nullable": false,
+            "unique": false,
+            "autoIncrement": false,
+            "visibility": {
+              "conceptual": true,
+              "logical": false,
+              "physical": false
+            }
+          },
+          {
+            "id": "InvoiceLine-attr-5",
+            "name": "effectiveFrom",
+            "logicalName": "",
+            "type": "",
+            "typeParams": {
+              "maxLength": "",
+              "precision": "",
+              "scale": "",
+              "enumValues": ""
+            },
+            "defaultValue": "",
+            "nullable": false,
+            "unique": false,
+            "autoIncrement": false,
+            "visibility": {
+              "conceptual": true,
+              "logical": false,
+              "physical": false
+            }
+          },
+          {
+            "id": "InvoiceLine-attr-6",
+            "name": "effectiveUntil",
+            "logicalName": "",
+            "type": "",
+            "typeParams": {
+              "maxLength": "",
+              "precision": "",
+              "scale": "",
+              "enumValues": ""
+            },
+            "defaultValue": "",
+            "nullable": false,
+            "unique": false,
+            "autoIncrement": false,
+            "visibility": {
+              "conceptual": true,
+              "logical": false,
+              "physical": false
+            }
+          }
+        ],
+        "visibility": {
+          "conceptual": true,
+          "logical": false,
+          "physical": false
+        },
+        "viewPositions": {
+          "conceptual": {
+            "x": -240,
+            "y": 1310
+          },
+          "logical": {
+            "x": -240,
+            "y": 1310
+          },
+          "physical": {
+            "x": -240,
+            "y": 1310
+          }
+        }
+      }
+    },
+    {
+      "id": "Payment",
+      "type": "class",
+      "position": {
+        "x": 220,
+        "y": 1310
+      },
+      "selected": false,
+      "data": {
+        "label": "Payment",
+        "logicalName": "",
+        "color": "#ffc107",
+        "attributes": [
+          {
+            "id": "Payment-attr-0",
+            "name": "identifier",
+            "logicalName": "",
+            "type": "",
+            "typeParams": {
+              "maxLength": "",
+              "precision": "",
+              "scale": "",
+              "enumValues": ""
+            },
+            "defaultValue": "",
+            "nullable": false,
+            "unique": false,
+            "autoIncrement": false,
+            "visibility": {
+              "conceptual": true,
+              "logical": false,
+              "physical": false
+            }
+          },
+          {
+            "id": "Payment-attr-1",
+            "name": "displayName",
+            "logicalName": "",
+            "type": "",
+            "typeParams": {
+              "maxLength": "",
+              "precision": "",
+              "scale": "",
+              "enumValues": ""
+            },
+            "defaultValue": "",
+            "nullable": false,
+            "unique": false,
+            "autoIncrement": false,
+            "visibility": {
+              "conceptual": true,
+              "logical": false,
+              "physical": false
+            }
+          },
+          {
+            "id": "Payment-attr-2",
+            "name": "status",
+            "logicalName": "",
+            "type": "",
+            "typeParams": {
+              "maxLength": "",
+              "precision": "",
+              "scale": "",
+              "enumValues": ""
+            },
+            "defaultValue": "",
+            "nullable": false,
+            "unique": false,
+            "autoIncrement": false,
+            "visibility": {
+              "conceptual": true,
+              "logical": false,
+              "physical": false
+            }
+          },
+          {
+            "id": "Payment-attr-3",
+            "name": "createdAt",
+            "logicalName": "",
+            "type": "",
+            "typeParams": {
+              "maxLength": "",
+              "precision": "",
+              "scale": "",
+              "enumValues": ""
+            },
+            "defaultValue": "",
+            "nullable": false,
+            "unique": false,
+            "autoIncrement": false,
+            "visibility": {
+              "conceptual": true,
+              "logical": false,
+              "physical": false
+            }
+          },
+          {
+            "id": "Payment-attr-4",
+            "name": "updatedAt",
+            "logicalName": "",
+            "type": "",
+            "typeParams": {
+              "maxLength": "",
+              "precision": "",
+              "scale": "",
+              "enumValues": ""
+            },
+            "defaultValue": "",
+            "nullable": false,
+            "unique": false,
+            "autoIncrement": false,
+            "visibility": {
+              "conceptual": true,
+              "logical": false,
+              "physical": false
+            }
+          },
+          {
+            "id": "Payment-attr-5",
+            "name": "effectiveFrom",
+            "logicalName": "",
+            "type": "",
+            "typeParams": {
+              "maxLength": "",
+              "precision": "",
+              "scale": "",
+              "enumValues": ""
+            },
+            "defaultValue": "",
+            "nullable": false,
+            "unique": false,
+            "autoIncrement": false,
+            "visibility": {
+              "conceptual": true,
+              "logical": false,
+              "physical": false
+            }
+          },
+          {
+            "id": "Payment-attr-6",
+            "name": "effectiveUntil",
+            "logicalName": "",
+            "type": "",
+            "typeParams": {
+              "maxLength": "",
+              "precision": "",
+              "scale": "",
+              "enumValues": ""
+            },
+            "defaultValue": "",
+            "nullable": false,
+            "unique": false,
+            "autoIncrement": false,
+            "visibility": {
+              "conceptual": true,
+              "logical": false,
+              "physical": false
+            }
+          },
+          {
+            "id": "Payment-attr-7",
+            "name": "referenceCode",
+            "logicalName": "",
+            "type": "",
+            "typeParams": {
+              "maxLength": "",
+              "precision": "",
+              "scale": "",
+              "enumValues": ""
+            },
+            "defaultValue": "",
+            "nullable": false,
+            "unique": false,
+            "autoIncrement": false,
+            "visibility": {
+              "conceptual": true,
+              "logical": false,
+              "physical": false
+            }
+          }
+        ],
+        "visibility": {
+          "conceptual": true,
+          "logical": false,
+          "physical": false
+        },
+        "viewPositions": {
+          "conceptual": {
+            "x": 220,
+            "y": 1310
+          },
+          "logical": {
+            "x": 220,
+            "y": 1310
+          },
+          "physical": {
+            "x": 220,
+            "y": 1310
+          }
+        }
+      }
+    },
+    {
+      "id": "Refund",
+      "type": "class",
+      "position": {
+        "x": 680,
+        "y": 1310
+      },
+      "selected": false,
+      "data": {
+        "label": "Refund",
+        "logicalName": "",
+        "color": "#ffc107",
+        "attributes": [],
+        "visibility": {
+          "conceptual": true,
+          "logical": false,
+          "physical": false
+        },
+        "viewPositions": {
+          "conceptual": {
+            "x": 680,
+            "y": 1310
+          },
+          "logical": {
+            "x": 680,
+            "y": 1310
+          },
+          "physical": {
+            "x": 680,
+            "y": 1310
+          }
+        }
+      }
+    },
+    {
+      "id": "Ledger",
+      "type": "class",
+      "position": {
+        "x": 1140,
+        "y": 1310
+      },
+      "selected": false,
+      "data": {
+        "label": "Ledger",
+        "logicalName": "",
+        "color": "#ffc107",
+        "attributes": [
+          {
+            "id": "Ledger-attr-0",
+            "name": "identifier",
+            "logicalName": "",
+            "type": "",
+            "typeParams": {
+              "maxLength": "",
+              "precision": "",
+              "scale": "",
+              "enumValues": ""
+            },
+            "defaultValue": "",
+            "nullable": false,
+            "unique": false,
+            "autoIncrement": false,
+            "visibility": {
+              "conceptual": true,
+              "logical": false,
+              "physical": false
+            }
+          }
+        ],
+        "visibility": {
+          "conceptual": true,
+          "logical": false,
+          "physical": false
+        },
+        "viewPositions": {
+          "conceptual": {
+            "x": 1140,
+            "y": 1310
+          },
+          "logical": {
+            "x": 1140,
+            "y": 1310
+          },
+          "physical": {
+            "x": 1140,
+            "y": 1310
+          }
+        }
+      }
+    },
+    {
+      "id": "Fulfilment",
+      "type": "class",
+      "position": {
+        "x": 2200,
+        "y": 1200
+      },
+      "selected": false,
+      "data": {
+        "label": "fulfilledBy",
+        "logicalName": "",
+        "color": "#9c27b0",
+        "attributes": [
+          {
+            "id": "Fulfilment-attr-0",
+            "name": "allocatedAt",
+            "logicalName": "",
+            "type": "",
+            "typeParams": {
+              "maxLength": "",
+              "precision": "",
+              "scale": "",
+              "enumValues": ""
+            },
+            "defaultValue": "",
+            "nullable": false,
+            "unique": false,
+            "autoIncrement": false,
+            "visibility": {
+              "conceptual": true,
+              "logical": false,
+              "physical": false
+            }
+          },
+          {
+            "id": "Fulfilment-attr-1",
+            "name": "quantity",
+            "logicalName": "",
+            "type": "",
+            "typeParams": {
+              "maxLength": "",
+              "precision": "",
+              "scale": "",
+              "enumValues": ""
+            },
+            "defaultValue": "",
+            "nullable": false,
+            "unique": false,
+            "autoIncrement": false,
+            "visibility": {
+              "conceptual": true,
+              "logical": false,
+              "physical": false
+            }
+          }
+        ],
+        "visibility": {
+          "conceptual": true,
+          "logical": false,
+          "physical": false
+        },
+        "viewPositions": {
+          "conceptual": {
+            "x": 2200,
+            "y": 1200
+          },
+          "logical": {
+            "x": 2200,
+            "y": 1200
+          },
+          "physical": {
+            "x": 2200,
+            "y": 1200
+          }
+        }
+      }
+    },
+    {
+      "id": "PriceValidity",
+      "type": "class",
+      "position": {
+        "x": 2200,
+        "y": 1570
+      },
+      "selected": false,
+      "data": {
+        "label": "pricedAt",
+        "logicalName": "",
+        "color": "#9c27b0",
+        "attributes": [
+          {
+            "id": "PriceValidity-attr-0",
+            "name": "fromDate",
+            "logicalName": "",
+            "type": "",
+            "typeParams": {
+              "maxLength": "",
+              "precision": "",
+              "scale": "",
+              "enumValues": ""
+            },
+            "defaultValue": "",
+            "nullable": false,
+            "unique": false,
+            "autoIncrement": false,
+            "visibility": {
+              "conceptual": true,
+              "logical": false,
+              "physical": false
+            }
+          },
+          {
+            "id": "PriceValidity-attr-1",
+            "name": "toDate",
+            "logicalName": "",
+            "type": "",
+            "typeParams": {
+              "maxLength": "",
+              "precision": "",
+              "scale": "",
+              "enumValues": ""
+            },
+            "defaultValue": "",
+            "nullable": false,
+            "unique": false,
+            "autoIncrement": false,
+            "visibility": {
+              "conceptual": true,
+              "logical": false,
+              "physical": false
+            }
+          }
+        ],
+        "visibility": {
+          "conceptual": true,
+          "logical": false,
+          "physical": false
+        },
+        "viewPositions": {
+          "conceptual": {
+            "x": 2200,
+            "y": 1570
+          },
+          "logical": {
+            "x": 2200,
+            "y": 1570
+          },
+          "physical": {
+            "x": 2200,
+            "y": 1570
+          }
+        }
+      }
+    },
+    {
+      "id": "RefundDecision",
+      "type": "class",
+      "position": {
+        "x": 2200,
+        "y": 1950
+      },
+      "selected": false,
+      "data": {
+        "label": "reversedBy",
+        "logicalName": "",
+        "color": "#9c27b0",
+        "attributes": [
+          {
+            "id": "RefundDecision-attr-0",
+            "name": "reason",
+            "logicalName": "",
+            "type": "",
+            "typeParams": {
+              "maxLength": "",
+              "precision": "",
+              "scale": "",
+              "enumValues": ""
+            },
+            "defaultValue": "",
+            "nullable": false,
+            "unique": false,
+            "autoIncrement": false,
+            "visibility": {
+              "conceptual": true,
+              "logical": false,
+              "physical": false
+            }
+          },
+          {
+            "id": "RefundDecision-attr-1",
+            "name": "authorisedAt",
+            "logicalName": "",
+            "type": "",
+            "typeParams": {
+              "maxLength": "",
+              "precision": "",
+              "scale": "",
+              "enumValues": ""
+            },
+            "defaultValue": "",
+            "nullable": false,
+            "unique": false,
+            "autoIncrement": false,
+            "visibility": {
+              "conceptual": true,
+              "logical": false,
+              "physical": false
+            }
+          }
+        ],
+        "visibility": {
+          "conceptual": true,
+          "logical": false,
+          "physical": false
+        },
+        "viewPositions": {
+          "conceptual": {
+            "x": 2200,
+            "y": 1950
+          },
+          "logical": {
+            "x": 2200,
+            "y": 1950
+          },
+          "physical": {
+            "x": 2200,
+            "y": 1950
+          }
+        }
+      }
+    },
+    {
+      "id": "area-0065",
+      "type": "area",
+      "position": {
+        "x": -780,
+        "y": -540
+      },
+      "selected": false,
+      "data": {
+        "label": "Sales",
+        "color": "#009688",
+        "viewSizes": {
+          "conceptual": {
+            "width": 890,
+            "height": 2250
+          },
+          "logical": {
+            "width": 890,
+            "height": 2250
+          },
+          "physical": {
+            "width": 890,
+            "height": 2250
+          }
+        },
+        "visibility": {
+          "conceptual": true,
+          "logical": false,
+          "physical": false
+        },
+        "viewPositions": {
+          "conceptual": {
+            "x": -780,
+            "y": -540
+          },
+          "logical": {
+            "x": -780,
+            "y": -540
+          },
+          "physical": {
+            "x": -780,
+            "y": -540
+          }
+        }
+      },
+      "width": 890,
+      "height": 2250,
+      "style": {
+        "width": 890,
+        "height": 2250
+      },
+      "zIndex": -1
+    },
+    {
+      "id": "note-0066",
+      "type": "note",
+      "position": {
+        "x": -1050,
+        "y": 2300
+      },
+      "selected": false,
+      "data": {
+        "label": "Review 1",
+        "text": "Compare two, three and four parallel connections. Keep every role and multiplicity visible.",
+        "visibility": {
+          "conceptual": true,
+          "logical": false,
+          "physical": false
+        },
+        "viewPositions": {
+          "conceptual": {
+            "x": -1050,
+            "y": 2300
+          },
+          "logical": {
+            "x": -1050,
+            "y": 2300
+          },
+          "physical": {
+            "x": -1050,
+            "y": 2300
+          }
+        }
+      }
+    },
+    {
+      "id": "area-0070",
+      "type": "area",
+      "position": {
+        "x": 140,
+        "y": -540
+      },
+      "selected": false,
+      "data": {
+        "label": "Fulfilment",
+        "color": "#2196f3",
+        "viewSizes": {
+          "conceptual": {
+            "width": 890,
+            "height": 2250
+          },
+          "logical": {
+            "width": 890,
+            "height": 2250
+          },
+          "physical": {
+            "width": 890,
+            "height": 2250
+          }
+        },
+        "visibility": {
+          "conceptual": true,
+          "logical": false,
+          "physical": false
+        },
+        "viewPositions": {
+          "conceptual": {
+            "x": 140,
+            "y": -540
+          },
+          "logical": {
+            "x": 140,
+            "y": -540
+          },
+          "physical": {
+            "x": 140,
+            "y": -540
+          }
+        }
+      },
+      "width": 890,
+      "height": 2250,
+      "style": {
+        "width": 890,
+        "height": 2250
+      },
+      "zIndex": -1
+    },
+    {
+      "id": "note-0071",
+      "type": "note",
+      "position": {
+        "x": 350,
+        "y": 2300
+      },
+      "selected": false,
+      "data": {
+        "label": "Review 2",
+        "text": "Inspect dense crossings and dashed association-class attachments after dragging.",
+        "visibility": {
+          "conceptual": true,
+          "logical": false,
+          "physical": false
+        },
+        "viewPositions": {
+          "conceptual": {
+            "x": 350,
+            "y": 2300
+          },
+          "logical": {
+            "x": 350,
+            "y": 2300
+          },
+          "physical": {
+            "x": 350,
+            "y": 2300
+          }
+        }
+      }
+    },
+    {
+      "id": "area-0075",
+      "type": "area",
+      "position": {
+        "x": 1060,
+        "y": -540
+      },
+      "selected": false,
+      "data": {
+        "label": "Finance",
+        "color": "#ffc107",
+        "viewSizes": {
+          "conceptual": {
+            "width": 890,
+            "height": 2250
+          },
+          "logical": {
+            "width": 890,
+            "height": 2250
+          },
+          "physical": {
+            "width": 890,
+            "height": 2250
+          }
+        },
+        "visibility": {
+          "conceptual": true,
+          "logical": false,
+          "physical": false
+        },
+        "viewPositions": {
+          "conceptual": {
+            "x": 1060,
+            "y": -540
+          },
+          "logical": {
+            "x": 1060,
+            "y": -540
+          },
+          "physical": {
+            "x": 1060,
+            "y": -540
+          }
+        }
+      },
+      "width": 890,
+      "height": 2250,
+      "style": {
+        "width": 890,
+        "height": 2250
+      },
+      "zIndex": -1
+    },
+    {
+      "id": "note-0076",
+      "type": "note",
+      "position": {
+        "x": 1750,
+        "y": 2300
+      },
+      "selected": false,
+      "data": {
+        "label": "Review 3",
+        "text": "Try hiding notes and areas, then export with both included.",
+        "visibility": {
+          "conceptual": true,
+          "logical": false,
+          "physical": false
+        },
+        "viewPositions": {
+          "conceptual": {
+            "x": 1750,
+            "y": 2300
+          },
+          "logical": {
+            "x": 1750,
+            "y": 2300
+          },
+          "physical": {
+            "x": 1750,
+            "y": 2300
+          }
+        }
+      }
+    },
+    {
+      "id": "area-0080",
+      "type": "area",
+      "position": {
+        "x": -850,
+        "y": 800
+      },
+      "selected": false,
+      "data": {
+        "label": "Cross-domain audit boundary",
+        "color": "#94a3b8",
+        "viewSizes": {
+          "conceptual": {
+            "width": 3100,
+            "height": 360
+          },
+          "logical": {
+            "width": 3100,
+            "height": 360
+          },
+          "physical": {
+            "width": 3100,
+            "height": 360
+          }
+        },
+        "visibility": {
+          "conceptual": true,
+          "logical": false,
+          "physical": false
+        },
+        "viewPositions": {
+          "conceptual": {
+            "x": -850,
+            "y": 800
+          },
+          "logical": {
+            "x": -850,
+            "y": 800
+          },
+          "physical": {
+            "x": -850,
+            "y": 800
+          }
+        }
+      },
+      "width": 3100,
+      "height": 360,
+      "style": {
+        "width": 3100,
+        "height": 360
+      },
+      "zIndex": -1
+    }
+  ],
+  "edges": [
+    {
+      "id": "edge-0001",
+      "source": "Customer",
+      "target": "Order",
+      "sourceHandle": "right-source",
+      "targetHandle": "left-target",
+      "type": "composition",
+      "selected": false,
+      "interactionWidth": 20,
+      "data": {
+        "name": "contains",
+        "type": "composition",
+        "roleA": "sourceRecord",
+        "roleB": "relatedRecords",
+        "multiplicityA": "1..1",
+        "multiplicityB": "0..*",
+        "lineStyle": "orthogonal",
+        "controlPoints": [],
+        "parallelIndex": 0,
+        "parallelCount": 5
+      }
+    },
+    {
+      "id": "edge-0002",
+      "source": "Customer",
+      "target": "Basket",
+      "sourceHandle": "right-source",
+      "targetHandle": "left-target",
+      "type": "association",
+      "selected": false,
+      "interactionWidth": 20,
+      "data": {
+        "name": "references",
+        "type": "association",
+        "roleA": "owner",
+        "roleB": "member",
+        "multiplicityA": "1..1",
+        "multiplicityB": "0..*",
+        "lineStyle": "straight",
+        "controlPoints": [],
+        "parallelIndex": 0,
+        "parallelCount": 1
+      }
+    },
+    {
+      "id": "edge-0003",
+      "source": "Order",
+      "target": "OrderLine",
+      "sourceHandle": "right-source",
+      "targetHandle": "left-target",
+      "type": "association",
+      "selected": false,
+      "interactionWidth": 20,
+      "data": {
+        "name": "requires",
+        "type": "association",
+        "roleA": "sourceRecord",
+        "roleB": "relatedRecords",
+        "multiplicityA": "1..1",
+        "multiplicityB": "0..*",
+        "lineStyle": "orthogonal",
+        "controlPoints": [],
+        "parallelIndex": 0,
+        "parallelCount": 1
+      }
+    },
+    {
+      "id": "edge-0004",
+      "source": "OrderLine",
+      "target": "Product",
+      "sourceHandle": "right-source",
+      "targetHandle": "left-target",
+      "type": "association",
+      "selected": false,
+      "interactionWidth": 20,
+      "data": {
+        "name": "records",
+        "type": "association",
+        "roleA": "sourceRecord",
+        "roleB": "relatedRecords",
+        "multiplicityA": "1..1",
+        "multiplicityB": "0..*",
+        "lineStyle": "orthogonal",
+        "controlPoints": [],
+        "parallelIndex": 0,
+        "parallelCount": 1
+      }
+    },
+    {
+      "id": "edge-0005",
+      "source": "OrderLine",
+      "target": "Subscription",
+      "sourceHandle": "right-source",
+      "targetHandle": "left-target",
+      "type": "association",
+      "selected": false,
+      "interactionWidth": 20,
+      "data": {
+        "name": "references",
+        "type": "association",
+        "roleA": "owner",
+        "roleB": "member",
+        "multiplicityA": "1..1",
+        "multiplicityB": "0..*",
+        "lineStyle": "orthogonal",
+        "controlPoints": [],
+        "parallelIndex": 0,
+        "parallelCount": 1
+      }
+    },
+    {
+      "id": "edge-0006",
+      "source": "Product",
+      "target": "Catalogue",
+      "sourceHandle": "right-source",
+      "targetHandle": "left-target",
+      "type": "association",
+      "selected": false,
+      "interactionWidth": 20,
+      "data": {
+        "name": "supplies",
+        "type": "association",
+        "roleA": "sourceRecord",
+        "roleB": "relatedRecords",
+        "multiplicityA": "1..1",
+        "multiplicityB": "0..*",
+        "lineStyle": "orthogonal",
+        "controlPoints": [],
+        "parallelIndex": 0,
+        "parallelCount": 1
+      }
+    },
+    {
+      "id": "edge-0007",
+      "source": "Catalogue",
+      "target": "Price",
+      "sourceHandle": "right-source",
+      "targetHandle": "left-target",
+      "type": "association",
+      "selected": false,
+      "interactionWidth": 20,
+      "data": {
+        "name": "contains",
+        "type": "association",
+        "roleA": "sourceRecord",
+        "roleB": "relatedRecords",
+        "multiplicityA": "1..1",
+        "multiplicityB": "0..*",
+        "lineStyle": "orthogonal",
+        "controlPoints": [],
+        "parallelIndex": 0,
+        "parallelCount": 1
+      }
+    },
+    {
+      "id": "edge-0008",
+      "source": "Catalogue",
+      "target": "Offer",
+      "sourceHandle": "right-source",
+      "targetHandle": "left-target",
+      "type": "association",
+      "selected": false,
+      "interactionWidth": 20,
+      "data": {
+        "name": "references",
+        "type": "association",
+        "roleA": "owner",
+        "roleB": "member",
+        "multiplicityA": "1..1",
+        "multiplicityB": "0..*",
+        "lineStyle": "orthogonal",
+        "controlPoints": [],
+        "parallelIndex": 0,
+        "parallelCount": 1
+      }
+    },
+    {
+      "id": "edge-0009",
+      "source": "Price",
+      "target": "Promotion",
+      "sourceHandle": "right-source",
+      "targetHandle": "left-target",
+      "type": "association",
+      "selected": false,
+      "interactionWidth": 20,
+      "data": {
+        "name": "requires",
+        "type": "association",
+        "roleA": "sourceRecord",
+        "roleB": "relatedRecords",
+        "multiplicityA": "1..1",
+        "multiplicityB": "0..*",
+        "lineStyle": "orthogonal",
+        "controlPoints": [],
+        "parallelIndex": 0,
+        "parallelCount": 1
+      }
+    },
+    {
+      "id": "edge-0010",
+      "source": "Promotion",
+      "target": "Basket",
+      "sourceHandle": "right-source",
+      "targetHandle": "left-target",
+      "type": "association",
+      "selected": false,
+      "interactionWidth": 20,
+      "data": {
+        "name": "records",
+        "type": "association",
+        "roleA": "sourceRecord",
+        "roleB": "relatedRecords",
+        "multiplicityA": "1..1",
+        "multiplicityB": "0..*",
+        "lineStyle": "orthogonal",
+        "controlPoints": [],
+        "parallelIndex": 0,
+        "parallelCount": 1
+      }
+    },
+    {
+      "id": "edge-0011",
+      "source": "Promotion",
+      "target": "Inventory",
+      "sourceHandle": "right-source",
+      "targetHandle": "left-target",
+      "type": "association",
+      "selected": false,
+      "interactionWidth": 20,
+      "data": {
+        "name": "references",
+        "type": "association",
+        "roleA": "owner",
+        "roleB": "member",
+        "multiplicityA": "1..1",
+        "multiplicityB": "0..*",
+        "lineStyle": "straight",
+        "controlPoints": [],
+        "parallelIndex": 0,
+        "parallelCount": 1
+      }
+    },
+    {
+      "id": "edge-0012",
+      "source": "Basket",
+      "target": "Reservation",
+      "sourceHandle": "right-source",
+      "targetHandle": "left-target",
+      "type": "composition",
+      "selected": false,
+      "interactionWidth": 20,
+      "data": {
+        "name": "supplies",
+        "type": "composition",
+        "roleA": "sourceRecord",
+        "roleB": "relatedRecords",
+        "multiplicityA": "1..1",
+        "multiplicityB": "0..*",
+        "lineStyle": "orthogonal",
+        "controlPoints": [],
+        "parallelIndex": 0,
+        "parallelCount": 1
+      }
+    },
+    {
+      "id": "edge-0013",
+      "source": "Reservation",
+      "target": "Subscription",
+      "sourceHandle": "right-source",
+      "targetHandle": "left-target",
+      "type": "association",
+      "selected": false,
+      "interactionWidth": 20,
+      "data": {
+        "name": "contains",
+        "type": "association",
+        "roleA": "sourceRecord",
+        "roleB": "relatedRecords",
+        "multiplicityA": "1..1",
+        "multiplicityB": "0..*",
+        "lineStyle": "orthogonal",
+        "controlPoints": [],
+        "parallelIndex": 0,
+        "parallelCount": 1
+      }
+    },
+    {
+      "id": "edge-0014",
+      "source": "Reservation",
+      "target": "Shipment",
+      "sourceHandle": "right-source",
+      "targetHandle": "left-target",
+      "type": "association",
+      "selected": false,
+      "interactionWidth": 20,
+      "data": {
+        "name": "references",
+        "type": "association",
+        "roleA": "owner",
+        "roleB": "member",
+        "multiplicityA": "1..1",
+        "multiplicityB": "0..*",
+        "lineStyle": "orthogonal",
+        "controlPoints": [],
+        "parallelIndex": 0,
+        "parallelCount": 1
+      }
+    },
+    {
+      "id": "edge-0015",
+      "source": "Subscription",
+      "target": "Channel",
+      "sourceHandle": "right-source",
+      "targetHandle": "left-target",
+      "type": "association",
+      "selected": false,
+      "interactionWidth": 20,
+      "data": {
+        "name": "requires",
+        "type": "association",
+        "roleA": "sourceRecord",
+        "roleB": "relatedRecords",
+        "multiplicityA": "1..1",
+        "multiplicityB": "0..*",
+        "lineStyle": "orthogonal",
+        "controlPoints": [],
+        "parallelIndex": 0,
+        "parallelCount": 1
+      }
+    },
+    {
+      "id": "edge-0016",
+      "source": "Channel",
+      "target": "Offer",
+      "sourceHandle": "right-source",
+      "targetHandle": "left-target",
+      "type": "association",
+      "selected": false,
+      "interactionWidth": 20,
+      "data": {
+        "name": "records",
+        "type": "association",
+        "roleA": "sourceRecord",
+        "roleB": "relatedRecords",
+        "multiplicityA": "1..1",
+        "multiplicityB": "0..*",
+        "lineStyle": "orthogonal",
+        "controlPoints": [],
+        "parallelIndex": 0,
+        "parallelCount": 1
+      }
+    },
+    {
+      "id": "edge-0017",
+      "source": "Channel",
+      "target": "Carrier",
+      "sourceHandle": "right-source",
+      "targetHandle": "left-target",
+      "type": "association",
+      "selected": false,
+      "interactionWidth": 20,
+      "data": {
+        "name": "references",
+        "type": "association",
+        "roleA": "owner",
+        "roleB": "member",
+        "multiplicityA": "1..1",
+        "multiplicityB": "0..*",
+        "lineStyle": "orthogonal",
+        "controlPoints": [],
+        "parallelIndex": 0,
+        "parallelCount": 1
+      }
+    },
+    {
+      "id": "edge-0018",
+      "source": "Offer",
+      "target": "Warehouse",
+      "sourceHandle": "right-source",
+      "targetHandle": "left-target",
+      "type": "association",
+      "selected": false,
+      "interactionWidth": 20,
+      "data": {
+        "name": "supplies",
+        "type": "association",
+        "roleA": "sourceRecord",
+        "roleB": "relatedRecords",
+        "multiplicityA": "1..1",
+        "multiplicityB": "0..*",
+        "lineStyle": "orthogonal",
+        "controlPoints": [],
+        "parallelIndex": 0,
+        "parallelCount": 1
+      }
+    },
+    {
+      "id": "edge-0019",
+      "source": "Warehouse",
+      "target": "Inventory",
+      "sourceHandle": "right-source",
+      "targetHandle": "left-target",
+      "type": "association",
+      "selected": false,
+      "interactionWidth": 20,
+      "data": {
+        "name": "contains",
+        "type": "association",
+        "roleA": "sourceRecord",
+        "roleB": "relatedRecords",
+        "multiplicityA": "1..1",
+        "multiplicityB": "0..*",
+        "lineStyle": "orthogonal",
+        "controlPoints": [],
+        "parallelIndex": 0,
+        "parallelCount": 1
+      }
+    },
+    {
+      "id": "edge-0020",
+      "source": "Warehouse",
+      "target": "Route",
+      "sourceHandle": "right-source",
+      "targetHandle": "left-target",
+      "type": "association",
+      "selected": false,
+      "interactionWidth": 20,
+      "data": {
+        "name": "references",
+        "type": "association",
+        "roleA": "owner",
+        "roleB": "member",
+        "multiplicityA": "1..1",
+        "multiplicityB": "0..*",
+        "lineStyle": "straight",
+        "controlPoints": [],
+        "parallelIndex": 0,
+        "parallelCount": 1
+      }
+    },
+    {
+      "id": "edge-0021",
+      "source": "Inventory",
+      "target": "StockMovement",
+      "sourceHandle": "right-source",
+      "targetHandle": "left-target",
+      "type": "association",
+      "selected": false,
+      "interactionWidth": 20,
+      "data": {
+        "name": "requires",
+        "type": "association",
+        "roleA": "sourceRecord",
+        "roleB": "relatedRecords",
+        "multiplicityA": "1..1",
+        "multiplicityB": "0..*",
+        "lineStyle": "orthogonal",
+        "controlPoints": [],
+        "parallelIndex": 0,
+        "parallelCount": 1
+      }
+    },
+    {
+      "id": "edge-0022",
+      "source": "StockMovement",
+      "target": "Shipment",
+      "sourceHandle": "right-source",
+      "targetHandle": "left-target",
+      "type": "composition",
+      "selected": false,
+      "interactionWidth": 20,
+      "data": {
+        "name": "records",
+        "type": "composition",
+        "roleA": "sourceRecord",
+        "roleB": "relatedRecords",
+        "multiplicityA": "1..1",
+        "multiplicityB": "0..*",
+        "lineStyle": "orthogonal",
+        "controlPoints": [],
+        "parallelIndex": 0,
+        "parallelCount": 1
+      }
+    },
+    {
+      "id": "edge-0023",
+      "source": "StockMovement",
+      "target": "Return",
+      "sourceHandle": "right-source",
+      "targetHandle": "left-target",
+      "type": "association",
+      "selected": false,
+      "interactionWidth": 20,
+      "data": {
+        "name": "references",
+        "type": "association",
+        "roleA": "owner",
+        "roleB": "member",
+        "multiplicityA": "1..1",
+        "multiplicityB": "0..*",
+        "lineStyle": "orthogonal",
+        "controlPoints": [],
+        "parallelIndex": 0,
+        "parallelCount": 1
+      }
+    },
+    {
+      "id": "edge-0024",
+      "source": "Shipment",
+      "target": "Parcel",
+      "sourceHandle": "right-source",
+      "targetHandle": "left-target",
+      "type": "association",
+      "selected": false,
+      "interactionWidth": 20,
+      "data": {
+        "name": "supplies",
+        "type": "association",
+        "roleA": "sourceRecord",
+        "roleB": "relatedRecords",
+        "multiplicityA": "1..1",
+        "multiplicityB": "0..*",
+        "lineStyle": "orthogonal",
+        "controlPoints": [],
+        "parallelIndex": 0,
+        "parallelCount": 1
+      }
+    },
+    {
+      "id": "edge-0025",
+      "source": "Parcel",
+      "target": "Carrier",
+      "sourceHandle": "right-source",
+      "targetHandle": "left-target",
+      "type": "association",
+      "selected": false,
+      "interactionWidth": 20,
+      "data": {
+        "name": "contains",
+        "type": "association",
+        "roleA": "sourceRecord",
+        "roleB": "relatedRecords",
+        "multiplicityA": "1..1",
+        "multiplicityB": "0..*",
+        "lineStyle": "orthogonal",
+        "controlPoints": [],
+        "parallelIndex": 0,
+        "parallelCount": 1
+      }
+    },
+    {
+      "id": "edge-0026",
+      "source": "Parcel",
+      "target": "HandlingUnit",
+      "sourceHandle": "right-source",
+      "targetHandle": "left-target",
+      "type": "association",
+      "selected": false,
+      "interactionWidth": 20,
+      "data": {
+        "name": "references",
+        "type": "association",
+        "roleA": "owner",
+        "roleB": "member",
+        "multiplicityA": "1..1",
+        "multiplicityB": "0..*",
+        "lineStyle": "orthogonal",
+        "controlPoints": [],
+        "parallelIndex": 0,
+        "parallelCount": 1
+      }
+    },
+    {
+      "id": "edge-0027",
+      "source": "Carrier",
+      "target": "Delivery",
+      "sourceHandle": "right-source",
+      "targetHandle": "left-target",
+      "type": "association",
+      "selected": false,
+      "interactionWidth": 20,
+      "data": {
+        "name": "requires",
+        "type": "association",
+        "roleA": "sourceRecord",
+        "roleB": "relatedRecords",
+        "multiplicityA": "1..1",
+        "multiplicityB": "0..*",
+        "lineStyle": "orthogonal",
+        "controlPoints": [],
+        "parallelIndex": 0,
+        "parallelCount": 1
+      }
+    },
+    {
+      "id": "edge-0028",
+      "source": "Delivery",
+      "target": "Route",
+      "sourceHandle": "right-source",
+      "targetHandle": "left-target",
+      "type": "association",
+      "selected": false,
+      "interactionWidth": 20,
+      "data": {
+        "name": "records",
+        "type": "association",
+        "roleA": "sourceRecord",
+        "roleB": "relatedRecords",
+        "multiplicityA": "1..1",
+        "multiplicityB": "0..*",
+        "lineStyle": "orthogonal",
+        "controlPoints": [],
+        "parallelIndex": 0,
+        "parallelCount": 1
+      }
+    },
+    {
+      "id": "edge-0029",
+      "source": "Delivery",
+      "target": "InvoiceLine",
+      "sourceHandle": "right-source",
+      "targetHandle": "left-target",
+      "type": "association",
+      "selected": false,
+      "interactionWidth": 20,
+      "data": {
+        "name": "references",
+        "type": "association",
+        "roleA": "owner",
+        "roleB": "member",
+        "multiplicityA": "1..1",
+        "multiplicityB": "0..*",
+        "lineStyle": "straight",
+        "controlPoints": [],
+        "parallelIndex": 0,
+        "parallelCount": 1
+      }
+    },
+    {
+      "id": "edge-0030",
+      "source": "Route",
+      "target": "Location",
+      "sourceHandle": "right-source",
+      "targetHandle": "left-target",
+      "type": "association",
+      "selected": false,
+      "interactionWidth": 20,
+      "data": {
+        "name": "supplies",
+        "type": "association",
+        "roleA": "sourceRecord",
+        "roleB": "relatedRecords",
+        "multiplicityA": "1..1",
+        "multiplicityB": "0..*",
+        "lineStyle": "orthogonal",
+        "controlPoints": [],
+        "parallelIndex": 0,
+        "parallelCount": 1
+      }
+    },
+    {
+      "id": "edge-0031",
+      "source": "Location",
+      "target": "Return",
+      "sourceHandle": "right-source",
+      "targetHandle": "left-target",
+      "type": "association",
+      "selected": false,
+      "interactionWidth": 20,
+      "data": {
+        "name": "contains",
+        "type": "association",
+        "roleA": "sourceRecord",
+        "roleB": "relatedRecords",
+        "multiplicityA": "1..1",
+        "multiplicityB": "0..*",
+        "lineStyle": "orthogonal",
+        "controlPoints": [],
+        "parallelIndex": 0,
+        "parallelCount": 1
+      }
+    },
+    {
+      "id": "edge-0032",
+      "source": "Location",
+      "target": "Refund",
+      "sourceHandle": "right-source",
+      "targetHandle": "left-target",
+      "type": "association",
+      "selected": false,
+      "interactionWidth": 20,
+      "data": {
+        "name": "references",
+        "type": "association",
+        "roleA": "owner",
+        "roleB": "member",
+        "multiplicityA": "1..1",
+        "multiplicityB": "0..*",
+        "lineStyle": "orthogonal",
+        "controlPoints": [],
+        "parallelIndex": 0,
+        "parallelCount": 1
+      }
+    },
+    {
+      "id": "edge-0033",
+      "source": "Return",
+      "target": "Inspection",
+      "sourceHandle": "right-source",
+      "targetHandle": "left-target",
+      "type": "composition",
+      "selected": false,
+      "interactionWidth": 20,
+      "data": {
+        "name": "requires",
+        "type": "composition",
+        "roleA": "sourceRecord",
+        "roleB": "relatedRecords",
+        "multiplicityA": "1..1",
+        "multiplicityB": "0..*",
+        "lineStyle": "orthogonal",
+        "controlPoints": [],
+        "parallelIndex": 0,
+        "parallelCount": 1
+      }
+    },
+    {
+      "id": "edge-0034",
+      "source": "Inspection",
+      "target": "HandlingUnit",
+      "sourceHandle": "right-source",
+      "targetHandle": "left-target",
+      "type": "association",
+      "selected": false,
+      "interactionWidth": 20,
+      "data": {
+        "name": "records",
+        "type": "association",
+        "roleA": "sourceRecord",
+        "roleB": "relatedRecords",
+        "multiplicityA": "1..1",
+        "multiplicityB": "0..*",
+        "lineStyle": "orthogonal",
+        "controlPoints": [],
+        "parallelIndex": 0,
+        "parallelCount": 1
+      }
+    },
+    {
+      "id": "edge-0035",
+      "source": "Inspection",
+      "target": "Customer",
+      "sourceHandle": "right-source",
+      "targetHandle": "left-target",
+      "type": "association",
+      "selected": false,
+      "interactionWidth": 20,
+      "data": {
+        "name": "references",
+        "type": "association",
+        "roleA": "owner",
+        "roleB": "member",
+        "multiplicityA": "1..1",
+        "multiplicityB": "0..*",
+        "lineStyle": "orthogonal",
+        "controlPoints": [],
+        "parallelIndex": 0,
+        "parallelCount": 1
+      }
+    },
+    {
+      "id": "edge-0036",
+      "source": "HandlingUnit",
+      "target": "Invoice",
+      "sourceHandle": "right-source",
+      "targetHandle": "left-target",
+      "type": "association",
+      "selected": false,
+      "interactionWidth": 20,
+      "data": {
+        "name": "supplies",
+        "type": "association",
+        "roleA": "sourceRecord",
+        "roleB": "relatedRecords",
+        "multiplicityA": "1..1",
+        "multiplicityB": "0..*",
+        "lineStyle": "orthogonal",
+        "controlPoints": [],
+        "parallelIndex": 0,
+        "parallelCount": 1
+      }
+    },
+    {
+      "id": "edge-0037",
+      "source": "Invoice",
+      "target": "InvoiceLine",
+      "sourceHandle": "right-source",
+      "targetHandle": "left-target",
+      "type": "association",
+      "selected": false,
+      "interactionWidth": 20,
+      "data": {
+        "name": "contains",
+        "type": "association",
+        "roleA": "sourceRecord",
+        "roleB": "relatedRecords",
+        "multiplicityA": "1..1",
+        "multiplicityB": "0..*",
+        "lineStyle": "orthogonal",
+        "controlPoints": [],
+        "parallelIndex": 0,
+        "parallelCount": 1
+      }
+    },
+    {
+      "id": "edge-0038",
+      "source": "Invoice",
+      "target": "OrderLine",
+      "sourceHandle": "right-source",
+      "targetHandle": "left-target",
+      "type": "association",
+      "selected": false,
+      "interactionWidth": 20,
+      "data": {
+        "name": "references",
+        "type": "association",
+        "roleA": "owner",
+        "roleB": "member",
+        "multiplicityA": "1..1",
+        "multiplicityB": "0..*",
+        "lineStyle": "straight",
+        "controlPoints": [],
+        "parallelIndex": 0,
+        "parallelCount": 1
+      }
+    },
+    {
+      "id": "edge-0039",
+      "source": "InvoiceLine",
+      "target": "Payment",
+      "sourceHandle": "right-source",
+      "targetHandle": "left-target",
+      "type": "association",
+      "selected": false,
+      "interactionWidth": 20,
+      "data": {
+        "name": "requires",
+        "type": "association",
+        "roleA": "sourceRecord",
+        "roleB": "relatedRecords",
+        "multiplicityA": "1..1",
+        "multiplicityB": "0..*",
+        "lineStyle": "orthogonal",
+        "controlPoints": [],
+        "parallelIndex": 0,
+        "parallelCount": 1
+      }
+    },
+    {
+      "id": "edge-0040",
+      "source": "Payment",
+      "target": "Refund",
+      "sourceHandle": "right-source",
+      "targetHandle": "left-target",
+      "type": "association",
+      "selected": false,
+      "interactionWidth": 20,
+      "data": {
+        "name": "records",
+        "type": "association",
+        "roleA": "sourceRecord",
+        "roleB": "relatedRecords",
+        "multiplicityA": "1..1",
+        "multiplicityB": "0..*",
+        "lineStyle": "orthogonal",
+        "controlPoints": [],
+        "parallelIndex": 0,
+        "parallelCount": 2
+      }
+    },
+    {
+      "id": "edge-0041",
+      "source": "Payment",
+      "target": "Catalogue",
+      "sourceHandle": "right-source",
+      "targetHandle": "left-target",
+      "type": "association",
+      "selected": false,
+      "interactionWidth": 20,
+      "data": {
+        "name": "references",
+        "type": "association",
+        "roleA": "owner",
+        "roleB": "member",
+        "multiplicityA": "1..1",
+        "multiplicityB": "0..*",
+        "lineStyle": "orthogonal",
+        "controlPoints": [],
+        "parallelIndex": 0,
+        "parallelCount": 1
+      }
+    },
+    {
+      "id": "edge-0042",
+      "source": "Refund",
+      "target": "Ledger",
+      "sourceHandle": "right-source",
+      "targetHandle": "left-target",
+      "type": "association",
+      "selected": false,
+      "interactionWidth": 20,
+      "data": {
+        "name": "supplies",
+        "type": "association",
+        "roleA": "sourceRecord",
+        "roleB": "relatedRecords",
+        "multiplicityA": "1..1",
+        "multiplicityB": "0..*",
+        "lineStyle": "orthogonal",
+        "controlPoints": [],
+        "parallelIndex": 0,
+        "parallelCount": 1
+      }
+    },
+    {
+      "id": "edge-0043",
+      "source": "Ledger",
+      "target": "Customer",
+      "sourceHandle": "right-source",
+      "targetHandle": "left-target",
+      "type": "composition",
+      "selected": false,
+      "interactionWidth": 20,
+      "data": {
+        "name": "contains",
+        "type": "composition",
+        "roleA": "sourceRecord",
+        "roleB": "relatedRecords",
+        "multiplicityA": "1..1",
+        "multiplicityB": "0..*",
+        "lineStyle": "orthogonal",
+        "controlPoints": [],
+        "parallelIndex": 0,
+        "parallelCount": 1
+      }
+    },
+    {
+      "id": "edge-0044",
+      "source": "Ledger",
+      "target": "Promotion",
+      "sourceHandle": "right-source",
+      "targetHandle": "left-target",
+      "type": "association",
+      "selected": false,
+      "interactionWidth": 20,
+      "data": {
+        "name": "references",
+        "type": "association",
+        "roleA": "owner",
+        "roleB": "member",
+        "multiplicityA": "1..1",
+        "multiplicityB": "0..*",
+        "lineStyle": "orthogonal",
+        "controlPoints": [],
+        "parallelIndex": 0,
+        "parallelCount": 1
+      }
+    },
+    {
+      "id": "edge-0045",
+      "source": "Customer",
+      "target": "Order",
+      "sourceHandle": "right-source",
+      "targetHandle": "left-target",
+      "type": "association",
+      "selected": false,
+      "interactionWidth": 20,
+      "data": {
+        "name": "places",
+        "type": "association",
+        "roleA": "buyer",
+        "roleB": "orders",
+        "multiplicityA": "1..1",
+        "multiplicityB": "0..*",
+        "lineStyle": "orthogonal",
+        "controlPoints": [],
+        "parallelIndex": 1,
+        "parallelCount": 5
+      }
+    },
+    {
+      "id": "edge-0046",
+      "source": "Customer",
+      "target": "Order",
+      "sourceHandle": "right-source",
+      "targetHandle": "left-target",
+      "type": "association",
+      "selected": false,
+      "interactionWidth": 20,
+      "data": {
+        "name": "approves",
+        "type": "association",
+        "roleA": "approver",
+        "roleB": "orders",
+        "multiplicityA": "1..1",
+        "multiplicityB": "0..*",
+        "lineStyle": "orthogonal",
+        "controlPoints": [],
+        "parallelIndex": 2,
+        "parallelCount": 5
+      }
+    },
+    {
+      "id": "edge-0047",
+      "source": "Customer",
+      "target": "Order",
+      "sourceHandle": "right-source",
+      "targetHandle": "left-target",
+      "type": "association",
+      "selected": false,
+      "interactionWidth": 20,
+      "data": {
+        "name": "cancels",
+        "type": "association",
+        "roleA": "requester",
+        "roleB": "orders",
+        "multiplicityA": "1..1",
+        "multiplicityB": "0..*",
+        "lineStyle": "orthogonal",
+        "controlPoints": [],
+        "parallelIndex": 3,
+        "parallelCount": 5
+      }
+    },
+    {
+      "id": "edge-0048",
+      "source": "Customer",
+      "target": "Order",
+      "sourceHandle": "right-source",
+      "targetHandle": "left-target",
+      "type": "association",
+      "selected": false,
+      "interactionWidth": 20,
+      "data": {
+        "name": "receives",
+        "type": "association",
+        "roleA": "recipient",
+        "roleB": "orders",
+        "multiplicityA": "1..1",
+        "multiplicityB": "0..*",
+        "lineStyle": "orthogonal",
+        "controlPoints": [],
+        "parallelIndex": 4,
+        "parallelCount": 5
+      }
+    },
+    {
+      "id": "edge-0049",
+      "source": "Order",
+      "target": "Order",
+      "sourceHandle": "right-source",
+      "targetHandle": "left-target",
+      "type": "reflexiveAssociation",
+      "selected": false,
+      "interactionWidth": 20,
+      "data": {
+        "name": "replaces",
+        "type": "association",
+        "roleA": "parent",
+        "roleB": "child",
+        "multiplicityA": "0..1",
+        "multiplicityB": "0..*",
+        "lineStyle": "orthogonal",
+        "controlPoints": [],
+        "reflexiveIndex": 0,
+        "reflexiveCount": 4,
+        "reflexiveSide": "left",
+        "loopWidth": 85,
+        "loopHeight": 125
+      }
+    },
+    {
+      "id": "edge-0050",
+      "source": "Order",
+      "target": "Order",
+      "sourceHandle": "right-source",
+      "targetHandle": "left-target",
+      "type": "reflexiveAssociation",
+      "selected": false,
+      "interactionWidth": 20,
+      "data": {
+        "name": "splitsInto",
+        "type": "association",
+        "roleA": "parent",
+        "roleB": "child",
+        "multiplicityA": "0..1",
+        "multiplicityB": "0..*",
+        "lineStyle": "orthogonal",
+        "controlPoints": [],
+        "reflexiveIndex": 1,
+        "reflexiveCount": 4,
+        "reflexiveSide": "right",
+        "loopWidth": 85,
+        "loopHeight": 125
+      }
+    },
+    {
+      "id": "edge-0051",
+      "source": "Order",
+      "target": "Order",
+      "sourceHandle": "right-source",
+      "targetHandle": "left-target",
+      "type": "reflexiveAssociation",
+      "selected": false,
+      "interactionWidth": 20,
+      "data": {
+        "name": "mergesWith",
+        "type": "association",
+        "roleA": "parent",
+        "roleB": "child",
+        "multiplicityA": "0..1",
+        "multiplicityB": "0..*",
+        "lineStyle": "orthogonal",
+        "controlPoints": [],
+        "reflexiveIndex": 2,
+        "reflexiveCount": 4,
+        "reflexiveSide": "lower-right",
+        "loopWidth": 85,
+        "loopHeight": 125
+      }
+    },
+    {
+      "id": "edge-0052",
+      "source": "Order",
+      "target": "Order",
+      "sourceHandle": "right-source",
+      "targetHandle": "left-target",
+      "type": "reflexiveAssociation",
+      "selected": false,
+      "interactionWidth": 20,
+      "data": {
+        "name": "dependsOn",
+        "type": "association",
+        "roleA": "parent",
+        "roleB": "child",
+        "multiplicityA": "0..1",
+        "multiplicityB": "0..*",
+        "lineStyle": "orthogonal",
+        "controlPoints": [],
+        "reflexiveIndex": 3,
+        "reflexiveCount": 4,
+        "reflexiveSide": "lower-left",
+        "loopWidth": 85,
+        "loopHeight": 125
+      }
+    },
+    {
+      "id": "edge-0053",
+      "source": "Warehouse",
+      "target": "Warehouse",
+      "sourceHandle": "right-source",
+      "targetHandle": "left-target",
+      "type": "reflexiveAssociation",
+      "selected": false,
+      "interactionWidth": 20,
+      "data": {
+        "name": "supplies",
+        "type": "association",
+        "roleA": "parent",
+        "roleB": "child",
+        "multiplicityA": "0..1",
+        "multiplicityB": "0..*",
+        "lineStyle": "orthogonal",
+        "controlPoints": [],
+        "reflexiveIndex": 0,
+        "reflexiveCount": 4,
+        "reflexiveSide": "left",
+        "loopWidth": 85,
+        "loopHeight": 125
+      }
+    },
+    {
+      "id": "edge-0054",
+      "source": "Warehouse",
+      "target": "Warehouse",
+      "sourceHandle": "right-source",
+      "targetHandle": "left-target",
+      "type": "reflexiveAssociation",
+      "selected": false,
+      "interactionWidth": 20,
+      "data": {
+        "name": "backsUp",
+        "type": "association",
+        "roleA": "parent",
+        "roleB": "child",
+        "multiplicityA": "0..1",
+        "multiplicityB": "0..*",
+        "lineStyle": "orthogonal",
+        "controlPoints": [],
+        "reflexiveIndex": 1,
+        "reflexiveCount": 4,
+        "reflexiveSide": "right",
+        "loopWidth": 85,
+        "loopHeight": 125
+      }
+    },
+    {
+      "id": "edge-0055",
+      "source": "Warehouse",
+      "target": "Warehouse",
+      "sourceHandle": "right-source",
+      "targetHandle": "left-target",
+      "type": "reflexiveAssociation",
+      "selected": false,
+      "interactionWidth": 20,
+      "data": {
+        "name": "replenishes",
+        "type": "association",
+        "roleA": "parent",
+        "roleB": "child",
+        "multiplicityA": "0..1",
+        "multiplicityB": "0..*",
+        "lineStyle": "orthogonal",
+        "controlPoints": [],
+        "reflexiveIndex": 2,
+        "reflexiveCount": 4,
+        "reflexiveSide": "lower-right",
+        "loopWidth": 85,
+        "loopHeight": 125
+      }
+    },
+    {
+      "id": "edge-0056",
+      "source": "Warehouse",
+      "target": "Warehouse",
+      "sourceHandle": "right-source",
+      "targetHandle": "left-target",
+      "type": "reflexiveAssociation",
+      "selected": false,
+      "interactionWidth": 20,
+      "data": {
+        "name": "isManagedBy",
+        "type": "association",
+        "roleA": "parent",
+        "roleB": "child",
+        "multiplicityA": "0..1",
+        "multiplicityB": "0..*",
+        "lineStyle": "orthogonal",
+        "controlPoints": [],
+        "reflexiveIndex": 3,
+        "reflexiveCount": 4,
+        "reflexiveSide": "lower-left",
+        "loopWidth": 85,
+        "loopHeight": 125
+      }
+    },
+    {
+      "id": "edge-0057",
+      "source": "Order",
+      "target": "Shipment",
+      "sourceHandle": "right-source",
+      "targetHandle": "left-target",
+      "type": "association",
+      "selected": false,
+      "interactionWidth": 20,
+      "data": {
+        "name": "fulfilledBy",
+        "type": "association",
+        "roleA": "owner",
+        "roleB": "member",
+        "multiplicityA": "1..1",
+        "multiplicityB": "0..*",
+        "lineStyle": "orthogonal",
+        "controlPoints": [],
+        "parallelIndex": 0,
+        "parallelCount": 1
+      }
+    },
+    {
+      "id": "associative-0058",
+      "source": "Fulfilment",
+      "target": "assoc-edge-edge-0057",
+      "sourceHandle": "top-source",
+      "targetHandle": "association-target",
+      "type": "associativeAssociation",
+      "selected": false,
+      "interactionWidth": 20,
+      "data": {
+        "name": "fulfilledBy",
+        "type": "associative",
+        "autoName": true
+      }
+    },
+    {
+      "id": "edge-0059",
+      "source": "Product",
+      "target": "Price",
+      "sourceHandle": "right-source",
+      "targetHandle": "left-target",
+      "type": "association",
+      "selected": false,
+      "interactionWidth": 20,
+      "data": {
+        "name": "pricedAt",
+        "type": "association",
+        "roleA": "owner",
+        "roleB": "member",
+        "multiplicityA": "1..1",
+        "multiplicityB": "0..*",
+        "lineStyle": "orthogonal",
+        "controlPoints": [],
+        "parallelIndex": 0,
+        "parallelCount": 1
+      }
+    },
+    {
+      "id": "associative-0060",
+      "source": "PriceValidity",
+      "target": "assoc-edge-edge-0059",
+      "sourceHandle": "top-source",
+      "targetHandle": "association-target",
+      "type": "associativeAssociation",
+      "selected": false,
+      "interactionWidth": 20,
+      "data": {
+        "name": "pricedAt",
+        "type": "associative",
+        "autoName": true
+      }
+    },
+    {
+      "id": "edge-0061",
+      "source": "Payment",
+      "target": "Refund",
+      "sourceHandle": "right-source",
+      "targetHandle": "left-target",
+      "type": "association",
+      "selected": false,
+      "interactionWidth": 20,
+      "data": {
+        "name": "reversedBy",
+        "type": "association",
+        "roleA": "owner",
+        "roleB": "member",
+        "multiplicityA": "1..1",
+        "multiplicityB": "0..*",
+        "lineStyle": "orthogonal",
+        "controlPoints": [],
+        "parallelIndex": 1,
+        "parallelCount": 2
+      }
+    },
+    {
+      "id": "associative-0062",
+      "source": "RefundDecision",
+      "target": "assoc-edge-edge-0061",
+      "sourceHandle": "top-source",
+      "targetHandle": "association-target",
+      "type": "associativeAssociation",
+      "selected": false,
+      "interactionWidth": 20,
+      "data": {
+        "name": "reversedBy",
+        "type": "associative",
+        "autoName": true
+      }
+    },
+    {
+      "id": "edge-0063",
+      "source": "Return",
+      "target": "Invoice",
+      "sourceHandle": "right-source",
+      "targetHandle": "left-target",
+      "type": "association",
+      "selected": false,
+      "interactionWidth": 20,
+      "data": {
+        "name": "adjusts",
+        "type": "association",
+        "roleA": "owner",
+        "roleB": "member",
+        "multiplicityA": "1..1",
+        "multiplicityB": "0..*",
+        "lineStyle": "manual",
+        "controlPoints": [
+          {
+            "x": 2100,
+            "y": 1100
+          },
+          {
+            "x": 2100,
+            "y": 2050
+          },
+          {
+            "x": 800,
+            "y": 2050
+          }
+        ],
+        "parallelIndex": 0,
+        "parallelCount": 1
+      }
+    },
+    {
+      "id": "edge-0064",
+      "source": "Inventory",
+      "target": "Ledger",
+      "sourceHandle": "right-source",
+      "targetHandle": "left-target",
+      "type": "association",
+      "selected": false,
+      "interactionWidth": 20,
+      "data": {
+        "name": "valuedBy",
+        "type": "association",
+        "roleA": "owner",
+        "roleB": "member",
+        "multiplicityA": "1..1",
+        "multiplicityB": "0..*",
+        "lineStyle": "manual",
+        "controlPoints": [
+          {
+            "x": -950,
+            "y": 800
+          },
+          {
+            "x": -950,
+            "y": 2200
+          },
+          {
+            "x": 1500,
+            "y": 2200
+          }
+        ],
+        "parallelIndex": 0,
+        "parallelCount": 1
+      }
+    }
+  ],
+  "annotations": {
+    "conceptual": {
+      "items": [
+        {
+          "id": "text-0067",
+          "kind": "text",
+          "x": -650,
+          "y": -650,
+          "text": "A / Sales",
+          "color": "#334155",
+          "fontSize": 26
+        },
+        {
+          "id": "arrow-0068",
+          "kind": "shape",
+          "shape": "arrow",
+          "x1": -600,
+          "y1": 2220,
+          "x2": -500,
+          "y2": 1860,
+          "color": "#dc2626",
+          "thickness": 2
+        },
+        {
+          "id": "stroke-0069",
+          "kind": "stroke",
+          "tool": "marker",
+          "points": [
+            {
+              "x": -600,
+              "y": -590
+            },
+            {
+              "x": -300,
+              "y": -580
+            },
+            {
+              "x": 100,
+              "y": -590
+            }
+          ],
+          "color": "#facc15",
+          "thickness": 15,
+          "opacity": 0.3
+        },
+        {
+          "id": "text-0072",
+          "kind": "text",
+          "x": 250,
+          "y": -650,
+          "text": "B / Operations",
+          "color": "#334155",
+          "fontSize": 26
+        },
+        {
+          "id": "arrow-0073",
+          "kind": "shape",
+          "shape": "arrow",
+          "x1": 300,
+          "y1": 2220,
+          "x2": 400,
+          "y2": 1860,
+          "color": "#dc2626",
+          "thickness": 2
+        },
+        {
+          "id": "stroke-0074",
+          "kind": "stroke",
+          "tool": "marker",
+          "points": [
+            {
+              "x": 300,
+              "y": -590
+            },
+            {
+              "x": 600,
+              "y": -580
+            },
+            {
+              "x": 1000,
+              "y": -590
+            }
+          ],
+          "color": "#facc15",
+          "thickness": 15,
+          "opacity": 0.3
+        },
+        {
+          "id": "text-0077",
+          "kind": "text",
+          "x": 1150,
+          "y": -650,
+          "text": "C / Accounting",
+          "color": "#334155",
+          "fontSize": 26
+        },
+        {
+          "id": "arrow-0078",
+          "kind": "shape",
+          "shape": "arrow",
+          "x1": 1200,
+          "y1": 2220,
+          "x2": 1300,
+          "y2": 1860,
+          "color": "#dc2626",
+          "thickness": 2
+        },
+        {
+          "id": "stroke-0079",
+          "kind": "stroke",
+          "tool": "marker",
+          "points": [
+            {
+              "x": 1200,
+              "y": -590
+            },
+            {
+              "x": 1500,
+              "y": -580
+            },
+            {
+              "x": 1900,
+              "y": -590
+            }
+          ],
+          "color": "#facc15",
+          "thickness": 15,
+          "opacity": 0.3
+        },
+        {
+          "id": "ellipse-0081",
+          "kind": "shape",
+          "shape": "ellipse",
+          "x1": -900,
+          "y1": -700,
+          "x2": -200,
+          "y2": -180,
+          "color": "#dc2626",
+          "thickness": 2
+        },
+        {
+          "id": "text-0082",
+          "kind": "text",
+          "x": 1900,
+          "y": -350,
+          "text": "Manual routes are intentional. Preserve their control points.",
+          "color": "#334155",
+          "fontSize": 18,
+          "width": 340,
+          "padding": 12,
+          "background": "#e0f2fe",
+          "border": true
+        }
+      ]
+    },
+    "logical": {
+      "items": []
+    },
+    "physical": {
+      "items": []
+    }
+  }
+}

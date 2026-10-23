@@ -54,6 +54,18 @@ afterEach(() => {
 })
 
 describe('shared model opening', () => {
+  it('reports an unsupported format without replacing unsaved work or requesting discard', async () => {
+    const { result, onFileError, onModelLoaded } = setup()
+    act(() => result.current.setModelName('Unsaved work'))
+    await act(async () => result.current.onOpenModelFile(fileFor({ ...payload, version: 3 })))
+    expect(onFileError).toHaveBeenCalledWith('Unsupported model version: 3.', {
+      code: 'UNSUPPORTED_MODEL_VERSION', fileVersion: 3, supportedVersion: 2,
+    })
+    expect(result.current.modelName).toBe('Unsaved work')
+    expect(result.current.isDirty).toBe(true)
+    expect(result.current.isConfirmDialogOpen).toBe(false)
+    expect(onModelLoaded).not.toHaveBeenCalled()
+  })
   it.each(['class', 'umlClass', 'note', 'area', 'associationHelper', 'associationFloatingEdgeNode'])(
     'provides a canvas-safe default position for a %s node', async (type) => {
       const { result } = setup()
@@ -383,3 +395,24 @@ describe('React Flow 12 file compatibility', () => {
     expect(result.current.nodes.find(node => node.type === 'area').width).toBe(280)
   })
 })
+
+ it.each(['conceptual', 'logical', 'physical'])('marks a completed area resize dirty in %s without dirtying measurements', async (view) => {
+  const {result} = renderHook(() => {
+   const model = useModelState({activeView: view});
+   const annotation = useAnnotations({activeView: view});
+   const file = useFileActions({...model, annotations: annotation.annotations, annotationsDirtySignal: annotation.dirtySignal, onLoadAnnotations: annotation.onLoadAnnotations});
+   return {...model, ...file};
+  });
+  await act(async () => result.current.onOpenModelFile(fileFor({version:2, nodes:[{id:'area',type:'area',position:{x:0,y:0},width:280,height:180,data:{label:'Area'}}],edges:[]})));
+  act(() => result.current.onNodesChange([{id:'area',type:'dimensions',dimensions:{width:280,height:180}}]));
+  expect(result.current.isDirty).toBe(false);
+  expect(result.current.canUndo).toBe(false);
+  await act(async () => result.current.onNodesChange([{id:'area',type:'dimensions',dimensions:{width:400,height:300},resizing:true,setAttributes:true}]));
+  act(() => result.current.onNodesChange([{id:'area',type:'dimensions',dimensions:{width:400,height:300},resizing:false}]));
+  expect(result.current.nodes[0].data.viewSizes[view]).toEqual({width:400,height:300});
+  expect(result.current.isDirty).toBe(true);
+  act(() => result.current.onRequestNewModel());
+  expect(result.current.isConfirmDialogOpen).toBe(true);
+  act(() => result.current.onUndo());
+  expect(result.current.isDirty).toBe(false);
+ });

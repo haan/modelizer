@@ -2,9 +2,18 @@ import { Position, getSmoothStepPath, getStraightPath } from '@xyflow/react'
 import {
   ASSOCIATION_LINE_STYLE_MANUAL,
   ASSOCIATION_LINE_STYLE_STRAIGHT,
+  ASSOCIATION_EDGE_TYPE,
+  COMPOSITION_EDGE_TYPE,
 } from '../../../model/constants.js'
 
 const PARALLEL_OFFSET_SPACING = 25
+// Prefer readable separation for automatic orthogonal groups; each endpoint
+// compresses the entire group only when its class border has insufficient room.
+// Side labels need two text rows; top/bottom labels need horizontal text room.
+const ORTHOGONAL_SIDE_SPACING = 42
+const ORTHOGONAL_TOP_BOTTOM_SPACING = 120
+const ORTHOGONAL_STEP_SPACING = -24
+const PARALLEL_CORNER_CLEARANCE = 8
 const STEP_SHIFT_SPACING = -20
 const SNAP_AXIS_THRESHOLD = 10
 const MANUAL_STUB_LENGTH = 18
@@ -185,17 +194,23 @@ function isHorizontalConnection(sourcePos, targetPos) {
   )
 }
 
-function getParallelLineOffset(parallelOffset, isHorizontal) {
-  if (parallelOffset === 0) {
-    return { offsetX: 0, offsetY: 0 }
-  }
-
-  const offsetDistance = parallelOffset * PARALLEL_OFFSET_SPACING
-
-  return {
-    offsetX: isHorizontal ? 0 : offsetDistance,
-    offsetY: isHorizontal ? offsetDistance : 0,
-  }
+function getParallelAnchor(node, side, x, y, count, offset, direction, preferredSpacing) {
+  const position = getNodePosition(node)
+  const measured = getNodeMeasured(node)
+  const width = Math.max(measured.width, 1)
+  const height = Math.max(measured.height, 1)
+  const isSideEdge = side === Position.Left || side === Position.Right
+  const length = isSideEdge ? height : width
+  const start = isSideEdge ? position.y : position.x
+  const clearance = Math.min(PARALLEL_CORNER_CLEARANCE, length / 4)
+  const spacing = Math.min(preferredSpacing, (length - 2 * clearance) / (count - 1))
+  const halfSpan = spacing * (count - 1) / 2
+  // Fit the entire group, rather than clamping individual endpoints together.
+  const center = clamp(isSideEdge ? y : x, start + clearance + halfSpan, start + length - clearance - halfSpan)
+  const alongEdge = center + offset * spacing * direction
+  return isSideEdge
+    ? { x: side === Position.Left ? position.x : position.x + width, y: alongEdge }
+    : { x: alongEdge, y: side === Position.Top ? position.y : position.y + height }
 }
 
 function getPositionSign(sourceCenter, targetCenter, isHorizontal) {
@@ -361,7 +376,53 @@ export function getPolylineMidpointByLength(points) {
   return { x: lastPoint.x, y: lastPoint.y }
 }
 
-export function getAssociationLayout(sourceNode, targetNode, data) {
+// Allocate all automatic endpoints sharing a class border together. No model
+// metadata is written: slots follow current measurements and visible edges.
+export function getAssociationEndpointAllocations(edges, getNode) {
+  const borders = new Map()
+  for (const edge of edges) {
+    if (edge.hidden || ![ASSOCIATION_EDGE_TYPE, COMPOSITION_EDGE_TYPE].includes(edge.type) ||
+      edge.source === edge.target || edge.data?.lineStyle === ASSOCIATION_LINE_STYLE_STRAIGHT ||
+      edge.data?.lineStyle === ASSOCIATION_LINE_STYLE_MANUAL || normalizeControlPoints(edge.data?.controlPoints).length) continue
+    const source = getNode(edge.source), target = getNode(edge.target)
+    if (!source || !target || source.hidden || target.hidden) continue
+    const params = getEdgeParams(source, target)
+    const horizontal = isHorizontalConnection(params.sourcePos, params.targetPos)
+    const sign = getPositionSign(getNodeCenter(source), getNodeCenter(target), horizontal)
+    for (const [endpoint, nodeId, node, otherId, other, side] of [
+      ['source', edge.source, source, edge.target, target, params.sourcePos],
+      ['target', edge.target, target, edge.source, source, params.targetPos],
+    ]) {
+      const key = JSON.stringify([nodeId, side])
+      const sideEdge = side === Position.Left || side === Position.Right
+      const direction = horizontal && !sideEdge ? -sign : 1
+      const entry = { edgeId: edge.id, endpoint, node, side, otherId,
+        order: getNodeCenter(other)[sideEdge ? 'y' : 'x'],
+        lane: (edge.data?.parallelIndex ?? 0) * direction }
+      if (!borders.has(key)) borders.set(key, [])
+      borders.get(key).push(entry)
+    }
+  }
+  const result = new Map()
+  for (const entries of borders.values()) {
+    if (entries.length < 2) continue
+    entries.sort((a, b) => a.order - b.order || String(a.otherId).localeCompare(String(b.otherId)) ||
+      a.lane - b.lane || String(a.edgeId).localeCompare(String(b.edgeId)))
+    const first = entries[0]
+    const center = getNodeCenter(first.node)
+    const preferred = first.side === Position.Left || first.side === Position.Right
+      ? ORTHOGONAL_SIDE_SPACING : ORTHOGONAL_TOP_BOTTOM_SPACING
+    entries.forEach((entry, index) => {
+      const anchor = getParallelAnchor(entry.node, entry.side, center.x, center.y,
+        entries.length, index - (entries.length - 1) / 2, 1, preferred)
+      if (!result.has(entry.edgeId)) result.set(entry.edgeId, {})
+      result.get(entry.edgeId)[entry.endpoint] = anchor
+    })
+  }
+  return result
+}
+
+export function getAssociationLayout(sourceNode, targetNode, data, anchors) {
   if (!sourceNode || !targetNode) {
     return null
   }
@@ -424,13 +485,20 @@ export function getAssociationLayout(sourceNode, targetNode, data) {
     sourceNode,
     targetNode,
   )
-  const { parallelOffset } = getParallelMeta(data)
+  const { parallelOffset, parallelCount } = getParallelMeta(data)
   const isHorizontal = isHorizontalConnection(sourcePos, targetPos)
-  const { offsetX, offsetY } = getParallelLineOffset(parallelOffset, isHorizontal)
-  let sourceXOffset = sx + offsetX
-  let sourceYOffset = sy + offsetY
-  let targetXOffset = tx + offsetX
-  let targetYOffset = ty + offsetY
+  const isStraightLine = data?.lineStyle === ASSOCIATION_LINE_STYLE_STRAIGHT
+  const oppositeSides = {
+    left: Position.Right, right: Position.Left, top: Position.Bottom, bottom: Position.Top,
+  }
+  const isOrthogonalGroup = parallelCount > 1 && !isStraightLine && oppositeSides[sourcePos] === targetPos
+  const preferredSpacing = isOrthogonalGroup
+    ? (isHorizontal ? ORTHOGONAL_SIDE_SPACING : ORTHOGONAL_TOP_BOTTOM_SPACING)
+    : PARALLEL_OFFSET_SPACING
+  let sourceXOffset = sx
+  let sourceYOffset = sy
+  let targetXOffset = tx
+  let targetYOffset = ty
   const sourceCenter = getNodeCenter(sourceNode)
   const targetCenter = getNodeCenter(targetNode)
   const deltaX = Math.abs(sourceCenter.x - targetCenter.x)
@@ -455,9 +523,31 @@ export function getAssociationLayout(sourceNode, targetNode, data) {
     targetXOffset = avgX
   }
 
+  if (parallelCount > 1) {
+    // Each endpoint follows its own border, including mixed side/top connections.
+    // Reverse horizontal-border ordering for mixed faces so lanes do not cross.
+    const directionFor = (side) => isHorizontal && (side === Position.Top || side === Position.Bottom)
+      ? -positionSign : 1
+    const sourceAnchor = getParallelAnchor(sourceNode, sourcePos, sourceXOffset, sourceYOffset,
+      parallelCount, parallelOffset, directionFor(sourcePos), preferredSpacing)
+    const targetAnchor = getParallelAnchor(targetNode, targetPos, targetXOffset, targetYOffset,
+      parallelCount, parallelOffset, directionFor(targetPos), preferredSpacing)
+    sourceXOffset = sourceAnchor.x
+    sourceYOffset = sourceAnchor.y
+    targetXOffset = targetAnchor.x
+    targetYOffset = targetAnchor.y
+  }
+
+  if (!isStraightLine && anchors) {
+    sourceXOffset = anchors.source?.x ?? sourceXOffset
+    sourceYOffset = anchors.source?.y ?? sourceYOffset
+    targetXOffset = anchors.target?.x ?? targetXOffset
+    targetYOffset = anchors.target?.y ?? targetYOffset
+  }
+
   const stepShift = isPerfectHorizontal || isPerfectVertical
     ? 0
-    : parallelOffset * STEP_SHIFT_SPACING * positionSign
+    : parallelOffset * (isOrthogonalGroup ? ORTHOGONAL_STEP_SPACING : STEP_SHIFT_SPACING) * positionSign
   const centerX =
     (sourceXOffset + targetXOffset) / 2 +
     (isHorizontal ? stepShift : 0) +
@@ -466,7 +556,6 @@ export function getAssociationLayout(sourceNode, targetNode, data) {
     (sourceYOffset + targetYOffset) / 2 +
     (isHorizontal ? 0 : stepShift) +
     (snapHorizontal ? sourceCenter.y - targetCenter.y : 0)
-  const isStraightLine = data?.lineStyle === ASSOCIATION_LINE_STYLE_STRAIGHT
   let edgePath
   let labelX
   let labelY

@@ -1,3 +1,5 @@
+import FileErrorDialog from './components/dialogs/FileErrorDialog.jsx'
+import ModelContentDialog from './components/dialogs/ModelContentDialog.jsx'
 import { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react'
 import {
   ReactFlow,
@@ -6,7 +8,6 @@ import {
   ConnectionLineType,
   Controls,
 } from '@xyflow/react'
-import * as Toast from '@radix-ui/react-toast'
 import { edgeTypes, nodeTypes } from './flowTypes.js'
 import {
   ConfirmDiscardDialog,
@@ -182,14 +183,10 @@ function App() {
     open: false,
     count: 0,
   })
-  const [hiddenContentToast, setHiddenContentToast] = useState({
-    open: false,
-    title: '',
-    description: '',
-  })
-  const [fileError, setFileError] = useState({ open: false, message: '', sequence: 0 })
-  const onFileError = useCallback((message) => {
-    setFileError((previous) => ({ open: true, message, sequence: previous.sequence + 1 }))
+  const [hiddenContentReport, setHiddenContentReport] = useState(null)
+  const [fileError, setFileError] = useState({ open: false, message: '' })
+  const onFileError = useCallback((message, details = {}) => {
+    setFileError({ open: true, message, ...details })
   }, [])
   const resizeState = useRef(null)
   const deleteActionRef = useRef(null)
@@ -234,38 +231,13 @@ function App() {
     setImportWarningDialog({ open: true, count })
   }, [])
 
-  const onHiddenContent = useCallback(
-    ({ hiddenNotes, hiddenAreas, hiddenCompositions, hiddenAnnotations }) => {
-      const parts = []
-      if (hiddenNotes) {
-        parts.push('Notes')
-      }
-      if (hiddenAreas) {
-        parts.push('Areas')
-      }
-      if (hiddenCompositions) {
-        parts.push('Composite aggregations')
-      }
-      if (hiddenAnnotations) {
-        parts.push('Annotations')
-      }
-      if (parts.length === 0) {
-        return
-      }
-      const subject =
-        parts.length <= 2
-          ? parts.join(' and ')
-          : `${parts.slice(0, -1).join(', ')}, and ${parts.at(-1)}`
-      const verb = 'are'
-      const pronoun = 'them'
-      setHiddenContentToast({
-        open: true,
-        title: 'Hidden content',
-        description: `This file contains ${subject}, but ${subject} ${verb} disabled in Settings. Enable ${subject} to view ${pronoun}.`,
-      })
-    },
-    [],
-  )
+  const onHiddenContent = useCallback(report => setHiddenContentReport(report), [])
+  const onRevealContent = useCallback(category => {
+    if (category === 'notes') setShowNotes(true)
+    if (category === 'areas') setShowAreas(true)
+    if (category === 'compositions') setShowCompositionAggregation(true)
+    if (category === 'annotations') { setShowAnnotations(true); setAnnotationsVisible(true) }
+  }, [])
 
   useEffect(() => {
     writeStoredBool(STORAGE_KEYS.showBackground, showBackground)
@@ -330,12 +302,6 @@ function App() {
   const onImportWarningOpenChange = useCallback((open) => {
     if (!open) {
       setImportWarningDialog((current) => ({ ...current, open: false }))
-    }
-  }, [])
-
-  const onHiddenContentToastOpenChange = useCallback((open) => {
-    if (!open) {
-      setHiddenContentToast((current) => ({ ...current, open: false }))
     }
   }, [])
 
@@ -431,6 +397,8 @@ function App() {
     selectedId,
     selectedItem,
     updateSelected: onSelectedAnnotationChange,
+    beginStyleEdit: onAnnotationStyleEditStart,
+    endStyleEdit: onAnnotationStyleEditEnd,
     onSelectItem: onSelectAnnotation,
     onItemPointerDown: onAnnotationItemPointerDown,
     onDeleteSelected: onDeleteSelectedAnnotation,
@@ -721,10 +689,12 @@ function App() {
     showAreas,
     showCompositionAggregation,
     showAnnotations,
+    annotationsVisible,
     onHiddenContent,
     onImportWarning,
     onLoadAnnotations,
     onNewModelCreated: () => {
+      setHiddenContentReport(null)
       setActiveView(VIEW_CONCEPTUAL)
       resetViewport()
       onLoadAnnotations(null)
@@ -892,7 +862,7 @@ function App() {
   )
 
   return (
-    <Toast.Provider duration={6500} swipeDirection="right">
+    <>
       <div className="h-screen overflow-hidden bg-base-200 text-base-content">
         {isFileOver && (
           <div className="model-file-drop-overlay" role="status" data-no-export="true">
@@ -1089,6 +1059,8 @@ function App() {
                           onSetTool={(tool) => { setAnnotationsVisible(true); onSetAnnotationTool(tool) }}
                           selectedItem={selectedItem}
                           onSelectedChange={onSelectedAnnotationChange}
+                          onStyleEditStart={onAnnotationStyleEditStart}
+                          onStyleEditEnd={onAnnotationStyleEditEnd}
                           onDeleteSelected={onDeleteSelectedAnnotation}
                           onDuplicateSelected={onDuplicateSelectedAnnotation}
                           canUndo={canUndo}
@@ -1143,53 +1115,16 @@ function App() {
           count={importWarningDialog.count}
           onOpenChange={onImportWarningOpenChange}
         />
-        <Toast.Root
-          open={hiddenContentToast.open}
-          onOpenChange={onHiddenContentToastOpenChange}
-          className="toast-root"
-          data-no-export="true"
-        >
-          <div className="toast-icon" aria-hidden="true">
-            <svg
-              xmlns="http://www.w3.org/2000/svg"
-              fill="none"
-              viewBox="0 0 24 24"
-              strokeWidth="1.5"
-              stroke="currentColor"
-              className="toast-icon-svg"
-            >
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                d="M12 9v3.75m-9.303 3.376c-.866 1.5.217 3.374 1.948 3.374h14.71c1.73 0 2.813-1.874 1.948-3.374L13.949 3.378c-.866-1.5-3.032-1.5-3.898 0L2.697 16.126ZM12 15.75h.007v.008H12v-.008Z"
-              />
-            </svg>
-          </div>
-          <Toast.Title className="toast-title">
-            {hiddenContentToast.title}
-          </Toast.Title>
-          <Toast.Description className="toast-description">
-            {hiddenContentToast.description}
-          </Toast.Description>
-        </Toast.Root>
-        <Toast.Root
-          key={fileError.sequence}
-          open={fileError.open}
-          onOpenChange={(open) => setFileError((current) => ({ ...current, open }))}
-          className="toast-root"
-          type="foreground"
-          data-no-export="true"
-        >
-          <Toast.Title className="toast-title">Could not open model</Toast.Title>
-          <Toast.Description className="toast-description">{fileError.message}</Toast.Description>
-          <Toast.Close aria-label="Dismiss file error">Dismiss</Toast.Close>
-        </Toast.Root>
-        <Toast.Viewport
-          className="toast-viewport"
-          data-no-export="true"
+        <ModelContentDialog
+          report={hiddenContentReport}
+          visible={activeView === VIEW_CONCEPTUAL && !importWarningDialog.open && !isConfirmDialogOpen && !fileError.open}
+          enabled={{ notes: showNotes, areas: showAreas, compositions: showCompositionAggregation, annotations: showAnnotations && annotationsVisible }}
+          onDismiss={() => setHiddenContentReport(null)}
+          onReveal={onRevealContent}
         />
+        <FileErrorDialog error={fileError} onOpenChange={open => setFileError(current => ({ ...current, open }))} />
       </div>
-    </Toast.Provider>
+    </>
   )
 }
 

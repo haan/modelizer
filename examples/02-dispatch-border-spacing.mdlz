@@ -1,0 +1,1128 @@
+{
+  "version": 2,
+  "modelName": "02 - Dispatch hub and border spacing",
+  "nodes": [
+    {
+      "id": "area-0001",
+      "type": "area",
+      "position": {
+        "x": 430,
+        "y": 430
+      },
+      "selected": false,
+      "data": {
+        "label": "Dispatch",
+        "color": "#009688",
+        "viewSizes": {
+          "conceptual": {
+            "width": 330,
+            "height": 420
+          },
+          "logical": {
+            "width": 330,
+            "height": 420
+          },
+          "physical": {
+            "width": 330,
+            "height": 420
+          }
+        },
+        "visibility": {
+          "conceptual": true,
+          "logical": false,
+          "physical": false
+        },
+        "viewPositions": {
+          "conceptual": {
+            "x": 430,
+            "y": 430
+          },
+          "logical": {
+            "x": 430,
+            "y": 430
+          },
+          "physical": {
+            "x": 430,
+            "y": 430
+          }
+        }
+      },
+      "style": {
+        "width": 330,
+        "height": 420
+      },
+      "zIndex": -1,
+      "width": 330,
+      "height": 420
+    },
+    {
+      "id": "hub",
+      "type": "class",
+      "position": {
+        "x": 500,
+        "y": 500
+      },
+      "selected": false,
+      "data": {
+        "label": "DispatchCentre",
+        "logicalName": "",
+        "color": "#009688",
+        "attributes": [
+          {
+            "id": "hub-attr-0",
+            "name": "identifier",
+            "logicalName": "",
+            "type": "",
+            "typeParams": {
+              "maxLength": "",
+              "precision": "",
+              "scale": "",
+              "enumValues": ""
+            },
+            "defaultValue": "",
+            "nullable": false,
+            "unique": false,
+            "autoIncrement": false,
+            "visibility": {
+              "conceptual": true,
+              "logical": false,
+              "physical": false
+            }
+          },
+          {
+            "id": "hub-attr-1",
+            "name": "displayName",
+            "logicalName": "",
+            "type": "",
+            "typeParams": {
+              "maxLength": "",
+              "precision": "",
+              "scale": "",
+              "enumValues": ""
+            },
+            "defaultValue": "",
+            "nullable": false,
+            "unique": false,
+            "autoIncrement": false,
+            "visibility": {
+              "conceptual": true,
+              "logical": false,
+              "physical": false
+            }
+          },
+          {
+            "id": "hub-attr-2",
+            "name": "status",
+            "logicalName": "",
+            "type": "",
+            "typeParams": {
+              "maxLength": "",
+              "precision": "",
+              "scale": "",
+              "enumValues": ""
+            },
+            "defaultValue": "",
+            "nullable": false,
+            "unique": false,
+            "autoIncrement": false,
+            "visibility": {
+              "conceptual": true,
+              "logical": false,
+              "physical": false
+            }
+          },
+          {
+            "id": "hub-attr-3",
+            "name": "createdAt",
+            "logicalName": "",
+            "type": "",
+            "typeParams": {
+              "maxLength": "",
+              "precision": "",
+              "scale": "",
+              "enumValues": ""
+            },
+            "defaultValue": "",
+            "nullable": false,
+            "unique": false,
+            "autoIncrement": false,
+            "visibility": {
+              "conceptual": true,
+              "logical": false,
+              "physical": false
+            }
+          },
+          {
+            "id": "hub-attr-4",
+            "name": "updatedAt",
+            "logicalName": "",
+            "type": "",
+            "typeParams": {
+              "maxLength": "",
+              "precision": "",
+              "scale": "",
+              "enumValues": ""
+            },
+            "defaultValue": "",
+            "nullable": false,
+            "unique": false,
+            "autoIncrement": false,
+            "visibility": {
+              "conceptual": true,
+              "logical": false,
+              "physical": false
+            }
+          },
+          {
+            "id": "hub-attr-5",
+            "name": "effectiveFrom",
+            "logicalName": "",
+            "type": "",
+            "typeParams": {
+              "maxLength": "",
+              "precision": "",
+              "scale": "",
+              "enumValues": ""
+            },
+            "defaultValue": "",
+            "nullable": false,
+            "unique": false,
+            "autoIncrement": false,
+            "visibility": {
+              "conceptual": true,
+              "logical": false,
+              "physical": false
+            }
+          },
+          {
+            "id": "hub-attr-6",
+            "name": "effectiveUntil",
+            "logicalName": "",
+            "type": "",
+            "typeParams": {
+              "maxLength": "",
+              "precision": "",
+              "scale": "",
+              "enumValues": ""
+            },
+            "defaultValue": "",
+            "nullable": false,
+            "unique": false,
+            "autoIncrement": false,
+            "visibility": {
+              "conceptual": true,
+              "logical": false,
+              "physical": false
+            }
+          },
+          {
+            "id": "hub-attr-7",
+            "name": "referenceCode",
+            "logicalName": "",
+            "type": "",
+            "typeParams": {
+              "maxLength": "",
+              "precision": "",
+              "scale": "",
+              "enumValues": ""
+            },
+            "defaultValue": "",
+            "nullable": false,
+            "unique": false,
+            "autoIncrement": false,
+            "visibility": {
+              "conceptual": true,
+              "logical": false,
+              "physical": false
+            }
+          },
+          {
+            "id": "hub-attr-8",
+            "name": "description",
+            "logicalName": "",
+            "type": "",
+            "typeParams": {
+              "maxLength": "",
+              "precision": "",
+              "scale": "",
+              "enumValues": ""
+            },
+            "defaultValue": "",
+            "nullable": false,
+            "unique": false,
+            "autoIncrement": false,
+            "visibility": {
+              "conceptual": true,
+              "logical": false,
+              "physical": false
+            }
+          },
+          {
+            "id": "hub-attr-9",
+            "name": "revision",
+            "logicalName": "",
+            "type": "",
+            "typeParams": {
+              "maxLength": "",
+              "precision": "",
+              "scale": "",
+              "enumValues": ""
+            },
+            "defaultValue": "",
+            "nullable": false,
+            "unique": false,
+            "autoIncrement": false,
+            "visibility": {
+              "conceptual": true,
+              "logical": false,
+              "physical": false
+            }
+          }
+        ],
+        "visibility": {
+          "conceptual": true,
+          "logical": false,
+          "physical": false
+        },
+        "viewPositions": {
+          "conceptual": {
+            "x": 500,
+            "y": 500
+          },
+          "logical": {
+            "x": 500,
+            "y": 500
+          },
+          "physical": {
+            "x": 500,
+            "y": 500
+          }
+        }
+      }
+    },
+    {
+      "id": "sender",
+      "type": "class",
+      "position": {
+        "x": -250,
+        "y": 230
+      },
+      "selected": false,
+      "data": {
+        "label": "Sender",
+        "logicalName": "",
+        "color": "#2196f3",
+        "attributes": [],
+        "visibility": {
+          "conceptual": true,
+          "logical": false,
+          "physical": false
+        },
+        "viewPositions": {
+          "conceptual": {
+            "x": -250,
+            "y": 230
+          },
+          "logical": {
+            "x": -250,
+            "y": 230
+          },
+          "physical": {
+            "x": -250,
+            "y": 230
+          }
+        }
+      }
+    },
+    {
+      "id": "warehouse",
+      "type": "class",
+      "position": {
+        "x": -195.13428591317845,
+        "y": 589.7303446835605
+      },
+      "selected": false,
+      "data": {
+        "label": "Warehouse",
+        "logicalName": "",
+        "color": "#ffc107",
+        "attributes": [
+          {
+            "id": "warehouse-attr-0",
+            "name": "identifier",
+            "logicalName": "",
+            "type": "",
+            "typeParams": {
+              "maxLength": "",
+              "precision": "",
+              "scale": "",
+              "enumValues": ""
+            },
+            "defaultValue": "",
+            "nullable": false,
+            "unique": false,
+            "autoIncrement": false,
+            "visibility": {
+              "conceptual": true,
+              "logical": false,
+              "physical": false
+            }
+          }
+        ],
+        "visibility": {
+          "conceptual": true,
+          "logical": false,
+          "physical": false
+        },
+        "viewPositions": {
+          "conceptual": {
+            "x": -195.13428591317845,
+            "y": 589.7303446835605
+          },
+          "logical": {
+            "x": -195.13428591317845,
+            "y": 589.7303446835605
+          },
+          "physical": {
+            "x": -195.13428591317845,
+            "y": 589.7303446835605
+          }
+        },
+        "viewPositionsMeta": {
+          "conceptual": true,
+          "logical": false,
+          "physical": false
+        }
+      }
+    },
+    {
+      "id": "carrier",
+      "type": "class",
+      "position": {
+        "x": -250,
+        "y": 870
+      },
+      "selected": false,
+      "data": {
+        "label": "Carrier",
+        "logicalName": "",
+        "color": "#9c27b0",
+        "attributes": [
+          {
+            "id": "carrier-attr-0",
+            "name": "identifier",
+            "logicalName": "",
+            "type": "",
+            "typeParams": {
+              "maxLength": "",
+              "precision": "",
+              "scale": "",
+              "enumValues": ""
+            },
+            "defaultValue": "",
+            "nullable": false,
+            "unique": false,
+            "autoIncrement": false,
+            "visibility": {
+              "conceptual": true,
+              "logical": false,
+              "physical": false
+            }
+          },
+          {
+            "id": "carrier-attr-1",
+            "name": "displayName",
+            "logicalName": "",
+            "type": "",
+            "typeParams": {
+              "maxLength": "",
+              "precision": "",
+              "scale": "",
+              "enumValues": ""
+            },
+            "defaultValue": "",
+            "nullable": false,
+            "unique": false,
+            "autoIncrement": false,
+            "visibility": {
+              "conceptual": true,
+              "logical": false,
+              "physical": false
+            }
+          }
+        ],
+        "visibility": {
+          "conceptual": true,
+          "logical": false,
+          "physical": false
+        },
+        "viewPositions": {
+          "conceptual": {
+            "x": -250,
+            "y": 870
+          },
+          "logical": {
+            "x": -250,
+            "y": 870
+          },
+          "physical": {
+            "x": -250,
+            "y": 870
+          }
+        }
+      }
+    },
+    {
+      "id": "route",
+      "type": "class",
+      "position": {
+        "x": 1250,
+        "y": 370
+      },
+      "selected": false,
+      "data": {
+        "label": "Route",
+        "logicalName": "",
+        "color": "#ff5722",
+        "attributes": [],
+        "visibility": {
+          "conceptual": true,
+          "logical": false,
+          "physical": false
+        },
+        "viewPositions": {
+          "conceptual": {
+            "x": 1250,
+            "y": 370
+          },
+          "logical": {
+            "x": 1250,
+            "y": 370
+          },
+          "physical": {
+            "x": 1250,
+            "y": 370
+          }
+        }
+      }
+    },
+    {
+      "id": "delivery",
+      "type": "class",
+      "position": {
+        "x": 1250,
+        "y": 750
+      },
+      "selected": false,
+      "data": {
+        "label": "Delivery",
+        "logicalName": "",
+        "color": "#607d8b",
+        "attributes": [
+          {
+            "id": "delivery-attr-0",
+            "name": "identifier",
+            "logicalName": "",
+            "type": "",
+            "typeParams": {
+              "maxLength": "",
+              "precision": "",
+              "scale": "",
+              "enumValues": ""
+            },
+            "defaultValue": "",
+            "nullable": false,
+            "unique": false,
+            "autoIncrement": false,
+            "visibility": {
+              "conceptual": true,
+              "logical": false,
+              "physical": false
+            }
+          }
+        ],
+        "visibility": {
+          "conceptual": true,
+          "logical": false,
+          "physical": false
+        },
+        "viewPositions": {
+          "conceptual": {
+            "x": 1250,
+            "y": 750
+          },
+          "logical": {
+            "x": 1250,
+            "y": 750
+          },
+          "physical": {
+            "x": 1250,
+            "y": 750
+          }
+        }
+      }
+    },
+    {
+      "id": "contract",
+      "type": "class",
+      "position": {
+        "x": 240,
+        "y": -180
+      },
+      "selected": false,
+      "data": {
+        "label": "Contract",
+        "logicalName": "",
+        "color": "#009688",
+        "attributes": [
+          {
+            "id": "contract-attr-0",
+            "name": "identifier",
+            "logicalName": "",
+            "type": "",
+            "typeParams": {
+              "maxLength": "",
+              "precision": "",
+              "scale": "",
+              "enumValues": ""
+            },
+            "defaultValue": "",
+            "nullable": false,
+            "unique": false,
+            "autoIncrement": false,
+            "visibility": {
+              "conceptual": true,
+              "logical": false,
+              "physical": false
+            }
+          },
+          {
+            "id": "contract-attr-1",
+            "name": "displayName",
+            "logicalName": "",
+            "type": "",
+            "typeParams": {
+              "maxLength": "",
+              "precision": "",
+              "scale": "",
+              "enumValues": ""
+            },
+            "defaultValue": "",
+            "nullable": false,
+            "unique": false,
+            "autoIncrement": false,
+            "visibility": {
+              "conceptual": true,
+              "logical": false,
+              "physical": false
+            }
+          }
+        ],
+        "visibility": {
+          "conceptual": true,
+          "logical": false,
+          "physical": false
+        },
+        "viewPositions": {
+          "conceptual": {
+            "x": 240,
+            "y": -180
+          },
+          "logical": {
+            "x": 240,
+            "y": -180
+          },
+          "physical": {
+            "x": 240,
+            "y": -180
+          }
+        }
+      }
+    },
+    {
+      "id": "policy",
+      "type": "class",
+      "position": {
+        "x": 800,
+        "y": -180
+      },
+      "selected": false,
+      "data": {
+        "label": "Policy",
+        "logicalName": "",
+        "color": "#2196f3",
+        "attributes": [],
+        "visibility": {
+          "conceptual": true,
+          "logical": false,
+          "physical": false
+        },
+        "viewPositions": {
+          "conceptual": {
+            "x": 800,
+            "y": -180
+          },
+          "logical": {
+            "x": 800,
+            "y": -180
+          },
+          "physical": {
+            "x": 800,
+            "y": -180
+          }
+        }
+      }
+    },
+    {
+      "id": "audit",
+      "type": "class",
+      "position": {
+        "x": 240,
+        "y": 1250
+      },
+      "selected": false,
+      "data": {
+        "label": "AuditEvent",
+        "logicalName": "",
+        "color": "#ffc107",
+        "attributes": [
+          {
+            "id": "audit-attr-0",
+            "name": "identifier",
+            "logicalName": "",
+            "type": "",
+            "typeParams": {
+              "maxLength": "",
+              "precision": "",
+              "scale": "",
+              "enumValues": ""
+            },
+            "defaultValue": "",
+            "nullable": false,
+            "unique": false,
+            "autoIncrement": false,
+            "visibility": {
+              "conceptual": true,
+              "logical": false,
+              "physical": false
+            }
+          }
+        ],
+        "visibility": {
+          "conceptual": true,
+          "logical": false,
+          "physical": false
+        },
+        "viewPositions": {
+          "conceptual": {
+            "x": 240,
+            "y": 1250
+          },
+          "logical": {
+            "x": 240,
+            "y": 1250
+          },
+          "physical": {
+            "x": 240,
+            "y": 1250
+          }
+        }
+      }
+    },
+    {
+      "id": "exception",
+      "type": "class",
+      "position": {
+        "x": 800,
+        "y": 1250
+      },
+      "selected": false,
+      "data": {
+        "label": "Exception",
+        "logicalName": "",
+        "color": "#9c27b0",
+        "attributes": [
+          {
+            "id": "exception-attr-0",
+            "name": "identifier",
+            "logicalName": "",
+            "type": "",
+            "typeParams": {
+              "maxLength": "",
+              "precision": "",
+              "scale": "",
+              "enumValues": ""
+            },
+            "defaultValue": "",
+            "nullable": false,
+            "unique": false,
+            "autoIncrement": false,
+            "visibility": {
+              "conceptual": true,
+              "logical": false,
+              "physical": false
+            }
+          },
+          {
+            "id": "exception-attr-1",
+            "name": "displayName",
+            "logicalName": "",
+            "type": "",
+            "typeParams": {
+              "maxLength": "",
+              "precision": "",
+              "scale": "",
+              "enumValues": ""
+            },
+            "defaultValue": "",
+            "nullable": false,
+            "unique": false,
+            "autoIncrement": false,
+            "visibility": {
+              "conceptual": true,
+              "logical": false,
+              "physical": false
+            }
+          }
+        ],
+        "visibility": {
+          "conceptual": true,
+          "logical": false,
+          "physical": false
+        },
+        "viewPositions": {
+          "conceptual": {
+            "x": 800,
+            "y": 1250
+          },
+          "logical": {
+            "x": 800,
+            "y": 1250
+          },
+          "physical": {
+            "x": 800,
+            "y": 1250
+          }
+        }
+      }
+    },
+    {
+      "id": "note-0012",
+      "type": "note",
+      "position": {
+        "x": -280,
+        "y": -100
+      },
+      "selected": false,
+      "data": {
+        "label": "Distance regression",
+        "text": "Move DispatchCentre farther right, then back. Left-border order and separation should stay stable. Repeat with Contract and Policy above the hub.",
+        "visibility": {
+          "conceptual": true,
+          "logical": false,
+          "physical": false
+        },
+        "viewPositions": {
+          "conceptual": {
+            "x": -280,
+            "y": -100
+          },
+          "logical": {
+            "x": -280,
+            "y": -100
+          },
+          "physical": {
+            "x": -280,
+            "y": -100
+          }
+        }
+      }
+    },
+    {
+      "id": "note-0013",
+      "type": "note",
+      "position": {
+        "x": 1180,
+        "y": 1100
+      },
+      "selected": false,
+      "data": {
+        "label": "Small versus tall",
+        "text": "Sender has no attributes. Add attributes to it, then undo. Endpoints must remain on borders without resizing other classes.",
+        "visibility": {
+          "conceptual": true,
+          "logical": false,
+          "physical": false
+        },
+        "viewPositions": {
+          "conceptual": {
+            "x": 1180,
+            "y": 1100
+          },
+          "logical": {
+            "x": 1180,
+            "y": 1100
+          },
+          "physical": {
+            "x": 1180,
+            "y": 1100
+          }
+        }
+      }
+    }
+  ],
+  "edges": [
+    {
+      "id": "edge-0002",
+      "source": "sender",
+      "target": "hub",
+      "sourceHandle": "right-source",
+      "targetHandle": "left-target",
+      "type": "association",
+      "selected": false,
+      "interactionWidth": 20,
+      "data": {
+        "name": "requests",
+        "type": "association",
+        "roleA": "sender",
+        "roleB": "centre",
+        "multiplicityA": "0..*",
+        "multiplicityB": "1..1",
+        "lineStyle": "orthogonal",
+        "controlPoints": [],
+        "parallelIndex": 0,
+        "parallelCount": 1
+      }
+    },
+    {
+      "id": "edge-0003",
+      "source": "warehouse",
+      "target": "hub",
+      "sourceHandle": "right-source",
+      "targetHandle": "left-target",
+      "type": "association",
+      "selected": false,
+      "interactionWidth": 20,
+      "data": {
+        "name": "stocks",
+        "type": "association",
+        "roleA": "warehouse",
+        "roleB": "centre",
+        "multiplicityA": "0..*",
+        "multiplicityB": "1..1",
+        "lineStyle": "orthogonal",
+        "controlPoints": [],
+        "parallelIndex": 0,
+        "parallelCount": 2
+      }
+    },
+    {
+      "id": "edge-0004",
+      "source": "carrier",
+      "target": "hub",
+      "sourceHandle": "right-source",
+      "targetHandle": "left-target",
+      "type": "association",
+      "selected": false,
+      "interactionWidth": 20,
+      "data": {
+        "name": "serves",
+        "type": "association",
+        "roleA": "carrier",
+        "roleB": "centre",
+        "multiplicityA": "0..*",
+        "multiplicityB": "1..1",
+        "lineStyle": "orthogonal",
+        "controlPoints": [],
+        "parallelIndex": 0,
+        "parallelCount": 1
+      }
+    },
+    {
+      "id": "edge-0005",
+      "source": "route",
+      "target": "hub",
+      "sourceHandle": "right-source",
+      "targetHandle": "left-target",
+      "type": "association",
+      "selected": false,
+      "interactionWidth": 20,
+      "data": {
+        "name": "plans",
+        "type": "association",
+        "roleA": "route",
+        "roleB": "centre",
+        "multiplicityA": "0..*",
+        "multiplicityB": "1..1",
+        "lineStyle": "orthogonal",
+        "controlPoints": [],
+        "parallelIndex": 0,
+        "parallelCount": 1
+      }
+    },
+    {
+      "id": "edge-0006",
+      "source": "delivery",
+      "target": "hub",
+      "sourceHandle": "right-source",
+      "targetHandle": "left-target",
+      "type": "association",
+      "selected": false,
+      "interactionWidth": 20,
+      "data": {
+        "name": "dispatches",
+        "type": "association",
+        "roleA": "delivery",
+        "roleB": "centre",
+        "multiplicityA": "0..*",
+        "multiplicityB": "1..1",
+        "lineStyle": "orthogonal",
+        "controlPoints": [],
+        "parallelIndex": 0,
+        "parallelCount": 1
+      }
+    },
+    {
+      "id": "edge-0007",
+      "source": "contract",
+      "target": "hub",
+      "sourceHandle": "right-source",
+      "targetHandle": "left-target",
+      "type": "association",
+      "selected": false,
+      "interactionWidth": 20,
+      "data": {
+        "name": "governs",
+        "type": "association",
+        "roleA": "contract",
+        "roleB": "centre",
+        "multiplicityA": "0..*",
+        "multiplicityB": "1..1",
+        "lineStyle": "orthogonal",
+        "controlPoints": [],
+        "parallelIndex": 0,
+        "parallelCount": 1
+      }
+    },
+    {
+      "id": "edge-0008",
+      "source": "policy",
+      "target": "hub",
+      "sourceHandle": "right-source",
+      "targetHandle": "left-target",
+      "type": "association",
+      "selected": false,
+      "interactionWidth": 20,
+      "data": {
+        "name": "restricts",
+        "type": "association",
+        "roleA": "policy",
+        "roleB": "centre",
+        "multiplicityA": "0..*",
+        "multiplicityB": "1..1",
+        "lineStyle": "orthogonal",
+        "controlPoints": [],
+        "parallelIndex": 0,
+        "parallelCount": 1
+      }
+    },
+    {
+      "id": "edge-0009",
+      "source": "audit",
+      "target": "hub",
+      "sourceHandle": "right-source",
+      "targetHandle": "left-target",
+      "type": "association",
+      "selected": false,
+      "interactionWidth": 20,
+      "data": {
+        "name": "records",
+        "type": "association",
+        "roleA": "audit",
+        "roleB": "centre",
+        "multiplicityA": "0..*",
+        "multiplicityB": "1..1",
+        "lineStyle": "orthogonal",
+        "controlPoints": [],
+        "parallelIndex": 0,
+        "parallelCount": 1
+      }
+    },
+    {
+      "id": "edge-0010",
+      "source": "exception",
+      "target": "hub",
+      "sourceHandle": "right-source",
+      "targetHandle": "left-target",
+      "type": "association",
+      "selected": false,
+      "interactionWidth": 20,
+      "data": {
+        "name": "escalates",
+        "type": "association",
+        "roleA": "exception",
+        "roleB": "centre",
+        "multiplicityA": "0..*",
+        "multiplicityB": "1..1",
+        "lineStyle": "orthogonal",
+        "controlPoints": [],
+        "parallelIndex": 0,
+        "parallelCount": 1
+      }
+    },
+    {
+      "id": "edge-0011",
+      "source": "warehouse",
+      "target": "hub",
+      "sourceHandle": "right-source",
+      "targetHandle": "left-target",
+      "type": "association",
+      "selected": false,
+      "interactionWidth": 20,
+      "data": {
+        "name": "returnsTo",
+        "type": "association",
+        "roleA": "returns",
+        "roleB": "receivingCentre",
+        "multiplicityA": "1..1",
+        "multiplicityB": "0..*",
+        "lineStyle": "orthogonal",
+        "controlPoints": [],
+        "parallelIndex": 1,
+        "parallelCount": 2
+      }
+    }
+  ],
+  "annotations": {
+    "conceptual": {
+      "items": [
+        {
+          "id": "text-0014",
+          "kind": "text",
+          "x": 460,
+          "y": -370,
+          "text": "02 / all four borders",
+          "color": "#334155",
+          "fontSize": 26
+        },
+        {
+          "id": "arrow-0015",
+          "kind": "shape",
+          "shape": "arrow",
+          "x1": 30,
+          "y1": 1100,
+          "x2": 430,
+          "y2": 770,
+          "color": "#dc2626",
+          "thickness": 2
+        }
+      ]
+    },
+    "logical": {
+      "items": []
+    },
+    "physical": {
+      "items": []
+    }
+  }
+}

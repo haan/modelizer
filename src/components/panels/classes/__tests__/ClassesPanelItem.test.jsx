@@ -65,6 +65,31 @@ const renderItem = (props = {}) =>
   )
 
 describe('ClassesPanelItem', () => {
+  it('keeps color and deletion in the header and preserves their callbacks', () => {
+    const onDeleteClass = vi.fn()
+    const onUpdateClassColor = vi.fn()
+    renderItem({ onDeleteClass, onUpdateClassColor })
+    expect(screen.queryByText('Options')).not.toBeInTheDocument()
+    fireEvent.click(screen.getByRole('button', { name: 'Choose class color' }))
+    fireEvent.click(screen.getAllByRole('button', { name: /Use color/ })[0])
+    expect(onUpdateClassColor).toHaveBeenCalledWith('class-1', expect.any(String))
+    fireEvent.click(screen.getByRole('button', { name: 'Delete class' }))
+    expect(onDeleteClass).toHaveBeenCalledWith('class-1')
+  })
+
+  it('preserves nullable semantics and attribute editing with the clearer controls', () => {
+    const onUpdateAttribute = vi.fn()
+    const onDeleteAttribute = vi.fn()
+    renderItem({ node: { ...node, data: { ...node.data, attributes: [{ id: 'a', name: 'username', type: 'varchar(n)', typeParams: { maxLength: '13' }, nullable: true, unique: false }] } },
+      openAttributeId: 'a', onUpdateAttribute, onDeleteAttribute })
+    expect(screen.getByRole('button', { name: 'Allow null values' })).toHaveAttribute('aria-pressed', 'true')
+    fireEvent.click(screen.getByRole('button', { name: 'Allow null values' }))
+    expect(onUpdateAttribute).toHaveBeenCalledWith('class-1', 'a', { nullable: false })
+    fireEvent.change(screen.getByLabelText('Max length'), { target: { value: '32' } })
+    expect(onUpdateAttribute).toHaveBeenCalledWith('class-1', 'a', { typeParams: { maxLength: '32' } })
+    fireEvent.click(screen.getByRole('button', { name: 'Delete attribute' }))
+    expect(onDeleteAttribute).toHaveBeenCalledWith('class-1', 'a')
+  })
   it('dispatches text edit start when class auto-edit begins', () => {
     const onTextEditStart = vi.fn()
     window.addEventListener('model-text-edit-start', onTextEditStart)
