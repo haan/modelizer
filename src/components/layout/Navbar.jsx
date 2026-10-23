@@ -6,10 +6,12 @@ import ControlTooltip from '../ui/ControlTooltip.jsx'
 import { HelpDialog } from '../dialogs/HelpDialog.jsx'
 
 const menuTriggerClass =
-  'shrink-0 rounded-md px-2.5 py-2 text-sm font-medium text-base-content transition-colors hover:bg-base-200 data-[highlighted]:bg-base-200 data-[state=open]:bg-base-200 focus-visible:outline-2 focus-visible:outline-primary'
+  'shrink-0 rounded-md px-2.5 py-2 text-sm font-medium text-base-content transition-colors hover:bg-base-200 data-[highlighted]:bg-base-200 data-[state=open]:bg-base-200 focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-primary'
 
 const choiceItemClass =
   'relative cursor-pointer rounded-sm py-1 pl-6 pr-2 text-xs text-base-content transition-colors hover:bg-base-200 data-[highlighted]:bg-base-200 focus:outline-none'
+const actionItemClass =
+  'cursor-pointer rounded-sm px-2 py-1 text-xs text-base-content transition-colors hover:bg-base-200 data-[highlighted]:bg-base-200 focus:outline-none'
 const indicatorClass =
   'absolute inset-y-0 left-1.5 flex w-3.5 items-center justify-center'
 
@@ -71,12 +73,19 @@ export default function Navbar({
   const [isEditing, setIsEditing] = useState(false)
   const [draft, setDraft] = useState('')
   const [isHelpOpen, setIsHelpOpen] = useState(false)
+  const [helpTab, setHelpTab] = useState('help')
+  const helpTriggerRef = useRef(null)
   const inputRef = useRef(null)
   const originalNameRef = useRef(modelName ?? '')
   const isMac =
     typeof navigator !== 'undefined' &&
     /Mac|iPhone|iPad|iPod/.test(navigator.platform)
   const shortcutPrefix = isMac ? 'Cmd' : 'Ctrl'
+
+  const openHelp = tab => {
+    setHelpTab(tab)
+    setIsHelpOpen(true)
+  }
 
   const startEditing = () => {
     originalNameRef.current = modelName ?? ''
@@ -332,12 +341,17 @@ export default function Navbar({
               </Menubar.Portal>
             </Menubar.Menu>
             <Menubar.Menu>
-              <Menubar.Trigger
-                className={menuTriggerClass}
-                onClick={() => setIsHelpOpen(true)}
-              >
-                Help
-              </Menubar.Trigger>
+              <Menubar.Trigger ref={helpTriggerRef} className={menuTriggerClass}>Help</Menubar.Trigger>
+              <Menubar.Portal>
+                <Menubar.Content
+                  className="z-50 min-w-[180px] rounded-md border border-base-content/20 bg-base-100 p-1 shadow-lg"
+                  align="start" sideOffset={6}
+                  onCloseAutoFocus={event => { if (isHelpOpen) event.preventDefault() }}
+                >
+                  <Menubar.Item className={actionItemClass} onSelect={() => openHelp('help')}>Help</Menubar.Item>
+                  <Menubar.Item className={actionItemClass} onSelect={() => openHelp('about')}>About Modelizer</Menubar.Item>
+                </Menubar.Content>
+              </Menubar.Portal>
             </Menubar.Menu>
           </Menubar.Root>
         </div>
@@ -400,7 +414,8 @@ export default function Navbar({
           )}
         </div>
       </div>
-      <HelpDialog open={isHelpOpen} onOpenChange={setIsHelpOpen} />
+      <HelpDialog open={isHelpOpen} onOpenChange={setIsHelpOpen} tab={helpTab} onTabChange={setHelpTab}
+        onCloseAutoFocus={event => { event.preventDefault(); helpTriggerRef.current?.focus() }} />
     </nav>
   )
 }

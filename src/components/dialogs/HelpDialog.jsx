@@ -1,4 +1,4 @@
-import { useId, useState } from 'react'
+import { useId, useRef, useState } from 'react'
 import * as Dialog from '@radix-ui/react-dialog'
 import * as Tabs from '@radix-ui/react-tabs'
 import MarkdownIt from 'markdown-it'
@@ -92,19 +92,27 @@ function AboutContent() {
   )
 }
 
-export function HelpDialog({ open, onOpenChange }) {
-  const [tab, setTab] = useState('help')
+export function HelpDialog({ open, onOpenChange, tab: controlledTab, onTabChange, onCloseAutoFocus }) {
+  const titleRef = useRef(null)
+  const [internalTab, setInternalTab] = useState('help')
+  const tab = controlledTab ?? internalTab
+  const setTab = onTabChange ?? setInternalTab
   const appVersion = typeof __APP_VERSION__ === 'string' ? `v${__APP_VERSION__}` : ''
 
   return (
     <Dialog.Root open={open} onOpenChange={onOpenChange}>
       <Dialog.Portal>
         <Dialog.Overlay className={dialogStyles.overlay} />
-        <Dialog.Content className="fixed left-1/2 top-1/2 z-50 flex h-[min(760px,88dvh)] w-[940px] max-w-[94vw] -translate-x-1/2 -translate-y-1/2 flex-col overflow-hidden rounded-xl border border-base-content/20 bg-base-100 text-base-content shadow-xl">
+        <Dialog.Content
+          onOpenAutoFocus={event => {
+            event.preventDefault()
+            titleRef.current?.focus()
+          }}
+          onCloseAutoFocus={onCloseAutoFocus} className="fixed left-1/2 top-1/2 z-50 flex h-[min(760px,88dvh)] w-[940px] max-w-[94vw] -translate-x-1/2 -translate-y-1/2 flex-col overflow-hidden rounded-xl border border-base-content/20 bg-base-100 text-base-content shadow-xl">
           <header className="flex shrink-0 items-center gap-4 px-5 pb-5 pt-6 sm:px-7">
             <img src="/images/logo.svg" alt="" className="h-10 w-10 shrink-0" />
             <div className="min-w-0">
-              <Dialog.Title className="text-xl font-semibold tracking-tight">{tab === 'help' ? 'Modelizer help' : 'About Modelizer'}</Dialog.Title>
+              <Dialog.Title ref={titleRef} tabIndex={-1} className="text-xl font-semibold tracking-tight outline-none">{tab === 'help' ? 'Modelizer help' : 'About Modelizer'}</Dialog.Title>
               <Dialog.Description className="mt-1 text-sm text-base-content/70">
                 {tab === 'help' ? 'From your first class to a model ready to share.' : 'A database modeling tool for teaching and learning.'}
               </Dialog.Description>

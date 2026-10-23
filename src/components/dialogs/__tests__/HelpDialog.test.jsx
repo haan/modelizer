@@ -58,3 +58,16 @@ it('shows About with preserved credits, local setup, safe links, and a working c
   await user.click(within(dialog).getByRole('button', { name: 'Close' }))
   expect(screen.queryByRole('dialog')).not.toBeInTheDocument()
 })
+
+it.each([
+  ['help', 'Modelizer help', 'Help'],
+  ['about', 'About Modelizer', 'About'],
+])('initially focuses the title for %s and keeps the active tab reachable by keyboard', async (tab, title, tabName) => {
+  const user = userEvent.setup()
+  render(<HelpDialog open tab={tab} onOpenChange={() => {}} />)
+  expect(screen.getByRole('heading', { name: title })).toHaveFocus()
+  const activeTab = screen.getByRole('tab', { name: tabName, exact: true })
+  expect(activeTab).not.toHaveFocus()
+  await user.tab()
+  expect(activeTab).toHaveFocus()
+})
