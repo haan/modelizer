@@ -70,7 +70,7 @@ docker run --rm -p 8080:80 modelizer:local
 
 ## Development
 
-Use **Node.js 26.10.0 or a later 26.x release** and npm. The repository pins its development version in [.nvmrc](.nvmrc).
+Use **Node.js 26.12.1 or a later 26.x release** and npm. This minimum includes the Brotli decoder security fix for CVE-2026-111497. The repository pins its development version in [.nvmrc](.nvmrc).
 
 From the repository root, install dependencies and start the development server:
 
