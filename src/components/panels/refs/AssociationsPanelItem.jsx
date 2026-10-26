@@ -39,6 +39,7 @@ export default function AssociationsPanelItem({
   onResetAssociationRouting,
   showCompositionAggregation = false,
   onToggleAssociationComposition,
+  onUpdateAssociationWhole,
   onHighlightAssociation,
   isOpen = false,
   onToggleOpen,
@@ -59,7 +60,20 @@ export default function AssociationsPanelItem({
   const isComposition = edge.type === 'composition'
   const isReflexive = edge.source === edge.target
   const label = edge.data?.name ?? ''
-  const endpointSummary = isReflexive ? `${sourceLabel} (self)` : `${sourceLabel} and ${targetLabel}`
+  const firstLabel = isComposition ? targetLabel : sourceLabel
+  const secondLabel = isComposition ? sourceLabel : targetLabel
+  const endpointSummary = isReflexive ? `${sourceLabel} (self)`
+    : isComposition ? `${firstLabel} (whole) and ${secondLabel} (part)`
+      : `${sourceLabel} and ${targetLabel}`
+  const endpointLabels = <>
+    <span className="truncate">{firstLabel}</span>
+    {isReflexive ? <span>(self)</span> : <>
+      <EndpointConnector composition={isComposition} />
+      <span className="sr-only">{isComposition ? ' (whole) and ' : 'and'}</span>
+      <span className="truncate">{secondLabel}</span>
+      {isComposition && <span className="sr-only"> (part)</span>}
+    </>}
+  </>
   const multiplicityA = edge.data?.multiplicityA ?? ''
   const multiplicityB = edge.data?.multiplicityB ?? ''
   const roleA = edge.data?.roleA ?? ''
@@ -109,6 +123,11 @@ export default function AssociationsPanelItem({
     multiplicityAValue || UNDEFINED_MULTIPLICITY_VALUE
   const selectMultiplicityBValue =
     multiplicityBValue || UNDEFINED_MULTIPLICITY_VALUE
+  const endpoints = [
+    { side: 'A', name: sourceLabel, isAssociation: sourceIsAssociation, multiplicity: selectMultiplicityAValue, role: roleA },
+    { side: 'B', name: targetLabel, isAssociation: targetIsAssociation, multiplicity: selectMultiplicityBValue, role: roleB },
+  ]
+  if (isComposition) endpoints.reverse()
 
   useEffect(() => {
     if (isEditing) {
@@ -199,28 +218,15 @@ export default function AssociationsPanelItem({
                   }}
                 />
               ) : (
-                <span className="flex w-full min-w-0 items-center gap-1 text-sm leading-5">
+                <span className="flex w-full min-w-0 items-center gap-1 text-sm leading-5" title={label ? undefined : endpointSummary}>
                   {label ? (
                     <span className="truncate">{label}</span>
-                  ) : isReflexive ? (
-                    <span className="truncate">{`${sourceLabel} (self)`}</span>
-                  ) : (
-                    <>
-                      <span className="truncate">{sourceLabel}</span>
-                      <EndpointConnector />
-                      <span className="truncate">{targetLabel}</span>
-                    </>
-                  )}
+                  ) : endpointLabels}
                 </span>
               )}
               {!isEditing && label && (
                 <span className="flex w-full min-w-0 items-center gap-1 text-[11px] font-normal leading-4 text-muted-foreground" title={endpointSummary}>
-                  <span className="truncate">{sourceLabel}</span>
-                  {isReflexive ? <span>(self)</span> : <>
-                    <EndpointConnector />
-                    <span className="sr-only">and</span>
-                    <span className="truncate">{targetLabel}</span>
-                  </>}
+                  {endpointLabels}
                 </span>
               )}
             </div>
@@ -296,45 +302,45 @@ export default function AssociationsPanelItem({
         <div className="w-full">
           <div className="rounded-b-md border-b border-base-content/20 px-3 pb-3 pt-1">
             <div className="grid grid-cols-2 gap-3">
-              {[
-                { side: 'A', name: sourceLabel, isAssociation: sourceIsAssociation, multiplicity: selectMultiplicityAValue, role: roleA },
-                { side: 'B', name: targetLabel, isAssociation: targetIsAssociation, multiplicity: selectMultiplicityBValue, role: roleB },
-              ].map(({ side, name, isAssociation, multiplicity, role }) => (
-                <section key={side} aria-label={`Endpoint ${side}: ${name}`} className="min-w-0 space-y-2">
-                  <div>
-                    <div className="text-[11px] text-base-content/65">{isAssociation ? 'Association' : edge.type === 'associativeAssociation' ? 'Class' : `Class ${side}`}</div>
-                    <div className="mt-0.5 truncate text-sm font-medium" title={name}>{name}</div>
-                  </div>
-                  {canEditMultiplicity && (
-                    <div className="space-y-1">
-                      <label htmlFor={`${fieldId}-multiplicity-${side}`} className="text-[11px] text-base-content/65">Multiplicity</label>
-                      <SelectField
-                        id={`${fieldId}-multiplicity-${side}`}
-                        aria-label={`Multiplicity ${side} (${name})`}
-                        value={multiplicity}
-                        items={MULTIPLICITY_OPTIONS}
-                        placeholder="Select"
-                        onValueChange={value => onUpdateAssociationMultiplicity?.(
-                          edge.id, side, value === UNDEFINED_MULTIPLICITY_VALUE ? '' : value,
-                        )}
-                      />
+              {endpoints.map(({ side, name, isAssociation, multiplicity, role }) => {
+                const endpointLabel = isComposition ? (side === 'A' ? 'Part' : 'Whole (composite)') : `Endpoint ${side}`
+                return (
+                  <section key={side} aria-label={`${endpointLabel}: ${name}`} className="min-w-0 space-y-2">
+                    <div>
+                      <div className="text-[11px] text-base-content/65">{isComposition ? endpointLabel : isAssociation ? 'Association' : edge.type === 'associativeAssociation' ? 'Class' : `Class ${side}`}</div>
+                      <div className="mt-0.5 truncate text-sm font-medium" title={name}>{name}</div>
                     </div>
-                  )}
-                  {canEditRole && (
-                    <div className="space-y-1">
-                      <label htmlFor={`${fieldId}-role-${side}`} className="text-[11px] text-base-content/65">Role</label>
-                      <Input
-                        id={`${fieldId}-role-${side}`}
-                        aria-label={`Role ${side} (${name})`}
-                        size="xs" value={role} placeholder="Role"
-                        onFocus={() => window.dispatchEvent(new CustomEvent('model-text-edit-start'))}
-                        onBlur={() => window.dispatchEvent(new CustomEvent('model-text-edit-end'))}
-                        onChange={event => onUpdateAssociationRole?.(edge.id, side, event.target.value)}
-                      />
-                    </div>
-                  )}
-                </section>
-              ))}
+                    {canEditMultiplicity && (
+                      <div className="space-y-1">
+                        <label htmlFor={`${fieldId}-multiplicity-${side}`} className="text-[11px] text-base-content/65">Multiplicity</label>
+                        <SelectField
+                          id={`${fieldId}-multiplicity-${side}`}
+                          aria-label={`Multiplicity ${isComposition ? endpointLabel : side} (${name})`}
+                          value={multiplicity}
+                          items={MULTIPLICITY_OPTIONS}
+                          placeholder="Select"
+                          onValueChange={value => onUpdateAssociationMultiplicity?.(
+                            edge.id, side, value === UNDEFINED_MULTIPLICITY_VALUE ? '' : value,
+                          )}
+                        />
+                      </div>
+                    )}
+                    {canEditRole && (
+                      <div className="space-y-1">
+                        <label htmlFor={`${fieldId}-role-${side}`} className="text-[11px] text-base-content/65">Role</label>
+                        <Input
+                          id={`${fieldId}-role-${side}`}
+                          aria-label={`Role ${side} (${name})`}
+                          size="xs" value={role} placeholder="Role"
+                          onFocus={() => window.dispatchEvent(new CustomEvent('model-text-edit-start'))}
+                          onBlur={() => window.dispatchEvent(new CustomEvent('model-text-edit-end'))}
+                          onChange={event => onUpdateAssociationRole?.(edge.id, side, event.target.value)}
+                        />
+                      </div>
+                    )}
+                  </section>
+                )
+              })}
             </div>
             {canToggleComposition ? (
               <div className="mt-3">
@@ -353,6 +359,21 @@ export default function AssociationsPanelItem({
                   />
                   <span>Composite aggregation</span>
                 </label>
+                {isComposition && (
+                  <div className="mt-2 space-y-1">
+                    <label htmlFor={`${fieldId}-whole`} className="text-[11px] text-base-content/65">Whole (composite)</label>
+                    <SelectField
+                      id={`${fieldId}-whole`}
+                      aria-label="Whole (composite)"
+                      value={edge.target}
+                      items={[
+                        { value: edge.source, label: sourceLabel === targetLabel ? `${sourceLabel} (Part)` : sourceLabel },
+                        { value: edge.target, label: sourceLabel === targetLabel ? `${targetLabel} (Whole)` : targetLabel },
+                      ]}
+                      onValueChange={nodeId => onUpdateAssociationWhole?.(edge.id, nodeId)}
+                    />
+                  </div>
+                )}
               </div>
             ) : null}
             {canEditLineStyle ? (

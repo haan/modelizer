@@ -5,6 +5,7 @@ import { Association } from '../Association.jsx'
 import { Composition } from '../Composition.jsx'
 import { AssociativeAssociation } from '../AssociativeAssociation.jsx'
 import { getAssociationEndpointAllocations, getAssociationLayout } from '../../utils/associationUtils.js'
+import { normalizeEdges, reverseAssociationEndpoints } from '../../../../model/edgeUtils.js'
 
 const flow = vi.hoisted(() => ({ edges: [], nodes: {
   a: { position: { x: 0, y: 0 }, measured: { width: 188, height: 80 } },
@@ -17,7 +18,53 @@ vi.mock('@xyflow/react', async importOriginal => ({
   useReactFlow: () => ({}),
   EdgeLabelRenderer: ({ children }) => createPortal(children, document.body),
 }))
-afterEach(cleanup)
+afterEach(() => {
+  cleanup()
+  flow.edges = []
+  flow.nodes = {
+    a: { position: { x: 0, y: 0 }, measured: { width: 188, height: 80 } },
+    b: { position: { x: 400, y: 0 }, measured: { width: 188, height: 80 } },
+  }
+})
+
+describe.each(['straight', 'orthogonal', 'manual'])('changing the whole with %s routing', lineStyle => {
+  it.each([1, 3])('keeps geometry and labels in place with %i association(s)', count => {
+    flow.nodes = {
+      a: { position: { x: 0, y: 0 }, measured: { width: 188, height: 80 } },
+      b: { position: { x: 430, y: 170 }, measured: { width: 188, height: 120 } },
+    }
+    flow.edges = normalizeEdges(Array.from({ length: count }, (_, index) => ({
+      id: `composition-${index}`, source: 'a', target: 'b', type: 'composition',
+      data: { name: 'contains', lineStyle, multiplicityA: '0..*', multiplicityB: '1..1',
+        controlPoints: lineStyle === 'manual' ? [{ x: 270, y: 40 }, { x: 350, y: 240 }] : [] },
+    })))
+    const first = flow.edges[0]
+    const { container, rerender } = render(<svg><Composition {...first} /></svg>)
+    const multiplicityTransforms = ['0..*', '1..1'].map(label => screen.getByText(label).style.transform)
+    const coordinates = () => container.querySelector('.react-flow__edge-path').getAttribute('d')
+      .match(/-?\d+(?:\.\d+)?(?:e[+-]?\d+)?/gi).map(Number)
+      .reduce((pairs, number, index) => {
+        if (index % 2 === 0) pairs.push([number])
+        else pairs[pairs.length - 1].push(number)
+        return pairs
+      }, [])
+    const beforeCoordinates = coordinates()
+    const diamondCenter = () => container.querySelector('polygon').getAttribute('transform').match(/translate\(([^)]+)\)/)[1].split(',').map(Number)
+    const originalDiamond = diamondCenter()
+    const originalTarget = beforeCoordinates.at(-1)
+    expect(Math.hypot(originalDiamond[0] - originalTarget[0], originalDiamond[1] - originalTarget[1])).toBeCloseTo(7)
+
+    const reversed = reverseAssociationEndpoints(first)
+    flow.edges = [reversed, ...flow.edges.slice(1)]
+    rerender(<svg><Composition {...reversed} /></svg>)
+    const afterCoordinates = coordinates().reverse()
+    expect(afterCoordinates).toHaveLength(beforeCoordinates.length)
+    afterCoordinates.forEach((pair, index) => pair.forEach((number, axis) => expect(number).toBeCloseTo(beforeCoordinates[index][axis])))
+    expect(['0..*', '1..1'].map(label => screen.getByText(label).style.transform)).toEqual(multiplicityTransforms)
+    const newDiamond = diamondCenter()
+    expect(Math.hypot(newDiamond[0] - beforeCoordinates[0][0], newDiamond[1] - beforeCoordinates[0][1])).toBeCloseTo(7)
+  })
+})
 
 it('attaches a dashed association-class link to the allocated path despite stale helper coordinates', () => {
   const nodes = { ...flow.nodes, upper: { position: { x: 0, y: -150 }, measured: { width: 188, height: 80 } } }

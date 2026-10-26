@@ -1,7 +1,9 @@
-import { cleanup, fireEvent, render, screen } from '@testing-library/react'
+import { cleanup, fireEvent, render, screen, within } from '@testing-library/react'
+import { useState } from 'react'
 import * as Accordion from '@radix-ui/react-accordion'
 import { afterEach, expect, it, vi } from 'vitest'
 import AssociationsPanelItem from '../AssociationsPanelItem.jsx'
+import { reverseAssociationEndpoints } from '../../../../model/edgeUtils.js'
 
 // Exercise endpoint-to-model mapping independently of Radix's popup mechanics.
 vi.mock('../../../ui/Select.jsx', () => ({
@@ -17,6 +19,75 @@ const renderItem = (props = {}) => render(
     <AssociationsPanelItem edge={edge} sourceLabel="User" targetLabel="Port" isOpen showCompositionAggregation {...props} />
   </Accordion.Root>,
 )
+
+it('shows the whole selector only for enabled compositions', () => {
+  const { unmount } = renderItem()
+  expect(screen.queryByRole('combobox', { name: 'Whole (composite)' })).not.toBeInTheDocument()
+  expect(screen.getByText('Class A')).toBeInTheDocument()
+  unmount()
+  renderItem({ edge: { ...edge, type: 'composition' }, showCompositionAggregation: false })
+  expect(screen.queryByRole('combobox', { name: 'Whole (composite)' })).not.toBeInTheDocument()
+})
+
+it('selects the whole by ID and disambiguates duplicate class names', () => {
+  const onUpdateAssociationWhole = vi.fn()
+  const onUpdateAssociationMultiplicity = vi.fn()
+  renderItem({ edge: { ...edge, type: 'composition' }, sourceLabel: 'Item', targetLabel: 'Item', onUpdateAssociationWhole, onUpdateAssociationMultiplicity })
+  const wholeColumn = screen.getAllByRole('region', { name: /^(Part|Whole)/ })[0]
+  fireEvent.change(within(wholeColumn).getByRole('combobox'), { target: { value: '0..1' } })
+  expect(onUpdateAssociationMultiplicity).toHaveBeenCalledWith(edge.id, 'B', '0..1')
+  const select = screen.getByRole('combobox', { name: 'Whole (composite)' })
+  expect(select).toHaveValue('port')
+  expect(within(select).getByRole('option', { name: 'Item (Part)' })).toHaveValue('user')
+  expect(within(select).getByRole('option', { name: 'Item (Whole)' })).toHaveValue('port')
+  fireEvent.change(select, { target: { value: 'user' } })
+  expect(onUpdateAssociationWhole).toHaveBeenCalledWith(edge.id, 'user')
+})
+
+it.each(['activates', ''])('keeps the header and columns consistent when changing the whole (name: "%s")', name => {
+  function StatefulItem() {
+    const [current, setCurrent] = useState({ ...edge, data: { ...edge.data, name } })
+    const names = { user: 'User', port: 'Port' }
+    return <Accordion.Root type="single" value={edge.id}>
+      <AssociationsPanelItem edge={current} sourceLabel={names[current.source]} targetLabel={names[current.target]}
+        isOpen showCompositionAggregation
+        onToggleAssociationComposition={(_id, enabled) => setCurrent(e => ({ ...e, type: enabled ? 'composition' : 'association' }))}
+        onUpdateAssociationWhole={(_id, nodeId) => setCurrent(e => nodeId === e.target ? e : reverseAssociationEndpoints(e))} />
+    </Accordion.Root>
+  }
+  render(<StatefulItem />)
+  fireEvent.click(screen.getByRole('checkbox', { name: 'Toggle composition' }))
+  expect(screen.queryByText('Class A')).not.toBeInTheDocument()
+  expect(screen.queryByText('Class B')).not.toBeInTheDocument()
+  expect(screen.getByRole('region', { name: 'Part: User' })).toBeInTheDocument()
+  expect(screen.getByRole('region', { name: 'Whole (composite): Port' })).toBeInTheDocument()
+  expect(screen.getAllByRole('region', { name: /^(Part|Whole)/ }).map(column => column.getAttribute('aria-label')))
+    .toEqual(['Whole (composite): Port', 'Part: User'])
+  const summary = screen.getByTitle('Port (whole) and User (part)')
+  expect(summary).toHaveTextContent('Port (whole) and User (part)')
+  expect(summary.querySelector('polygon')).toHaveAttribute('fill', 'currentColor')
+  expect(summary.querySelector('circle')).toBeNull()
+  if (name) expect(screen.getByText(name)).toBeInTheDocument()
+  expect(screen.queryByText('The diamond marks the whole; the other class is the part.')).not.toBeInTheDocument()
+  fireEvent.change(screen.getByRole('combobox', { name: 'Whole (composite)' }), { target: { value: 'user' } })
+  expect(screen.getByRole('combobox', { name: 'Multiplicity Part (Port)' })).toHaveValue('1..1')
+  expect(screen.getByRole('combobox', { name: 'Multiplicity Whole (composite) (User)' })).toHaveValue('0..*')
+  expect(screen.getByRole('combobox', { name: 'Whole (composite)' })).toHaveValue('user')
+  expect(screen.getAllByRole('region', { name: /^(Part|Whole)/ }).map(column => column.getAttribute('aria-label')))
+    .toEqual(['Whole (composite): User', 'Part: Port'])
+  expect(screen.getByTitle('User (whole) and Port (part)')).toHaveTextContent('User (whole) and Port (part)')
+  fireEvent.click(screen.getByRole('checkbox', { name: 'Toggle composition' }))
+  expect(screen.getByText('Class A')).toBeInTheDocument()
+  expect(screen.getByText('Class B')).toBeInTheDocument()
+  expect(screen.getByTitle('Port and User').querySelector('polygon')).toBeNull()
+  expect(screen.getByTitle('Port and User').querySelectorAll('circle')).toHaveLength(2)
+  expect(screen.getAllByRole('region', { name: /^Endpoint/ }).map(column => column.getAttribute('aria-label')))
+    .toEqual(['Endpoint A: Port', 'Endpoint B: User'])
+  expect(screen.getByRole('combobox', { name: 'Multiplicity A (Port)' })).toHaveValue('1..1')
+  expect(screen.queryByRole('combobox', { name: 'Whole (composite)' })).not.toBeInTheDocument()
+  fireEvent.click(screen.getByRole('checkbox', { name: 'Toggle composition' }))
+  expect(screen.getByRole('combobox', { name: 'Whole (composite)' })).toHaveValue('user')
+})
 
 it('shows endpoints in collapsed headers and keeps header actions separate from expansion', () => {
   const onHighlightAssociation = vi.fn(), onDeleteAssociation = vi.fn(), onRenameAssociation = vi.fn(), onToggleOpen = vi.fn()

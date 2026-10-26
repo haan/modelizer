@@ -2,6 +2,7 @@ import { act, renderHook } from '@testing-library/react'
 import { describe, expect, it, vi } from 'vitest'
 
 import { useModelState } from '../useModelState.js'
+import { normalizeEdges } from '../../model/edgeUtils.js'
 
 const renderModelState = () =>
   renderHook(() =>
@@ -20,6 +21,63 @@ const flushHistoryPush = async () => {
     await Promise.resolve()
   })
 }
+
+describe('composition whole selection', () => {
+  const composition = normalizeEdges([{
+    id: 'composition', type: 'composition', source: 'part', target: 'whole',
+    sourceHandle: 'right-source', targetHandle: 'left-target',
+    data: { type: 'composition', name: 'contains', roleA: 'items', roleB: 'owner',
+      multiplicityA: '0..*', multiplicityB: '1..1', lineStyle: 'manual',
+      controlPoints: [{ x: 240, y: 120 }, { x: 360, y: 120 }] },
+  }])[0]
+  const setup = (edge = composition) => {
+    const hook = renderModelState()
+    const nodes = ['part', 'whole'].map((id, index) => ({ id, type: 'class', position: { x: index * 400, y: 0 }, data: { label: id } }))
+    act(() => hook.result.current.setModel(nodes, [edge]))
+    return hook
+  }
+
+  it('updates panel and model atomically and undoes/redoes in one step', async () => {
+    const { result } = setup()
+    act(() => result.current.onUpdateAssociationWhole('composition', 'part'))
+    await flushHistoryPush()
+    const changed = result.current.edges[0]
+    expect(changed).toMatchObject({ source: 'whole', target: 'part', data: { roleA: 'owner', roleB: 'items', multiplicityA: '1..1', multiplicityB: '0..*' } })
+    expect(result.current.panelEdges).toEqual(result.current.edges)
+    act(() => result.current.onUndo())
+    expect(result.current.edges).toEqual([composition])
+    expect(result.current.canUndo).toBe(false)
+    act(() => result.current.onUpdateAssociationWhole('composition', 'whole'))
+    await flushHistoryPush()
+    expect(result.current.canRedo).toBe(true)
+    act(() => result.current.onRedo())
+    expect(result.current.edges).toEqual([changed])
+  })
+
+  it.each([
+    ['current target', composition, 'composition', 'whole'],
+    ['unrelated node', composition, 'composition', 'other'],
+    ['missing edge', composition, 'missing', 'part'],
+    ['ordinary association', { ...composition, type: 'association' }, 'composition', 'part'],
+    ['reflexive composition', { ...composition, target: 'part' }, 'composition', 'part'],
+  ])('ignores %s without adding history', async (_name, edge, id, whole) => {
+    const { result } = setup(edge)
+    const before = result.current.edges
+    act(() => result.current.onUpdateAssociationWhole(id, whole))
+    await flushHistoryPush()
+    expect(result.current.edges).toBe(before)
+    expect(result.current.canUndo).toBe(false)
+  })
+
+  it('retains the selected whole and roles when composition is disabled and reenabled', () => {
+    const { result } = setup()
+    act(() => result.current.onUpdateAssociationWhole('composition', 'part'))
+    act(() => result.current.onToggleAssociationComposition('composition', false))
+    expect(result.current.edges[0]).toMatchObject({ type: 'association', target: 'part', data: { roleB: 'items' } })
+    act(() => result.current.onToggleAssociationComposition('composition', true))
+    expect(result.current.edges[0]).toMatchObject({ type: 'composition', target: 'part', data: { roleB: 'items' } })
+  })
+})
 
 describe.each(['conceptual', 'logical', 'physical'])('exclusive focus in %s view', (activeView) => {
   const setup = () => {
