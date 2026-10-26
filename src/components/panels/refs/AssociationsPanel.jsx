@@ -21,6 +21,7 @@ export default function AssociationsPanel({
   onUpdateAssociationLineStyle,
   onResetAssociationRouting,
   onToggleAssociationComposition,
+  onUpdateAssociationWhole,
   onHighlightAssociation,
   openAssociationId: controlledOpenAssociationId,
   onOpenAssociationIdChange,
@@ -119,6 +120,7 @@ export default function AssociationsPanel({
               onResetAssociationRouting={onResetAssociationRouting}
               showCompositionAggregation={showCompositionAggregation}
               onToggleAssociationComposition={onToggleAssociationComposition}
+              onUpdateAssociationWhole={onUpdateAssociationWhole}
               onHighlightAssociation={onHighlightAssociation}
             />
           )

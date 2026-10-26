@@ -353,6 +353,7 @@ function App() {
     onUpdateRelationshipLineStyle,
     onResetRelationshipRouting,
     onToggleAssociationComposition,
+    onUpdateAssociationWhole,
     onHighlightAssociation,
     onHighlightNote,
     onHighlightArea,
@@ -977,6 +978,7 @@ function App() {
                 onResetRelationshipRouting={onResetRelationshipRouting}
                 showCompositionAggregation={showCompositionAggregation}
                 onToggleAssociationComposition={onToggleAssociationComposition}
+                onUpdateAssociationWhole={onUpdateAssociationWhole}
                 onHighlightAssociation={onHighlightAssociation}
                 onAddNote={onAddNote}
                 onRenameNote={onRenameNote}

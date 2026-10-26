@@ -60,6 +60,8 @@ Connect a class to the handle on an existing association. This creates the dashe
 
 Enable **Preferences → Enable composite aggregation**, then expand an ordinary association in Relations and select **Composite aggregation**. Its name, roles, multiplicities, and comment are kept.
 
+Choose **Whole (composite)** to select which class carries the diamond. The endpoint columns show **Whole (composite)** on the left and **Part** on the right; changing the whole exchanges the classes between these columns while keeping each class’s multiplicity and stored role. Unchecking **Composite aggregation** restores the **Class A** and **Class B** headings and ordering. Rechecking it restores the last selected whole. Changing the whole can be undone and is preserved when saving and reopening the model.
+
 This preference enables creation as well as display. Disabling it hides existing composite aggregations without deleting them. Reflexive associations cannot be changed into compositions.
 
 ### Create a logical or physical relationship

@@ -20,6 +20,30 @@ const ALL_REFLEXIVE_SIDES = [
   REFLEXIVE_SIDE_LOWER_LEFT,
 ]
 
+// The whole of a composition is always its target, including in saved files.
+// Reverse endpoint-specific data with the nodes so labels stay at their classes.
+export function reverseAssociationEndpoints(edge) {
+  const next = { ...edge, source: edge.target, target: edge.source }
+  const exchange = (object, original, a, b, transform = value => value) => {
+    delete object[a]
+    delete object[b]
+    if (Object.hasOwn(original, b)) object[a] = transform(original[b], 'source')
+    if (Object.hasOwn(original, a)) object[b] = transform(original[a], 'target')
+  }
+  exchange(next, edge, 'sourceHandle', 'targetHandle', (handle, endpoint) =>
+    typeof handle === 'string' ? handle.replace(/-(source|target)$/, `-${endpoint}`) : handle,
+  )
+  if (edge.data) {
+    next.data = { ...edge.data }
+    exchange(next.data, edge.data, 'multiplicityA', 'multiplicityB')
+    exchange(next.data, edge.data, 'roleA', 'roleB')
+    if (Array.isArray(edge.data.controlPoints)) {
+      next.data.controlPoints = [...edge.data.controlPoints].reverse()
+    }
+  }
+  return next
+}
+
 export function normalizeControlPoints(value) {
   if (!Array.isArray(value)) {
     return []

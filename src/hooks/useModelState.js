@@ -15,7 +15,7 @@ import {
   getReflexiveAssociationLayout,
   getReflexiveSide,
 } from '../components/flow/utils/reflexiveAssociationUtils.js'
-import { normalizeEdges } from '../model/edgeUtils.js'
+import { normalizeEdges, reverseAssociationEndpoints } from '../model/edgeUtils.js'
 import {
   ASSOCIATION_EDGE_TYPE,
   ASSOCIATION_LINE_STYLE_ORTHOGONAL,
@@ -2151,6 +2151,20 @@ export function useModelState({
     ],
   )
 
+  const onUpdateAssociationWhole = useCallback(
+    (edgeId, wholeNodeId) => {
+      updateEdgesAndPanel((current) => {
+        const edge = current.find((entry) => entry.id === edgeId)
+        if (!edge || edge.type !== COMPOSITION_EDGE_TYPE ||
+          edge.source === edge.target || wholeNodeId !== edge.source) {
+          return current
+        }
+        return current.map((entry) => entry === edge ? reverseAssociationEndpoints(entry) : entry)
+      })
+    },
+    [updateEdgesAndPanel],
+  )
+
   const onToggleAssociationComposition = useCallback(
     (edgeId, nextValue) => {
       updateEdgesAndPanel((current) => {
@@ -3001,6 +3015,7 @@ export function useModelState({
     onUpdateRelationshipLineStyle,
     onResetRelationshipRouting,
     onToggleAssociationComposition,
+    onUpdateAssociationWhole,
     onEdgeDoubleClick,
     onHighlightAssociation,
     onHighlightNote,

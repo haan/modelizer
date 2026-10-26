@@ -1,9 +1,9 @@
 import * as Select from '@radix-ui/react-select'
 
 const triggerBase =
-  'flex w-full items-center justify-between whitespace-nowrap rounded-md border border-control-border bg-transparent px-2 py-1 text-xs shadow-sm focus:outline-none focus:ring-1 focus:ring-ring disabled:cursor-not-allowed disabled:opacity-50'
+  'flex min-w-0 w-full items-center justify-between whitespace-nowrap rounded-md border border-control-border bg-transparent px-2 py-1 text-xs shadow-sm focus:outline-none focus:ring-1 focus:ring-ring disabled:cursor-not-allowed disabled:opacity-50'
 const contentBase =
-  'z-50 min-w-[8rem] overflow-hidden rounded-md border border-base-content/20 bg-base-100 shadow-lg'
+  'z-50 min-w-[8rem] max-w-[var(--radix-select-content-available-width)] overflow-hidden rounded-md border border-base-content/20 bg-base-100 shadow-lg'
 const itemBase =
   'relative flex w-full cursor-default select-none items-center rounded-sm px-2 py-1 text-xs outline-none data-[highlighted]:bg-base-200 data-[highlighted]:text-base-content data-[disabled]:pointer-events-none data-[disabled]:opacity-50'
 
@@ -16,11 +16,15 @@ export default function SelectField({
   id,
   'aria-label': ariaLabel,
 }) {
+  const selectedLabel = items.find(item => item.value === value)?.label
   return (
     <Select.Root value={value} onValueChange={onValueChange} disabled={disabled}>
-      <Select.Trigger id={id} aria-label={ariaLabel} className={triggerBase}>
-        <Select.Value placeholder={placeholder} />
-        <Select.Icon className="ml-2 h-3.5 w-3.5 opacity-60">
+      <Select.Trigger id={id} aria-label={ariaLabel} className={triggerBase}
+        title={typeof selectedLabel === 'string' ? selectedLabel : undefined}>
+        <span className="min-w-0 flex-1 truncate text-left">
+          <Select.Value placeholder={placeholder} />
+        </span>
+        <Select.Icon className="ml-2 h-3.5 w-3.5 shrink-0 opacity-60">
           <svg
             width="15"
             height="15"
@@ -47,7 +51,7 @@ export default function SelectField({
                 value={item.value}
                 className={itemBase}
               >
-                <Select.ItemText>{item.label}</Select.ItemText>
+                <Select.ItemText className="min-w-0 whitespace-normal [overflow-wrap:anywhere]">{item.label}</Select.ItemText>
               </Select.Item>
             ))}
           </Select.Viewport>
