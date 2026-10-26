@@ -1,7 +1,8 @@
 import ControlTooltip from '../../ui/ControlTooltip.jsx'
+import PanelDeleteButton from '../../ui/PanelDeleteButton.jsx'
 import { useEffect, useRef, useState } from 'react'
 import * as Accordion from '@radix-ui/react-accordion'
-import { CirclePicker } from 'react-color'
+import ClassColorControl from '../classes/ClassColorControl.jsx'
 import { CLASS_COLOR_PALETTE } from '../../../classPalette.js'
 import Input from '../../ui/Input.jsx'
 import CheckboxInput from '../../ui/Checkbox.jsx'
@@ -28,7 +29,6 @@ export default function AreasPanelItem({
   const accentBorderColor = color || 'transparent'
   const [isEditing, setIsEditing] = useState(false)
   const [draft, setDraft] = useState(label)
-  const [isPickerOpen, setIsPickerOpen] = useState(false)
   const inputRef = useRef(null)
   const originalLabelRef = useRef(label)
 
@@ -59,7 +59,7 @@ export default function AreasPanelItem({
     <Accordion.Item value={area.id} className="group">
       <Accordion.Header asChild>
         <div
-          className="w-full rounded-b-md border-b border-base-content/20 group-data-[state=open]:border-b-0"
+          className="group/area-header w-full rounded-b-md border-b border-base-content/20 group-data-[state=open]:border-b-0"
           onClick={toggleOpen}
         >
           <div
@@ -126,10 +126,11 @@ export default function AreasPanelItem({
                 </span>
               )}
             </div>
-            <div className="ml-auto flex items-center gap-1">
+            <div className="ml-auto flex shrink-0 items-center gap-0.5 opacity-0 pointer-events-none transition-opacity group-data-[state=open]:opacity-100 group-data-[state=open]:pointer-events-auto group-hover/area-header:opacity-100 group-hover/area-header:pointer-events-auto group-has-[:focus-visible]/area-header:opacity-100 group-has-[:focus-visible]/area-header:pointer-events-auto has-[[data-state=open]]:opacity-100 has-[[data-state=open]]:pointer-events-auto [@media(hover:none)]:opacity-100 [@media(hover:none)]:pointer-events-auto">
+              <ClassColorControl color={color} entityNoun="area" onChange={value => onUpdateColor?.(area.id, value)} />
               <ControlTooltip label="Focus area on diagram">
                 <button
-                  className="inline-flex h-6 w-6 items-center justify-center rounded-md text-base-content/60 opacity-0 transition-opacity hover:bg-base-300 hover:text-base-content group-hover:opacity-100 focus-visible:opacity-100"
+                  className="inline-flex h-6 w-6 items-center justify-center rounded-md text-base-content/60 transition-colors hover:bg-base-300 hover:text-base-content focus-visible:ring-2 focus-visible:ring-ring"
                   type="button"
                   onClick={(event) => {
                     event.stopPropagation()
@@ -161,31 +162,34 @@ export default function AreasPanelItem({
                   </svg>
                 </button>
               </ControlTooltip>
-              <button
-                className="inline-flex h-6 w-6 items-center justify-center rounded-md text-base-content/60 opacity-0 transition-opacity hover:bg-base-300 hover:text-base-content group-hover:opacity-100"
-                type="button"
-                onClick={(event) => {
-                  event.stopPropagation()
-                  startEditing()
-                }}
-                onMouseDown={(event) => event.stopPropagation()}
-                aria-label="Edit area name"
-              >
-                <svg
-                  xmlns="http://www.w3.org/2000/svg"
-                  viewBox="0 0 24 24"
-                  fill="none"
-                  stroke="currentColor"
-                  strokeWidth="2"
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  className="h-3.5 w-3.5"
-                  aria-hidden="true"
+              <ControlTooltip label="Rename area">
+                <button
+                  className="inline-flex h-6 w-6 items-center justify-center rounded-md text-base-content/60 transition-colors hover:bg-base-300 hover:text-base-content focus-visible:ring-2 focus-visible:ring-ring"
+                  type="button"
+                  onClick={(event) => {
+                    event.stopPropagation()
+                    startEditing()
+                  }}
+                  onMouseDown={(event) => event.stopPropagation()}
+                  aria-label="Edit area name"
                 >
-                  <path d="M21.174 6.812a1 1 0 0 0-3.986-3.987L3.842 16.174a2 2 0 0 0-.5.83l-1.321 4.352a.5.5 0 0 0 .623.622l4.353-1.32a2 2 0 0 0 .83-.497z" />
-                  <path d="m15 5 4 4" />
-                </svg>
-              </button>
+                  <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    strokeWidth="2"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    className="h-3.5 w-3.5"
+                    aria-hidden="true"
+                  >
+                    <path d="M21.174 6.812a1 1 0 0 0-3.986-3.987L3.842 16.174a2 2 0 0 0-.5.83l-1.321 4.352a.5.5 0 0 0 .623.622l4.353-1.32a2 2 0 0 0 .83-.497z" />
+                    <path d="m15 5 4 4" />
+                  </svg>
+                </button>
+              </ControlTooltip>
+              <PanelDeleteButton label="Delete area" onClick={() => onDelete?.(area.id)} />
             </div>
           </div>
         </div>
@@ -193,14 +197,14 @@ export default function AreasPanelItem({
       <Accordion.Content>
         <div className="w-full rounded-b-md border-b border-base-content/20">
           <div
-            className="border-l-[6px] px-2 py-3 text-xs rounded-bl-md"
+            className="border-l-[6px] px-2 pb-3 pt-1.5 text-xs rounded-bl-md"
             style={{ borderColor: accentBorderColor }}
           >
-            <div className="mt-2">
-              <div className="text-[11px] font-semibold uppercase tracking-wide opacity-70">
+            <div className="grid grid-cols-[76px_minmax(0,1fr)] items-center gap-2">
+              <div className="text-[11px] text-base-content/65">
                 Visibility
               </div>
-              <div className="mt-2 flex flex-wrap items-center gap-3 text-[11px]">
+              <div className="flex flex-wrap items-center gap-x-3 gap-y-2 text-[11px]">
                 <label className="flex items-center gap-2">
                   <CheckboxInput
                     checked={isConceptual}
@@ -225,81 +229,6 @@ export default function AreasPanelItem({
                   <span>Logical/Physical</span>
                 </label>
               </div>
-            </div>
-            <div className="mt-3 flex items-center justify-between">
-              <span className="text-xs font-semibold uppercase tracking-wide opacity-70">
-                Options
-              </span>
-            </div>
-            <div className="relative mt-2">
-              <button
-                type="button"
-                className="inline-flex h-7 w-7 items-center justify-center rounded-md hover:ring-2 hover:ring-base-content/30 hover:ring-offset-2 hover:ring-offset-base-100"
-                onClick={(event) => {
-                  event.stopPropagation()
-                  setIsPickerOpen((open) => !open)
-                }}
-                onMouseDown={(event) => event.stopPropagation()}
-                aria-haspopup="dialog"
-                aria-expanded={isPickerOpen}
-                aria-label="Choose area color"
-                style={{ backgroundColor: color }}
-              >
-                <span className="sr-only">Choose area color</span>
-              </button>
-              {isPickerOpen ? (
-                <div className="absolute right-0 top-10 z-20">
-                  <button
-                    type="button"
-                    className="fixed inset-0 h-full w-full cursor-default"
-                    onClick={(event) => {
-                      event.stopPropagation()
-                      setIsPickerOpen(false)
-                    }}
-                    aria-hidden="true"
-                    tabIndex={-1}
-                  />
-                  <div className="relative rounded-lg border border-base-content/20 bg-base-100 p-2 shadow-xl">
-                    <CirclePicker
-                      color={color}
-                      colors={CLASS_COLOR_PALETTE}
-                      circleSize={22}
-                      circleSpacing={10}
-                      onChange={(nextColor) =>
-                        onUpdateColor?.(area.id, nextColor.hex)
-                      }
-                    />
-                  </div>
-                </div>
-              ) : null}
-            </div>
-            <div className="flex flex-1 items-center justify-center pt-2">
-              <button
-                className="inline-flex h-8 items-center justify-center gap-2 whitespace-nowrap rounded-md p-2 text-xs font-medium transition-colors hover:bg-base-300 hover:text-accent-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:pointer-events-none disabled:opacity-50 [&_svg]:pointer-events-none [&_svg]:size-4 [&_svg]:shrink-0"
-                type="button"
-                onClick={() => onDelete?.(area.id)}
-              >
-                <svg
-                  xmlns="http://www.w3.org/2000/svg"
-                  width="24"
-                  height="24"
-                  viewBox="0 0 24 24"
-                  fill="none"
-                  stroke="currentColor"
-                  strokeWidth="2"
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  className="mr-1 h-3.5 w-3.5 text-danger"
-                  aria-hidden="true"
-                >
-                  <path d="M10 11v6" />
-                  <path d="M14 11v6" />
-                  <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6" />
-                  <path d="M3 6h18" />
-                  <path d="M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2" />
-                </svg>
-                <div className="text-danger">Delete</div>
-              </button>
             </div>
           </div>
         </div>
