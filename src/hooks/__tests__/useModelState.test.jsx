@@ -22,6 +22,26 @@ const flushHistoryPush = async () => {
   })
 }
 
+describe('attribute connection identity', () => {
+  it.each([
+    ['matching IDs in different classes', 'a', 'b', 'id', 'id', true],
+    ['different attributes in one class', 'a', 'a', 'id', 'parentId', true],
+    ['the same attribute on opposite sides', 'a', 'a', 'id', 'id', false],
+  ])('%s', (_label, source, target, sourceId, targetId, allowed) => {
+    const { result } = renderModelState()
+    act(() => result.current.setModel(['a', 'b'].map(id => ({
+      id, type: 'class', position: { x: 0, y: 0 },
+      data: { attributes: [{ id: 'id', name: 'id' }, { id: 'parentId', name: 'parentId' }] },
+    })), []))
+    const connection = { source, target,
+      sourceHandle: `right-${sourceId}-source`, targetHandle: `left-${targetId}-target` }
+    expect(result.current.isValidConnection(connection)).toBe(allowed)
+    act(() => result.current.onConnect(connection))
+    expect(result.current.edges).toHaveLength(allowed ? 1 : 0)
+    if (allowed) expect(result.current.edges[0]).toMatchObject({ source, target, type: 'relationship' })
+  })
+})
+
 describe('composition whole selection', () => {
   const composition = normalizeEdges([{
     id: 'composition', type: 'composition', source: 'part', target: 'whole',

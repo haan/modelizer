@@ -801,6 +801,7 @@ export function useModelState({
           : null
         if (
           isAttributeConnection &&
+          params.source === params.target &&
           sourceAttributeId &&
           targetAttributeId &&
           sourceAttributeId === targetAttributeId
@@ -998,6 +999,7 @@ export function useModelState({
         connection.targetHandle,
       )
       if (
+        connection.source === connection.target &&
         sourceAttributeId &&
         targetAttributeId &&
         sourceAttributeId === targetAttributeId

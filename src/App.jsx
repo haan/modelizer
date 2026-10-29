@@ -1010,6 +1010,7 @@ function App() {
                   onConnect={onConnect}
                   onConnectStart={onConnectStart}
                   onConnectEnd={onConnectEnd}
+                  connectOnClick={false}
                   onEdgeDoubleClick={onEdgeDoubleClick}
                   onNodeClick={onFlowNodeClick}
                   onEdgeClick={onFlowEdgeClick}
