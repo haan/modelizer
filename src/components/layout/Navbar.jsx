@@ -14,6 +14,8 @@ const actionItemClass =
   'cursor-pointer rounded-sm px-2 py-1 text-xs text-base-content transition-colors hover:bg-base-200 data-[highlighted]:bg-base-200 focus:outline-none'
 const indicatorClass =
   'absolute inset-y-0 left-1.5 flex w-3.5 items-center justify-center'
+// Borders snap to device pixels more consistently than thin background fills.
+const separatorClass = 'my-1 box-border h-px border-t border-base-content/15'
 
 function MenuCheckbox({ checked, onCheckedChange, children }) {
   return (
@@ -170,7 +172,7 @@ export default function Navbar({
                   >
                     Save As…
                   </Menubar.Item>
-                  <Menubar.Separator className="my-1 h-px bg-base-content/20" />
+                  <Menubar.Separator className={separatorClass} />
                   <Menubar.Sub>
                     <Menubar.SubTrigger className="flex cursor-pointer items-center justify-between rounded-sm px-2 py-1 text-xs text-base-content transition-colors hover:bg-base-200 data-[highlighted]:bg-base-200 focus:outline-none">
                       Import
@@ -261,7 +263,7 @@ export default function Navbar({
                   <MenuCheckbox checked={showAnnotations} onCheckedChange={onToggleAnnotations}>
                     Annotations
                   </MenuCheckbox>
-                  <Menubar.Separator className="my-1 h-px bg-base-content/15" />
+                  <Menubar.Separator className={separatorClass} />
                   <Menubar.Label className="px-2 pb-1 pt-2 text-xs font-medium text-base-content/70">Notation</Menubar.Label>
                   <MenuCheckbox checked={showConceptualOperationsCompartment} onCheckedChange={onToggleConceptualOperationsCompartment}>
                     Operations compartment
@@ -302,7 +304,7 @@ export default function Navbar({
                       </Menubar.SubContent>
                     </Menubar.Portal>
                   </Menubar.Sub>
-                  <Menubar.Separator className="my-1 h-px bg-base-content/15" />
+                  <Menubar.Separator className={separatorClass} />
                   <Menubar.Label className="px-2 pb-1 pt-2 text-xs font-medium text-base-content/70">Canvas</Menubar.Label>
                   <MenuCheckbox checked={showBackground} onCheckedChange={onToggleBackground}>
                     Background grid
@@ -324,12 +326,12 @@ export default function Navbar({
                   <MenuCheckbox checked={theme === 'dark'} onCheckedChange={onToggleTheme}>
                     Dark mode
                   </MenuCheckbox>
-                  <Menubar.Separator className="my-1 h-px bg-base-content/15" />
+                  <Menubar.Separator className={separatorClass} />
                   <Menubar.Label className="px-2 pb-1 pt-2 text-xs font-medium text-base-content/70">Modeling</Menubar.Label>
                   <MenuCheckbox checked={showCompositionAggregation} onCheckedChange={onToggleCompositionAggregation}>
                     Enable composite aggregation
                   </MenuCheckbox>
-                  <Menubar.Separator className="my-1 h-px bg-base-content/15" />
+                  <Menubar.Separator className={separatorClass} />
                   <Menubar.Label className="px-2 pb-1 pt-2 text-xs font-medium text-base-content/70">Editing</Menubar.Label>
                   <MenuCheckbox checked={confirmDelete} onCheckedChange={onToggleConfirmDelete}>
                     Confirm before deleting
