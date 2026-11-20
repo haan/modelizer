@@ -244,6 +244,11 @@ function prepareLoadedModel(payload) {
     const nodeType = node?.type === 'umlClass' ? CLASS_NODE_TYPE : node?.type ?? CLASS_NODE_TYPE
 
     if (nodeType === CLASS_NODE_TYPE) {
+      // Class boxes follow their visible attributes, even when a file supplies a CSS width.
+      if (node.style?.width !== undefined) {
+        const { width: _width, ...style } = node.style
+        node = { ...node, style }
+      }
       const viewPositions = normalizeViewPositions(
         data.viewPositions,
         node?.position,

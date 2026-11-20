@@ -365,6 +365,7 @@ describe('React Flow 12 file compatibility', () => {
     const { result } = setup()
     const nodes = ['class', 'note', 'area'].map((type) => ({ id: type, type,
       position: { x: 10, y: 20 }, width: 280, height: 180,
+      style: { width: version === 1 ? '220px' : 220, opacity: 0.9 },
       measured: { width: 999, height: 999 }, internals: { positionAbsolute: { x: 9, y: 9 } }, data: {},
     }))
     await act(async () => result.current.onOpenModelFile(fileFor({ version, nodes, edges: [] })))
@@ -380,6 +381,9 @@ describe('React Flow 12 file compatibility', () => {
       }
     }
     const before = buildHashPayload({ nodes: result.current.nodes, edges: [] })
+    expect(before.nodes.find(node => node.type === 'class').style).toEqual({ opacity: 0.9 })
+    expect(before.nodes.find(node => node.type === 'note').style).toEqual(nodes[1].style)
+    expect(before.nodes.find(node => node.type === 'area').style.width).toBe(280)
     for (const height of [250, 350]) {
       act(() => result.current.onNodesChange(nodes.map(node => ({ id: node.id, type: 'dimensions', dimensions: { width: 300, height } }))))
     }
