@@ -10,12 +10,12 @@ vi.mock('../../../model/pngExport.jsx', () => ({ exportFlowPng: vi.fn() }))
 const source = {
   activeView: 'logical', fileName: 'Assignment-logical.png', annotations: {},
   nodes: [
-    { id: 'class', type: CLASS_NODE_TYPE, selected: true, data: { showAccentColors: false } },
+    { id: 'class', type: CLASS_NODE_TYPE, selected: true, data: { showAccentColors: false, showKeySymbols: true } },
     { id: 'note', type: NOTE_NODE_TYPE },
     { id: 'area', type: AREA_NODE_TYPE },
   ],
   edges: [{ id: 'link', source: 'class', target: 'note', selected: true }],
-  defaults: { includeAnnotations: false, includeNotes: false, includeAreas: true, includeAccentColors: true },
+  defaults: { includeAnnotations: false, includeNotes: false, includeAreas: true, includeAccentColors: true, includeKeySymbols: false },
 }
 
 beforeEach(() => { exportFlowPng.mockReset().mockResolvedValue('data:image/png;base64,preview') })
@@ -29,23 +29,24 @@ describe('PNG export preview', () => {
     expect(screen.getByText('Logical view')).toBeInTheDocument()
     expect(screen.queryByRole('checkbox', { name: 'Include annotations' })).not.toBeInTheDocument()
     expect(exportFlowPng).toHaveBeenLastCalledWith(expect.objectContaining({
-      nodes: [expect.objectContaining({ id: 'class', selected: false, data: { showAccentColors: true } }), expect.objectContaining({ id: 'area' })],
+      nodes: [expect.objectContaining({ id: 'class', selected: false, data: { showAccentColors: true, showKeySymbols: false } }), expect.objectContaining({ id: 'area' })],
       edges: [], resolution: 'standard', background: 'white', padding: 64,
     }))
     await user.click(screen.getByRole('checkbox', { name: 'Include notes' }))
     await user.click(screen.getByRole('checkbox', { name: 'Include areas' }))
     await user.click(screen.getByRole('checkbox', { name: 'Accent colors' }))
+    await user.click(screen.getByRole('checkbox', { name: 'Key symbols' }))
     await user.selectOptions(screen.getByLabelText('Resolution', { exact: false }), 'high')
     await user.click(screen.getByText('More options'))
     await user.selectOptions(screen.getByLabelText('Background'), 'transparent')
     await user.selectOptions(screen.getByLabelText('Margin'), 'small')
     expect(await screen.findByAltText('PNG export preview')).toBeInTheDocument()
     expect(exportFlowPng).toHaveBeenLastCalledWith(expect.objectContaining({
-      nodes: [expect.objectContaining({ id: 'class', data: { showAccentColors: false } }), expect.objectContaining({ id: 'note' })],
+      nodes: [expect.objectContaining({ id: 'class', data: { showAccentColors: false, showKeySymbols: true } }), expect.objectContaining({ id: 'note' })],
       edges: [expect.objectContaining({ id: 'link', selected: false })],
       resolution: 'high', background: 'transparent', padding: 32, currentStroke: null,
     }))
-    expect(source.nodes[0]).toMatchObject({ selected: true, data: { showAccentColors: false } })
+    expect(source.nodes[0]).toMatchObject({ selected: true, data: { showAccentColors: false, showKeySymbols: true } })
     const count = exportFlowPng.mock.calls.length
     await user.clear(screen.getByLabelText('Filename'))
     expect(screen.getByRole('button', { name: 'Download PNG' })).toBeDisabled()

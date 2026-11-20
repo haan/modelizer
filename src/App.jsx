@@ -47,11 +47,13 @@ const MIN_INFO_WIDTH = 370
 const STORAGE_KEYS = {
   showBackground: 'modelizer.showBackground',
   showAccentColors: 'modelizer.showAccentColors',
+  showKeySymbols: 'modelizer.showKeySymbols',
   showConceptualOperationsCompartment:
     'modelizer.showConceptualOperationsCompartment',
   nullDisplayMode: 'modelizer.nullDisplayMode',
   confirmDelete: 'modelizer.confirmDelete',
   includeAccentColorsInExport: 'modelizer.includeAccentColorsInExport',
+  includeKeySymbolsInExport: 'modelizer.includeKeySymbolsInExport',
   viewSpecificSettingsOnly: 'modelizer.viewSpecificSettingsOnly',
   showFullscreen: 'modelizer.showFullscreen',
   showCompositionAggregation: 'modelizer.showCompositionAggregation',
@@ -134,6 +136,9 @@ function App() {
   const [showAccentColors, setShowAccentColors] = useState(() =>
     readStoredBool(STORAGE_KEYS.showAccentColors, true),
   )
+  const [showKeySymbols, setShowKeySymbols] = useState(() =>
+    readStoredBool(STORAGE_KEYS.showKeySymbols, false),
+  )
   const [showConceptualOperationsCompartment, setShowConceptualOperationsCompartment] =
     useState(() =>
       readStoredBool(STORAGE_KEYS.showConceptualOperationsCompartment, false),
@@ -146,6 +151,9 @@ function App() {
   )
   const [includeAccentColorsInExport, setIncludeAccentColorsInExport] = useState(() =>
     readStoredBool(STORAGE_KEYS.includeAccentColorsInExport, true),
+  )
+  const [includeKeySymbolsInExport, setIncludeKeySymbolsInExport] = useState(() =>
+    readStoredBool(STORAGE_KEYS.includeKeySymbolsInExport, false),
   )
   const [viewSpecificSettingsOnly, setViewSpecificSettingsOnly] = useState(() =>
     readStoredBool(STORAGE_KEYS.viewSpecificSettingsOnly, false),
@@ -249,6 +257,10 @@ function App() {
   }, [showAccentColors])
 
   useEffect(() => {
+    writeStoredBool(STORAGE_KEYS.showKeySymbols, showKeySymbols)
+  }, [showKeySymbols])
+
+  useEffect(() => {
     writeStoredBool(
       STORAGE_KEYS.showConceptualOperationsCompartment,
       showConceptualOperationsCompartment,
@@ -269,6 +281,10 @@ function App() {
       includeAccentColorsInExport,
     )
   }, [includeAccentColorsInExport])
+
+  useEffect(() => {
+    writeStoredBool(STORAGE_KEYS.includeKeySymbolsInExport, includeKeySymbolsInExport)
+  }, [includeKeySymbolsInExport])
   useEffect(() => {
     writeStoredBool(
       STORAGE_KEYS.viewSpecificSettingsOnly,
@@ -384,6 +400,7 @@ function App() {
     reactFlowInstance,
     reactFlowWrapper,
     showAccentColors,
+    showKeySymbols,
     showConceptualOperationsCompartment,
     showCompositionAggregation,
     nullDisplayMode,
@@ -821,10 +838,11 @@ function App() {
         includeNotes: showNotes,
         includeAreas: showAreas,
         includeAccentColors: includeAccentColorsInExport,
+        includeKeySymbols: includeKeySymbolsInExport,
       },
     })
   }, [activeView, annotations, annotationsVisible, defaultValueEntries, flowEdges,
-    flowNodes, includeAccentColorsInExport, modelName, showAnnotations, showAreas, showNotes])
+    flowNodes, includeAccentColorsInExport, includeKeySymbolsInExport, modelName, showAnnotations, showAreas, showNotes])
 
   const onSidebarSelect = useCallback(
     (item) => {
@@ -886,6 +904,8 @@ function App() {
             onExportPng={onExportPng}
             showBackground={showBackground}
             showAccentColors={showAccentColors}
+            showKeySymbols={showKeySymbols}
+            onToggleKeySymbols={() => setShowKeySymbols((current) => !current)}
             showConceptualOperationsCompartment={
               showConceptualOperationsCompartment
             }
@@ -1096,7 +1116,14 @@ function App() {
             </main>
           </div>
         </div>
-        {pngExport && <PngExportDialog source={pngExport} onAccentColorsChange={setIncludeAccentColorsInExport} onClose={() => setPngExport(null)} />}
+        {pngExport && (
+          <PngExportDialog
+            source={pngExport}
+            onAccentColorsChange={setIncludeAccentColorsInExport}
+            onKeySymbolsChange={setIncludeKeySymbolsInExport}
+            onClose={() => setPngExport(null)}
+          />
+        )}
         <ConfirmDiscardDialog
           open={isConfirmDialogOpen}
           onOpenChange={onConfirmDialogOpenChange}

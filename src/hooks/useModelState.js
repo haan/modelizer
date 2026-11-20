@@ -113,6 +113,7 @@ export function useModelState({
   reactFlowInstance,
   reactFlowWrapper,
   showAccentColors,
+  showKeySymbols,
   showConceptualOperationsCompartment,
   showCompositionAggregation,
   nullDisplayMode,
@@ -2938,6 +2939,7 @@ export function useModelState({
             data: {
               ...node.data,
               showAccentColors,
+              showKeySymbols,
               showConceptualOperationsCompartment,
               showCompositionAggregation,
               nullDisplayMode,
@@ -2975,6 +2977,7 @@ export function useModelState({
     nodes,
     normalizedActiveView,
     showAccentColors,
+    showKeySymbols,
     showConceptualOperationsCompartment,
     showCompositionAggregation,
   ])

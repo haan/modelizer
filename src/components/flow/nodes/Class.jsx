@@ -10,7 +10,6 @@ import {
   VIEW_LOGICAL,
   VIEW_PHYSICAL,
 } from '../../../model/constants.js'
-import { formatAttributeType } from '../../../attributes.js'
 import Attribute from './Attribute.jsx'
 import ClassHandle from '../handles/ClassHandle.jsx'
 
@@ -22,9 +21,6 @@ export function Class({ data, id, selected }) {
   const showConceptualOperationsCompartment =
     data?.showConceptualOperationsCompartment ?? false
   const nullDisplayMode = data?.nullDisplayMode ?? 'not-null'
-  const showNullAsQuestion = nullDisplayMode === 'null-as-question'
-  const showNull = nullDisplayMode === 'null'
-  const showNotNull = nullDisplayMode === 'not-null'
   const activeView = data?.activeView ?? VIEW_CONCEPTUAL
   const displayName = getClassDisplayName(data, activeView)
   const showHandles = activeView === VIEW_CONCEPTUAL
@@ -33,6 +29,7 @@ export function Class({ data, id, selected }) {
   const showAttributeHandles = activeView !== VIEW_CONCEPTUAL
   const handleVisibilityClass = showHandles ? '' : 'opacity-0 pointer-events-none'
   const showTypeDetails = activeView === VIEW_PHYSICAL
+  const showKeySymbols = data?.showKeySymbols && (activeView === VIEW_LOGICAL || activeView === VIEW_PHYSICAL)
   const showConstraints = activeView === VIEW_PHYSICAL
   const showDefaultMarker = activeView === VIEW_PHYSICAL
   const visibleAttributes = (() => {
@@ -51,47 +48,6 @@ export function Class({ data, id, selected }) {
   const visibleAttributeKey = visibleAttributes
     .map((attribute) => attribute.id)
     .join('|')
-  let columnTemplate = ''
-  if (showTypeDetails || showConstraints) {
-    let maxTypeLength = 0
-    let maxConstraintsLength = 0
-
-    visibleAttributes.forEach((attribute) => {
-      if (showTypeDetails) {
-        const rawTypeLabel = formatAttributeType(
-          attribute.type,
-          attribute.typeParams,
-        )
-        const typeLabel =
-          showNullAsQuestion && attribute.nullable && rawTypeLabel
-            ? `${rawTypeLabel}?`
-            : rawTypeLabel
-        maxTypeLength = Math.max(maxTypeLength, typeLabel.length)
-      }
-      if (showConstraints) {
-        const constraintLabel = [
-          showNull && attribute.nullable ? 'N' : null,
-          showNotNull && !attribute.nullable ? 'NN' : null,
-          attribute.unique ? 'UQ' : null,
-          attribute.autoIncrement ? 'AI' : null,
-        ]
-          .filter(Boolean)
-          .join(', ')
-        maxConstraintsLength = Math.max(
-          maxConstraintsLength,
-          constraintLabel.length,
-        )
-      }
-    })
-
-    const typeColumnWidth =
-      showTypeDetails && maxTypeLength > 0 ? `${maxTypeLength}ch` : '0px'
-    const constraintsColumnWidth =
-      showConstraints && maxConstraintsLength > 0
-        ? `${maxConstraintsLength}ch`
-        : '0px'
-    columnTemplate = `minmax(0, 1fr) ${typeColumnWidth} ${constraintsColumnWidth}`
-  }
   const borderClass = selected ? 'stroke-primary' : 'stroke-base-content/70'
   useLayoutEffect(() => {
     if (!showAttributeHandles) {
@@ -145,7 +101,9 @@ export function Class({ data, id, selected }) {
           {visibleAttributes.length === 0 ? (
             <div className="opacity-60">No attributes</div>
           ) : (
-            <ul className="flex w-full flex-col gap-1">
+            <ul className={showTypeDetails
+              ? 'grid grid-cols-[minmax(max-content,1fr)_max-content_max-content] gap-x-2 gap-y-1'
+              : 'flex flex-col gap-1'}>
               {visibleAttributes.map((attr) => {
                 const logicalName =
                   typeof attr.logicalName === 'string' && attr.logicalName.trim()
@@ -166,12 +124,12 @@ export function Class({ data, id, selected }) {
                     showType={showTypeDetails}
                     showConstraints={showConstraints}
                     showDefaultMarker={showDefaultMarker}
+                    showKeySymbols={showKeySymbols}
                     nullDisplayMode={nullDisplayMode}
                     nullable={attr.nullable}
                     unique={attr.unique}
                     autoIncrement={attr.autoIncrement}
                     showHandles={showAttributeHandles}
-                    columnTemplate={columnTemplate}
                     defaultValue={attr.defaultValue}
                   />
                 )

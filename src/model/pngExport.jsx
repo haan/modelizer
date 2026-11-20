@@ -79,16 +79,9 @@ export async function exportFlowPng({
   resolution = 'high',
 }) {
   const backgroundColor = background === 'transparent' ? 'transparent' : BACKGROUND_COLOR
-  let bounds =
-    getPngExportContentBounds({
-      nodes,
-      edges,
-      annotations,
-      activeView,
-      includeAnnotations: showAnnotations,
-      currentStroke,
-      padding,
-    }) ?? { x: 0, y: 0, width: fallbackWidth, height: fallbackHeight }
+  const contentOptions = { edges, annotations, activeView, includeAnnotations: showAnnotations, currentStroke, padding }
+  let bounds = getPngExportContentBounds({ ...contentOptions, nodes }) ??
+    { x: 0, y: 0, width: fallbackWidth, height: fallbackHeight }
   let { width, height } = getPngExportDimensions(
     bounds,
     fallbackWidth,
@@ -124,10 +117,12 @@ export async function exportFlowPng({
     await waitForFrame()
     await waitForFrame()
 
-    // Previously hidden notes may not have measured sizes yet. Expand to the
-    // rendered content, including edge labels, before capturing the image.
+    // Export options can grow or shrink classes relative to the editor.
+    // Start with this canvas's measurements and include rendered edge labels.
+    const measured = getPngExportContentBounds({ ...contentOptions, nodes: flow.getNodes() }) ?? bounds
     const origin = container.getBoundingClientRect()
-    let left = 0, top = 0, right = width, bottom = height
+    let left = measured.x - bounds.x, top = measured.y - bounds.y
+    let right = left + measured.width, bottom = top + measured.height
     container.querySelectorAll('.react-flow__node, .react-flow__edge, .react-flow__edgelabel-renderer > *').forEach((element) => {
       const rect = element.getBoundingClientRect()
       if (!rect.width && !rect.height) return
@@ -136,7 +131,7 @@ export async function exportFlowPng({
       right = Math.max(right, rect.right - origin.left + padding)
       bottom = Math.max(bottom, rect.bottom - origin.top + padding)
     })
-    if (left < 0 || top < 0 || right > width || bottom > height) {
+    if (left !== 0 || top !== 0 || Math.ceil(right - left) !== width || Math.ceil(bottom - top) !== height) {
       bounds = { x: bounds.x + left, y: bounds.y + top, width: right - left, height: bottom - top }
       ;({ width, height } = getPngExportDimensions(bounds))
       container.style.width = `${width}px`

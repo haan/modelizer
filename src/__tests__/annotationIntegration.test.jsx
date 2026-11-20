@@ -86,6 +86,7 @@ describe('annotation editor integration', () => {
     await user.click(screen.getByRole('menuitem', { name: 'Export PNG…' }))
     expect(await screen.findByAltText('PNG export preview')).toBeInTheDocument()
     expect(screen.queryByRole('checkbox', { name: 'Include annotations' })).not.toBeInTheDocument()
+    expect(screen.queryByRole('checkbox', { name: 'Key symbols' })).not.toBeInTheDocument()
     expect(exportFlowPng).toHaveBeenCalledWith(expect.objectContaining({ showAnnotations: false, currentStroke: null }))
   })
 

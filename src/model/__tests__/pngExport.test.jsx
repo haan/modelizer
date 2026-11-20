@@ -9,6 +9,7 @@ const reactFlowMockState = vi.hoisted(() => ({
   skipInit: false,
   nodesInitialized: true,
   setViewport: vi.fn(),
+  getNodes: vi.fn(),
 }))
 
 vi.mock('html-to-image', () => ({
@@ -20,6 +21,7 @@ vi.mock('@xyflow/react', async () => {
 
   return {
     ReactFlow: function MockReactFlow({ children, onInit, defaultNodes: nodes, defaultViewport }) {
+      reactFlowMockState.getNodes.mockImplementation(() => nodes)
       React.useEffect(() => {
         if (reactFlowMockState.skipInit) {
           return
@@ -32,7 +34,7 @@ vi.mock('@xyflow/react', async () => {
       </div>
     },
     useNodesInitialized: () => reactFlowMockState.nodesInitialized,
-    useReactFlow: () => ({ viewportInitialized: !reactFlowMockState.skipInit, setViewport: reactFlowMockState.setViewport }),
+    useReactFlow: () => ({ viewportInitialized: !reactFlowMockState.skipInit, setViewport: reactFlowMockState.setViewport, getNodes: reactFlowMockState.getNodes }),
     ConnectionLineType: { Straight: 'straight' },
     ConnectionMode: { Loose: 'loose' },
     useViewport: () => ({ x: 0, y: 0, zoom: 1 }),
@@ -175,6 +177,13 @@ describe('pngExport', () => {
     } finally {
       rect.mockRestore()
     }
+  })
+
+  it('uses the narrower export width when key symbols are hidden only in the PNG', async () => {
+    const nodes = [{ id: 'class-a', position: { x: 100, y: 40 }, measured: { width: 396, height: 118 } }]
+    reactFlowMockState.getNodes.mockReturnValueOnce([{ ...nodes[0], measured: { width: 369, height: 118 } }])
+    await exportFlowPng(getExportArgs({ nodes, padding: 64 }))
+    expect(toPng.mock.lastCall[1]).toMatchObject({ width: 497, height: 246 })
   })
 
   it('does not capture an initialized viewport before its nodes are measured', async () => {

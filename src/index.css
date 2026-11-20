@@ -81,6 +81,8 @@
   --color-base-200: 245 245 245;
   --color-base-300: 229 231 235;
   --color-base-content: 31 41 55;
+  --key-primary: #95712c;
+  --key-foreign: #64758a;
   --color-primary: 59 130 246;
   --color-primary-content: 255 255 255;
   --color-primary-label: 59 130 246;
@@ -109,6 +111,8 @@
   --color-base-200: 15 23 42;
   --color-base-300: 51 65 85;
   --color-base-content: 226 232 240;
+  --key-primary: #c8a765;
+  --key-foreign: #a2b2c4;
   --color-primary: 96 165 250;
   --color-primary-content: 15 23 42;
   --color-primary-label: 147 197 253;

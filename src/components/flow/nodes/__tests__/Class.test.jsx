@@ -67,3 +67,42 @@ describe('Class accent layout', () => {
     expect(classFrame).not.toHaveClass('overflow-hidden')
   })
 })
+
+describe('attribute key symbols', () => {
+  it.each([VIEW_LOGICAL, VIEW_PHYSICAL])('marks exact prefixes on the displayed name in %s view', (activeView) => {
+    const names = [
+      ['pk_number', ''],
+      ['pk_oldName', 'fk_course'],
+      ['Enrollment', 'pkfk_student'],
+      ['pk_hiddenPrefix', 'student'],
+      ['PK_number', ''],
+      ['old_fk_course', ''],
+    ]
+    const attributes = names.map(([name, logicalName], id) => ({ id, name, logicalName, defaultValue: '1' }))
+    render(<Class id="class-1" data={{ activeView, showKeySymbols: true, attributes }} />)
+    const symbols = screen.getAllByRole('img')
+    expect(symbols.map(symbol => symbol.getAttribute('aria-label'))).toEqual([
+      'Primary key', 'Foreign key', 'Primary and foreign key',
+    ])
+    expect(symbols[2].querySelectorAll('svg')).toHaveLength(2)
+    expect(symbols[2].parentElement).toHaveTextContent(activeView === VIEW_PHYSICAL ? 'pkfk_student*' : 'pkfk_student')
+  })
+
+  it('updates the same row when the name, view, or preference changes', () => {
+    const node = (name, activeView, showKeySymbols) => (
+      <Class id="class-1" data={{ activeView, showKeySymbols, attributes: [{ id: 'a', name }] }} />
+    )
+    const { rerender } = render(node('id', VIEW_LOGICAL, true))
+    expect(screen.queryByRole('img')).toBeNull()
+    rerender(node('pk_id', VIEW_LOGICAL, true))
+    expect(screen.getByRole('img', { name: 'Primary key' })).toBeInTheDocument()
+    rerender(node('id', VIEW_LOGICAL, true))
+    expect(screen.queryByRole('img')).toBeNull()
+    rerender(node('pk_id', VIEW_CONCEPTUAL, true))
+    expect(screen.queryByRole('img')).toBeNull()
+    rerender(node('pk_id', VIEW_PHYSICAL, false))
+    expect(screen.queryByRole('img')).toBeNull()
+    rerender(node('pk_id', VIEW_PHYSICAL, true))
+    expect(screen.getByRole('img', { name: 'Primary key' })).toBeInTheDocument()
+  })
+})

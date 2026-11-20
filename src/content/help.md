@@ -88,6 +88,8 @@ Layouts can differ between views. Use Sync when you want to copy the previous ph
 
 ### Choose the notation
 
+Enable **View → Key symbols** to mark attributes in logical and physical views. A lowercase `pk_` prefix shows a gold key, `fk_` shows a silver key, and `pkfk_` shows both. The PNG export dialog remembers its own **Key symbols** setting.
+
 Use **View → Operations compartment** to show or hide the empty UML operations compartment beneath class attributes.
 
 Use **View → Nullability notation** to choose how nullability is shown: **Null** marks nullable attributes with `N`; **Not Null** marks required attributes with `NN`; **Null as ?** appends `?` to nullable types in physical view.

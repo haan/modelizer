@@ -48,6 +48,8 @@ export default function Navbar({
   onToggleBackground,
   showAccentColors,
   onToggleAccentColors,
+  showKeySymbols,
+  onToggleKeySymbols,
   showConceptualOperationsCompartment,
   onToggleConceptualOperationsCompartment,
   showFullscreen,
@@ -267,6 +269,9 @@ export default function Navbar({
                   <Menubar.Label className="px-2 pb-1 pt-2 text-xs font-medium text-base-content/70">Notation</Menubar.Label>
                   <MenuCheckbox checked={showConceptualOperationsCompartment} onCheckedChange={onToggleConceptualOperationsCompartment}>
                     Operations compartment
+                  </MenuCheckbox>
+                  <MenuCheckbox checked={showKeySymbols} onCheckedChange={onToggleKeySymbols}>
+                    Key symbols
                   </MenuCheckbox>
                   <Menubar.Sub>
                     <Menubar.SubTrigger className={`flex items-center justify-between gap-4 ${choiceItemClass}`}>

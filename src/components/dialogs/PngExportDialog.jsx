@@ -3,7 +3,7 @@ import * as Dialog from '@radix-ui/react-dialog'
 import { exportFlowPng } from '../../model/pngExport.jsx'
 import { getPngExportNodes } from '../../model/pngExportUtils.js'
 import { sanitizeFileName } from '../../model/fileUtils.js'
-import { AREA_NODE_TYPE, NOTE_NODE_TYPE } from '../../model/constants.js'
+import { AREA_NODE_TYPE, NOTE_NODE_TYPE, VIEW_LOGICAL, VIEW_PHYSICAL } from '../../model/constants.js'
 import { dialogStyles } from './dialogStyles.js'
 
 const MARGINS = { small: 32, medium: 64, large: 96 }
@@ -16,7 +16,8 @@ function Toggle({ label, checked, onChange }) {
   </label>
 }
 
-export default function PngExportDialog({ source, onClose, onAccentColorsChange }) {
+export default function PngExportDialog({ source, onClose, onAccentColorsChange, onKeySymbolsChange }) {
+  const supportsKeySymbols = source.activeView === VIEW_LOGICAL || source.activeView === VIEW_PHYSICAL
   const hasAnnotations = Boolean(source.annotations?.[source.activeView]?.items?.length)
   const hasNotes = source.nodes.some((node) => node.type === NOTE_NODE_TYPE && !node.hidden)
   const hasAreas = source.nodes.some((node) => node.type === AREA_NODE_TYPE && !node.hidden)
@@ -112,6 +113,12 @@ export default function PngExportDialog({ source, onClose, onAccentColorsChange 
               {hasNotes && <Toggle label="Include notes" checked={options.includeNotes} onChange={(value) => change('includeNotes', value)} />}
               {hasAreas && <Toggle label="Include areas" checked={options.includeAreas} onChange={(value) => change('includeAreas', value)} />}
               <Toggle label="Accent colors" checked={options.includeAccentColors} onChange={(value) => { change('includeAccentColors', value); onAccentColorsChange?.(value) }} />
+              {supportsKeySymbols && (
+                <Toggle label="Key symbols" checked={options.includeKeySymbols} onChange={(value) => {
+                  change('includeKeySymbols', value)
+                  onKeySymbolsChange?.(value)
+                }} />
+              )}
             </fieldset>
             <label className="block text-sm font-medium">Resolution
               <select className={INPUT_CLASS} value={options.resolution} onChange={(event) => change('resolution', event.target.value)}>

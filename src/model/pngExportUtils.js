@@ -10,12 +10,12 @@ const DEFAULT_NODE_SIZE = { width: 220, height: 140 }
 const DEFAULT_NOTE_SIZE = { width: 180, height: 80 }
 const DEFAULT_AREA_SIZE = { width: 280, height: 180 }
 
-export function getPngExportNodes(nodes, { includeNotes, includeAreas, includeAccentColors }) {
+export function getPngExportNodes(nodes, { includeNotes, includeAreas, includeAccentColors, includeKeySymbols }) {
   return nodes.filter((node) => !node.hidden &&
     (node.type !== NOTE_NODE_TYPE || includeNotes) &&
     (node.type !== AREA_NODE_TYPE || includeAreas))
     .map((node) => ({ ...node, selected: false,
-      data: { ...node.data, showAccentColors: includeAccentColors },
+      data: { ...node.data, showAccentColors: includeAccentColors, showKeySymbols: includeKeySymbols },
     }))
 }
 

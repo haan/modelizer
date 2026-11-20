@@ -81,6 +81,7 @@ describe('consistent menu preferences', () => {
     const preferences = [
       ['Preferences', 'Enable composite aggregation', 'showCompositionAggregation'],
       ['View', 'Operations compartment', 'showConceptualOperationsCompartment'],
+      ['View', 'Key symbols', 'showKeySymbols'],
       ['View', 'Notes', 'showNotes'],
       ['View', 'Areas', 'showAreas'],
       ['View', 'Annotations', 'showAnnotations'],

@@ -19,7 +19,7 @@ it('separates diagram visibility and notation from editor preferences', async ()
     .toEqual(['File', 'Edit', 'View', 'Preferences', 'Help'])
   await user.click(screen.getByRole('menuitem', { name: 'View', exact: true }))
   expect(screen.getAllByRole('menuitemcheckbox').map(item => item.textContent)).toEqual([
-    'Notes', 'Areas', 'Annotations', 'Operations compartment', 'Background grid', 'Accent colors', 'Fullscreen',
+    'Notes', 'Areas', 'Annotations', 'Operations compartment', 'Key symbols', 'Background grid', 'Accent colors', 'Fullscreen',
   ])
   expect(screen.getByRole('menuitem', { name: 'Nullability notation' })).toBeInTheDocument()
   await user.keyboard('{Escape}')
