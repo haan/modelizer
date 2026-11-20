@@ -88,7 +88,13 @@ Layouts can differ between views. Use Sync when you want to copy the previous ph
 
 ### Choose the notation
 
-Enable **View → Key symbols** to mark attributes in logical and physical views. A lowercase `pk_` prefix shows a honey brass key, `fk_` shows a blue slate key, and `pkfk_` shows both. The PNG export dialog remembers its own **Key symbols** setting.
+In logical or physical view, enable **View → Key symbols**. Modelizer reads the lowercase prefix of the displayed attribute name. It uses the **Logical name** when filled in and the original name otherwise.
+
+| Example name | Symbol in the diagram |
+| --- | --- |
+| `pk_reader` | Honey brass key for a primary key |
+| `fk_reader` | Blue slate key for a foreign key |
+| `pkfk_reader` | Both keys for an attribute that serves both roles |
 
 Use **View → Operations compartment** to show or hide the empty UML operations compartment beneath class attributes.
 
@@ -173,8 +179,9 @@ Java Modelizer import keeps supported classes, attributes, positions, and connec
 
 1. Switch to the view you want to share, then choose **Export PNG** from File or the sidebar.
 2. In the preview, choose whether to include notes, areas, and annotations. These options appear when the current view contains those items, even if they are hidden on the canvas.
-3. Choose **Standard (1×)** or **High (2×)** resolution. Open **More options** to set a white or transparent background, margins, and filename.
-4. Wait for the preview to update, then choose **Download PNG**.
+3. Choose whether to show **Accent colors**. For a logical or physical diagram, you can also enable **Key symbols**. The diagram and export key-symbol settings both start off, and Modelizer remembers each choice separately.
+4. Choose **Standard (1×)** or **High (2×)** resolution. Open **More options** to set a white or transparent background, margins, and filename.
+5. Wait for the preview to update, then choose **Download PNG**.
 
 The export fits the included content regardless of your current zoom or pan. It omits the grid, editor controls, and laser effects. A transparency checkerboard is only a preview aid. Export settings do not change the model or its canvas settings.
 

@@ -12,6 +12,8 @@ Modelizer is a lightweight database modeling tool for teaching and discussing th
 | **Logical** | Define tables and relationships between attributes, using logical names where needed. |
 | **Physical** | Specify column types, nullability, uniqueness, auto-increment, and default values. |
 
+In logical and physical views, enable **View → Key symbols** to see which attributes are named as primary keys (`pk_`), foreign keys (`fk_`), or both (`pkfk_`).
+
 Conceptual models support parallel, reflexive, and associative associations, as well as composite aggregation. Enable **Preferences → Enable composite aggregation** to create and display composite aggregations.
 
 Modelizer leaves modeling decisions to the learner. It does not validate modeling correctness or automatically generate relationships from associations.
@@ -34,7 +36,7 @@ Models are stored in local files, with no server-side model storage. The `*` bes
 
 **Import existing designs.** Import Java Modelizer (`.mod`) or MySQL (`.sql`) files through **File → Import**. Review the result: unsupported types are reported and mapped to Undefined, unsupported Java Modelizer links may be skipped, and composite MySQL foreign keys are ignored.
 
-**Export an image.** **Export PNG** previews the full current view and lets you choose whether to include notes, areas, annotations, and accent colors. Choose standard or high resolution, a white or transparent background, margins, and a filename. Export settings do not change the model. Keep a `.mdlz` file as your editable copy; PNG is for sharing and presentation.
+**Export an image.** **Export PNG** previews the full current view and lets you choose whether to include notes, areas, annotations, and accent colors. Logical and physical exports have their own **Key symbols** checkbox. Choose standard or high resolution, a white or transparent background, margins, and a filename. Keep a `.mdlz` file as your editable copy.
 
 ## Teach and discuss
 
