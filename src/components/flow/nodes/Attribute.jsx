@@ -5,13 +5,12 @@ import AttributeHandle from '../handles/AttributeHandle.jsx'
 
 function KeyGlyph({ primary }) {
   return (
-    <svg width="11" height="11" viewBox="0 0 16 16" fill="none" stroke="currentColor"
-      strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"
+    <svg width="13" height="13" viewBox="0 0 16 16" fill="currentColor" aria-hidden="true"
       className={primary ? 'text-(--key-primary)' : 'text-(--key-foreign)'}>
-      {primary
-        ? <circle cx="4.8" cy="11.2" r="3.2" />
-        : <path d="m4.8 7.4 3.8 3.8L4.8 15 1 11.2Z" />}
-      <path d="m7.1 8.9 6.1-6.1 1.6 1.6 M10.7 5.3l1.6 1.6" />
+      <g transform="rotate(45 8 8)">
+        <path fillRule="evenodd" d="M.8 8a4.4 4.4 0 1 0 8.8 0 4.4 4.4 0 0 0-8.8 0Zm2.5 0a1.9 1.9 0 1 1 3.8 0 1.9 1.9 0 0 1-3.8 0Z" />
+        <path d="M8.4 6.8h7v4.6h-2.2V9.1h-1.9v1.5H9.5V9.1H8.4Z" />
+      </g>
     </svg>
   )
 }
@@ -25,7 +24,7 @@ function KeySymbols({ name }) {
   const label = combined ? 'Primary and foreign key' : primary ? 'Primary key' : 'Foreign key'
   return (
     <span role="img" aria-label={label} title={label}
-      className="ml-1 inline-flex gap-px align-[-1px]">
+      className="ml-1 inline-flex gap-px align-[-2px]">
       {primary && <KeyGlyph primary />}
       {foreign && <KeyGlyph />}
     </span>
